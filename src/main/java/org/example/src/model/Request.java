@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * 请求模型，等效于 Python 的 Request。
+ * 请求模型，Request。
  */
 public class Request {
     public Instant timestamp;

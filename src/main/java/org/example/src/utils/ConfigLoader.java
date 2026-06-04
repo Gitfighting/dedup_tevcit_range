@@ -124,9 +124,6 @@ public class ConfigLoader {
             if (data.containsKey("milp_strict_fail")) {
                 config.milpStrictFail = (Boolean) data.get("milp_strict_fail");
             }
-            if (data.containsKey("milp_trigger_mode")) {
-                config.milpTriggerMode = (String) data.get("milp_trigger_mode");
-            }
             if (data.containsKey("milpEcV3ForceEcOnly")) {
                 config.milpEcV3ForceEcOnly = (Boolean) data.get("milpEcV3ForceEcOnly");
             }
@@ -138,6 +135,12 @@ public class ConfigLoader {
             }
             if (data.containsKey("milp_ec_v3_allow_ec")) {
                 config.milpEcV3AllowEc = (Boolean) data.get("milp_ec_v3_allow_ec");
+            }
+            if (data.containsKey("milp_dataset_end_epoch_sec")) {
+                config.milpDatasetEndEpochSec = ((Number) data.get("milp_dataset_end_epoch_sec")).longValue();
+            }
+            if (data.containsKey("milp_fb_replica_horizon_sec")) {
+                config.milpFbReplicaHorizonSec = ((Number) data.get("milp_fb_replica_horizon_sec")).doubleValue();
             }
 
         } catch (Exception e) {

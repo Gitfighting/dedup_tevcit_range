@@ -15,8 +15,8 @@ import java.util.*;
 /**
  * MILP-EC Region-Level Strategy (New Version)
  *
- * 与 PolicyMilpEC 的根本区别：
- *   旧版：事件 = per-object MilpEvent，状态 = per-object MilpStorageState
+ * 与已移除的 object-level MILP 版本的根本区别：
+ *   旧版：事件 = per-object，状态 = per-object MilpStorageState
  *   新版：事件 = per-region RegionStats（聚合 sizeGB），状态 = per-region RegionDecision
  *
  * 每个窗口：

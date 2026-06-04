@@ -43,9 +43,9 @@ public class PolicyTevictRangesNew extends PlacementPolicy {
         this.avgNetworkCost = getAvgNetworkCost(totalGraph);
         this.minNetworkCost = getMinNetworkCost(totalGraph);
         if (c.regions != null && !c.regions.isEmpty()) {
-            this.regions = c.regions;
+            this.regions = c.regions;//从配置中获取区域列表
         } else {
-            this.regions = new ArrayList<>(g.getNodes());
+            this.regions = new ArrayList<>(g.getNodes());//
         }
         System.out.println("[DEBUG] PolicyTevictRangesNew regions: " + regions);
 
@@ -59,7 +59,7 @@ public class PolicyTevictRangesNew extends PlacementPolicy {
         List<Double> rangesList = new ArrayList<>();
         rangesList.add(0.0);
         for (int i = 0; i < 700; i++) {
-            rangesList.add(s * Math.pow(1 + 0.02, i) / HOUR);
+            rangesList.add(s * Math.pow(1 + 0.02, i) / HOUR);//生成2%指数增长的范围列表
         }
         ranges = rangesList.stream().mapToDouble(Double::doubleValue).toArray();
 
@@ -72,7 +72,7 @@ public class PolicyTevictRangesNew extends PlacementPolicy {
         for (String region : regions) {
             for (String region2 : regions) {
                 regionPairsTtl.put(new RegionPair(region, region2), new ArrayList<>());
-            }
+            }//初始化区域对TTL映射
         }
     }
 

@@ -2,36 +2,29 @@ package org.example;
 
 import org.example.src.model.Config;
 import org.example.src.utils.Helpers;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
+import org.example.src.model.*;
+import org.example.src.placement_policy.*;
+import org.example.src.transfer_policy.*;
+import org.example.graph.DiGraph;
 /**
  * Python simulator_v2.py 的前 1-174 行的 Java 1.8 等价实现。
  * 保留原始结构与逻辑，包括导入、日志初始化、versionate_trace 函数与构造逻辑初始化。
  */
 public class SimulatorV2 {
     private static final Logger logger = Logger.getLogger(SimulatorV2.class.getName());
+
+    /** Tail after last trace request used by {@link org.example.src.model.RegionManager#calculateRemainingStorageCosts}. */
+    public static final long TRACE_ACCOUNTING_TAIL_SECONDS = 50L;
 
     // 版本化函数：versionate_trace(trace_path, out_path)
     public void versionateTrace(String tracePath, String outPath) {
@@ -90,7 +83,7 @@ public class SimulatorV2 {
     // 策略集合
     private final Set<String> evictionBasedPolicies = new HashSet<>(Arrays.asList(
             "teven", "tevict", "tevict_ranges", "tevict_window", "optimal", "fixedttl", "to_keep", "ewma",
-            "dynamicttl", "adaptive_tier", "milp_ec", "milp_ec_new", "milp_ec_new_v2", "milp_ec_new_v3"));//注册新策略
+            "dynamicttl", "adaptive_tier", "milp_ec_new", "milp_ec_new_v3"));//注册新策略
     private final Set<String> otherEvictionPolicies = new HashSet<>(Arrays.asList(
             "lru", "always_evict", "pull_on_read", "replicate_all"));
     private final Set<String> spanstorePolicies = new HashSet<>(Arrays.asList("spanstore", "oracle"));
@@ -110,9 +103,9 @@ public class SimulatorV2 {
     private int misses = 0;
     private double hits_size = 0;
     private double misses_size = 0;
-    private org.example.src.model.Tracker tracker;
-    protected org.example.src.placement_policy.PlacementPolicy placementPolicy;
-    private org.example.src.transfer_policy.TransferPolicy transferPolicy;
+    private Tracker tracker;
+    protected PlacementPolicy placementPolicy;
+    private TransferPolicy transferPolicy;
 
     // Missing fields from Python
     private double minNetworkCost;
@@ -173,15 +166,6 @@ public class SimulatorV2 {
 
         this.regionManager = new org.example.src.model.RegionManager(this.totalGraph, logger);
 
-        // Debug: Print Storage Prices
-        // for (String node : totalGraph.getNodes()) {
-        // Object price = totalGraph.getNodeAttr(node, "priceStorage");
-        // if (price != null) {
-        // System.out.println("[DEBUG-PRICE] Region: " + node + ", Price: " + price + ",
-        // PricePerMonth*3: "
-        // + (((Number) price).doubleValue() * 3));
-        // }
-        // }
 
         this.placementPolicy = _select_placement_policy(String.valueOf(config.placementPolicy));
         if (!spanstorePolicies.contains(String.valueOf(config.placementPolicy))) {
@@ -193,12 +177,7 @@ public class SimulatorV2 {
 
     private List<Map<String, Object>> detailsLog = new ArrayList<>();
     private boolean enableJsonDetail = Boolean.getBoolean("skystore.detailedCostLogging"); // Re-use this flag or use
-                                                                                           // new one. User said "output
-                                                                                           // detailed process",
-                                                                                           // detailedCostLogging is
-                                                                                           // already on. Let's use it
-                                                                                           // to turn ON tracking.
-
+                                                                                          
     public org.example.src.model.Tracker getTracker() {
         return this.tracker;
     }
@@ -229,19 +208,17 @@ public class SimulatorV2 {
     // 保留注释并翻译为中文注释
 
     // 依赖的模型与管理器（需在其他处完成初始化）
-    private org.example.graph.DiGraph totalGraph;
-    private static final double PY_FALLBACK_PRICE_PUT = 5e-6;
-    private static final double PY_FALLBACK_PRICE_GET = 4e-7;
-    private org.example.src.model.RegionManager regionManager;
-    private final Map<String, org.example.src.model.LogicalObject> logicalObjects = new HashMap<>();
+    private DiGraph totalGraph;
+    private RegionManager regionManager;
+    private final Map<String, LogicalObject> logicalObjects = new HashMap<>();
 
     /** 扩展点：写请求时各 region 的数据量（EC 分片等）。默认 null 表示每 region 用完整 request.size。 */
-    protected Map<String, BigDecimal> getPlacementSizesForWrite(org.example.src.model.Request req) {
+    protected Map<String, BigDecimal> getPlacementSizesForWrite(Request req) {
         return null;
     }
 
     /** 扩展点：读请求的传输数据量（EC 时只需拉 1 片）。默认 null 表示用完整 request.size。 */
-    protected BigDecimal getReadTransferSize(org.example.src.model.Request req) {
+    protected BigDecimal getReadTransferSize(Request req) {
         return null;
     }
 
@@ -249,7 +226,7 @@ public class SimulatorV2 {
      * Extension hook: called immediately after a TTL value is computed.
      * Baseline V2 keeps no extra behavior.
      */
-    protected void onTtlComputed(org.example.src.model.Request request) {
+    protected void onTtlComputed(Request request) {
         // no-op
     }
 
@@ -257,7 +234,7 @@ public class SimulatorV2 {
      * Extension hook: called once per parsed request before read/write dispatch.
      * Baseline V2 keeps no extra behavior.
      */
-    protected void onRequestReady(org.example.src.model.Request request) {
+    protected void onRequestReady(Request request) {
         // no-op
     }
 
@@ -286,7 +263,6 @@ public class SimulatorV2 {
         boolean shouldUpdatePast = (("tevict_ranges".equals(pp)
                 || "tevict".equals(pp)
                 || "tevict_window".equals(pp)
-                || "milp_ec_new_v2".equals(pp)
                 || "milp_ec_new_v3".equals(pp))
                 && "read".equals(op));
         if (shouldUpdatePast) {
@@ -295,8 +271,8 @@ public class SimulatorV2 {
 
         Map<String, BigDecimal> placementSizes = "write".equals(op) ? getPlacementSizesForWrite(request) : null;
         List<Long> transfer_times = new ArrayList<>();
-        for (int i = 0; i < transfer_graphs.size(); i++) {
-            org.example.graph.DiGraph transfer_graph = transfer_graphs.get(i);
+        for (int i = 0; i < transfer_graphs.size(); i++) {//每个传输图一轮
+           DiGraph transfer_graph = transfer_graphs.get(i);
 
             // Extract src nodes (nodes with src=True)
             List<String> src = new ArrayList<>();
@@ -339,9 +315,9 @@ public class SimulatorV2 {
                     : transfer_graph.edgesWithData().get(0).src;
 
             String key = request.objKey;
-            Map<String, org.example.src.model.PhysicalObject> physical_objects = logicalObjects
+            Map<String, PhysicalObject> physical_objects = logicalObjects
                     .get(key).physicalObjects;
-            org.example.src.model.LogicalObject logical_object = logicalObjects.get(request.objKey);
+            LogicalObject logical_object = logicalObjects.get(request.objKey);
             String physical_object_region = srcNode;
 
             boolean refresh_ttl = (ttl
@@ -352,7 +328,7 @@ public class SimulatorV2 {
 
             // Refresh TTL for the object in the cache
             if (refresh_ttl) {
-                org.example.src.model.PhysicalObject physical_object = physical_objects.get(srcNode);
+                PhysicalObject physical_object = physical_objects.get(srcNode);
                 physical_object.expireImmediate = false;
 
                 if ("dynamicttl".equals(String.valueOf(config.placementPolicy))) {
@@ -500,7 +476,7 @@ public class SimulatorV2 {
                         // Simulate a cache hit: Handle refresh TTL for other eviction policies (teven,
                         // tevict, fixedttl)
                         List<String> evictionPolicies = Arrays.asList("teven", "tevict", "tevict_ranges",
-                                "tevict_window", "dynamicttl");
+                                "tevict_window", "dynamicttl", "milp_ec_new_v3");
                         if (evictionPolicies.contains(String.valueOf(config.placementPolicy))) {
                             List<String> region_list = new ArrayList<>();
                             for (org.example.src.model.PhysicalObject obj : logicalObjects.get(key).physicalObjects
@@ -566,6 +542,12 @@ public class SimulatorV2 {
                                         }
                                     }
                                     ttlValue = set_ttl;
+                                } else if ("milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))) {
+                                    double ecTtl = placementPolicy.getTevict(physical_object_region,
+                                            request.issueRegion, request.timestamp);
+                                    if (ecTtl > 0) {
+                                        ttlValue = ecTtl;
+                                    }
                                 }
                             } else if ("dynamicttl".equals(String.valueOf(config.placementPolicy))) {
                                 ttlValue = placementPolicy.getTtl(request.issueRegion, ttlValue);
@@ -639,14 +621,14 @@ public class SimulatorV2 {
         return transfer_times;
     }
 
-    private int calculateTtl(org.example.src.model.Request request,
+    private int calculateTtl(Request request,
             Instant currentTimestamp,
             String source,
             String dst) {
         String obj_key = request.objKey;
         int ttl = -1;
-
-        if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegion)) {
+//读取当前的请求 ，当前的时间戳  srcreg,dstreg
+if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegion)) {//不是fB模式或是srcreg！=dstreg时
             if ("optimal".equals(String.valueOf(config.placementPolicy))) {
                 ttl = Integer.MAX_VALUE; // float('inf')
 
@@ -667,26 +649,24 @@ public class SimulatorV2 {
                     || "tevict_window".equals(String.valueOf(config.placementPolicy))
                     || "hystore_ec".equals(String.valueOf(config.placementPolicy))
                     || "hystore_lrc".equals(String.valueOf(config.placementPolicy))
-                    || "milp_ec".equals(String.valueOf(config.placementPolicy))
                     || "milp_ec_new".equals(String.valueOf(config.placementPolicy))
-                    || "milp_ec_new_v2".equals(String.valueOf(config.placementPolicy))
                     || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))) {//TTL注册新策略
 
                 List<String> region_list = new ArrayList<>();
-                for (org.example.src.model.PhysicalObject obj : logicalObjects.get(obj_key).physicalObjects.values()) {
+                for (PhysicalObject obj : logicalObjects.get(obj_key).physicalObjects.values()) {
                     if (!obj.getLocationTag().equals(request.issueRegion) && obj.ready(request.timestamp)) {
                         region_list.add(obj.getLocationTag());
                     }
-                }
+                }//收集issueregion以外已有副本的region
 
                 if (!region_list.isEmpty()) {
                 }
 
                 double net_cost;
-                if (region_list.isEmpty()) {
+                if (region_list.isEmpty()) {//region_list为空时，使用中位数网络成本
                     net_cost = this.medianNetworkCost;
                 } else {
-                    String src_2 = region_list.stream()
+                    String src_2 = region_list.stream()//region_list不为空时，使用最小成本节点
                             .min((x, y) -> {
                                 Number costX = (Number) totalGraph.getEdgeAttr(x, request.issueRegion, "cost");
                                 Number costY = (Number) totalGraph.getEdgeAttr(y, request.issueRegion, "cost");
@@ -702,18 +682,25 @@ public class SimulatorV2 {
                 }
 
                 Number priceStorageNum = (Number) totalGraph.getNodeAttr(request.issueRegion, "priceStorage");
-                if (priceStorageNum == null || priceStorageNum.doubleValue() <= 0)
-                    throw new IllegalStateException(
-                        "[SimulatorV2] priceStorage unavailable for '" + request.issueRegion + "': " + priceStorageNum);
                 double priceStorageVal = priceStorageNum.doubleValue();
 
                 double ttlValue = (net_cost / priceStorageVal) * 60 * 60 * 24 / 3;
 
-                // milp_ec: region_list 为空时（r0 分片首次写），也通过 getTevict 获取 MILP 统一 TTL
-                if (("milp_ec".equals(String.valueOf(config.placementPolicy))
-                        || "milp_ec_new".equals(String.valueOf(config.placementPolicy))
-                        || "milp_ec_new_v2".equals(String.valueOf(config.placementPolicy))
-                        || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy)))//看不明白为啥要这样写
+                // milp_ec_new_v3: on write path only — when 12h pair-TTL histogram advances, solve MILP so coeffs match TTL.
+                if ("milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))
+                        && placementPolicy instanceof PolicyMilpECnewV3) {
+                    PolicyMilpECnewV3 v3 =
+                            (PolicyMilpECnewV3) placementPolicy;
+                    if (region_list.isEmpty()) {
+                        v3.syncMilpIfHistogramTtlAdvanced(request, dst);
+                    } else {
+                        v3.syncMilpIfHistogramTtlAdvanced(request, request.issueRegion);
+                    }
+                }
+
+                // milp_ec_new / milp_ec_new_v3: region_list 为空时（r0 分片首次写），也通过 getTevict 获取 MILP 统一 TTL
+                if (("milp_ec_new".equals(String.valueOf(config.placementPolicy))
+                        || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy)))
                         && region_list.isEmpty()) {
                     double ecTtl = placementPolicy.getTevict(source, dst, request.timestamp);
                     if (ecTtl > 0) ttlValue = ecTtl;
@@ -807,7 +794,7 @@ public class SimulatorV2 {
         return ttl;
     }
 
-    public List<String> get_placements(org.example.src.model.Request request) {
+    public List<String> get_placements(Request request) {
         String obj_key = request.objKey;
         List<String> place_regions = new ArrayList<>();
 
@@ -838,32 +825,25 @@ public class SimulatorV2 {
             this.tracePath = this.tracePath + "-versioned";
         }
 
+        prefillMilpDatasetEndEpochFromTraceIfApplicable();
+
         File in = new File(Helpers.getFullPath(this.tracePath));
         File out = new File(
                 Helpers.getFullPath(this.tracePath) + "." + String.valueOf(config.placementPolicy) + ".prototype");
-
-        // System.out.println("DEBUG: Reading trace file: " + in.getAbsolutePath());
-        // System.out.println("
-        // : File exists: " + in.exists());
-        // System.out.println("DEBUG: File size: " + in.length() + " bytes");
 
         try (BufferedReader br = new BufferedReader(new FileReader(in));
                 BufferedWriter bw = new BufferedWriter(new FileWriter(out))) {
             String header = br.readLine();
             System.out.println("DEBUG: CSV Header: " + header);
-            if (header == null) {
-                System.out.println("ERROR: Header is null, trace file is empty!");
-                return;
-            }
             String[] headerCols = header.split(",");
             System.out.println("DEBUG: Header columns count: " + headerCols.length);
-            for (int i = 0; i < headerCols.length; i++) {
+            for (int i = 0; i < headerCols.length; i++) {//打印表头调试用
                 System.out.println("  Column " + i + ": " + headerCols[i]);
             }
             List<String> fieldnames = new ArrayList<>(Arrays.asList(headerCols));
             fieldnames.add("answer_region");
             List<String> reduced = new ArrayList<>();
-            for (int i = 0; i < Math.min(5, fieldnames.size()); i++)
+            for (int i = 0; i < Math.min(5, fieldnames.size()); i++)//缩短字段名调试用
                 reduced.add(fieldnames.get(i));
             if (fieldnames.size() > 7)
                 reduced.add(fieldnames.get(7));
@@ -899,7 +879,7 @@ public class SimulatorV2 {
                 Instant requestTimestamp;
                 String normalized = timestampStr == null ? ""
                         : timestampStr.replace("-", "").replace(":", "").replace(" ", "");
-                if (!normalized.isEmpty() && normalized.chars().allMatch(Character::isDigit)) {
+                if (!normalized.isEmpty() && normalized.chars().allMatch(Character::isDigit)) {//时间戳分析
                     requestTimestamp = Instant.ofEpochMilli(Long.parseLong(timestampStr));
                 } else {
                     requestTimestamp = parseIsoMillis(timestampStr);
@@ -908,7 +888,7 @@ public class SimulatorV2 {
                 Map<String, Object> requestData = new HashMap<>();
                 for (Map.Entry<String, String> e : row.entrySet())
                     requestData.put(e.getKey(), e.getValue());
-                requestData.put("timestamp", requestTimestamp);
+                requestData.put("timestamp", requestTimestamp);//组装请求数据 时间戳字段，请求时间戳对象
 
                 String op = (String) requestData.get("op");
                 if ("GET".equals(op) || "REST.GET.OBJECT".equals(op)) {
@@ -938,7 +918,7 @@ public class SimulatorV2 {
                 requestData.put("next_access_timestamp", nextAccessTimestamp);
 
                 String nextAccessSameRegStr = row.get("time_to_next_access_same_reg");
-                if (nextAccessSameRegStr != null && !"-1".equals(nextAccessSameRegStr)) {
+                if (nextAccessSameRegStr != null && !"-1".equals(nextAccessSameRegStr)) {//同区域下次访问时间字段分析
                     String norm3 = nextAccessSameRegStr.replace("-", "").replace(":", "").replace(" ", "");
                     Instant nextAccessSameRegTimestamp;
                     if (!norm3.isEmpty() && norm3.chars().allMatch(Character::isDigit)) {
@@ -949,7 +929,7 @@ public class SimulatorV2 {
                     requestData.put("time_to_next_access_same_reg", nextAccessSameRegTimestamp);
                 }
                 // 构造 Request 对象
-                org.example.src.model.Request req = new org.example.src.model.Request();
+                Request req = new org.example.src.model.Request();
                 req.timestamp = requestTimestamp;
                 req.op = (String) requestData.get("op");
                 req.issueRegion = row.get("issue_region");
@@ -1019,11 +999,11 @@ public class SimulatorV2 {
 
                 // 选择策略：SPANStore/Oracle 使用 placement_policy，否则使用 transfer_policy
                 Object policy = (spanstorePolicies.contains(String.valueOf(config.placementPolicy))) ? placementPolicy
-                        : transferPolicy;
+                        : transferPolicy;//选择策略：SPANStore/Oracle 使用 placement_policy，否则使用 transfer_policy
 
                 if ("read".equals(req.op)) {
-                    org.example.src.transfer_policy.TransferPolicy.ReadPathResult rp = (transferPolicy != null)
-                            ? ((org.example.src.transfer_policy.TransferPolicy) transferPolicy).readTransferPath(req)
+                    TransferPolicy.ReadPathResult rp = (transferPolicy != null)
+                            ? transferPolicy.readTransferPath(req)
                             : null;
                     if (rp != null) {
                         readRegion = rp.src;
@@ -1041,7 +1021,7 @@ public class SimulatorV2 {
                                     20, RoundingMode.HALF_UP).doubleValue();
                         }
                         for (org.example.graph.DiGraph g : readGraphList) {
-                            readGraphs.add(g);
+                            readGraphs.add(g);//多读图？？？
                         }
 
                         List<String> place_regions = get_placements(req);
@@ -1065,7 +1045,7 @@ public class SimulatorV2 {
                         double minThroughput = Double.MAX_VALUE;
                         double maxTputRuntime = 0.0;
                         String debugSrc = "N/A";
-                        for (int gi = 0; gi < readGraphList.size(); gi++) {
+                        for (int gi = 0; gi < readGraphList.size(); gi++) {//按分段算延迟/吞吐/费用
                             org.example.graph.DiGraph g = readGraphList.get(gi);
                             BigDecimal segSize = (gi < rp.segmentSizes.size()) ? rp.segmentSizes.get(gi)
                                     : getReadTransferSize(req);
@@ -1078,7 +1058,7 @@ public class SimulatorV2 {
                                 transferCost += metrics.cost;
                             }
                             if (shouldLog && g != null) {
-                                for (String node : g.getNodes()) {
+                                for (String node : g.getNodes()) {//找src节点打日志
                                     if (Boolean.TRUE.equals(g.getNodeAttrs(node).get("src"))) {
                                         debugSrc = node;
                                         break;
@@ -1094,15 +1074,13 @@ public class SimulatorV2 {
                                     "REQ #%d [READ-NET] src=%s cost=$%.9f",
                                     currentReqIndex, debugSrc, transferCost));
                         }
-
-                        applyPythonArtifactRequestCosts(place_regions, readRegion, currentReqIndex, shouldLog);
                     }
                 } else if ("write".equals(req.op)) {
                     List<String> place_regions = get_placements(req);
                     Map<String, BigDecimal> placementSizes = getPlacementSizesForWrite(req);
                     for (String region : place_regions) {
                         writeTransferGraph = (transferPolicy != null)
-                                ? ((org.example.src.transfer_policy.TransferPolicy) transferPolicy)
+                                ? transferPolicy
                                         .writeTransferPath(req, region)
                                 : null;
                         if (writeTransferGraph != null) {
@@ -1197,10 +1175,7 @@ public class SimulatorV2 {
                                         throughputs.stream().min(Double::compare).orElse(0.0));
                             }
                         }
-
-                        // Python artifact request-cost path is the baseline mainline.
                     }
-                    applyPythonArtifactRequestCosts(place_regions, "", currentReqIndex, shouldLog);
                 }
 
                 // 更新时间范围
@@ -1292,6 +1267,53 @@ public class SimulatorV2 {
         } catch (IOException e) {
             return 0;
         }
+    }
+
+    /**
+     * When {@link Config#fixedBaseRegion} is true and YAML did not set {@link Config#milpDatasetEndEpochSec}, set it from
+     * the trace so FB MILP matches simulator accounting: last row's request time + {@link #TRACE_ACCOUNTING_TAIL_SECONDS}s
+     * (same tail as {@link org.example.src.model.RegionManager#calculateRemainingStorageCosts} at end of {@link #run()}).
+     */
+    private void prefillMilpDatasetEndEpochFromTraceIfApplicable() {
+        if (!Boolean.TRUE.equals(config.fixedBaseRegion) || config.milpDatasetEndEpochSec != null) {
+            return;
+        }
+        Instant last = scanTraceLastRequestInstant(Helpers.getFullPath(this.tracePath));
+        if (last != null) {
+            config.milpDatasetEndEpochSec = last.plus(Duration.ofSeconds(TRACE_ACCOUNTING_TAIL_SECONDS)).getEpochSecond();
+        }
+    }
+
+    /**
+     * Sequential scan: timestamp of the last data row (matches {@code endTimestamp} updated each iteration in {@link #run()}).
+     */
+    private Instant scanTraceLastRequestInstant(String path) {
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String header = br.readLine();
+            if (header == null) {
+                return null;
+            }
+            String[] headerCols = header.split(",");
+            String line;
+            Instant last = null;
+            while ((line = br.readLine()) != null) {
+                Map<String, String> row = parseCsvRow(headerCols, line);
+                last = parseTraceRowTimestamp(row.get("timestamp"));
+            }
+            return last;
+        } catch (IOException e) {
+            logger.warning("scanTraceLastRequestInstant failed for " + path + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Instant parseTraceRowTimestamp(String timestampStr) {
+        String normalized = timestampStr == null ? ""
+                : timestampStr.replace("-", "").replace(":", "").replace(" ", "");
+        if (!normalized.isEmpty() && normalized.chars().allMatch(Character::isDigit)) {
+            return Instant.ofEpochMilli(Long.parseLong(timestampStr.trim()));
+        }
+        return parseIsoMillis(timestampStr);
     }
 
     private Map<String, String> parseCsvRow(String[] header, String line) {
@@ -1451,11 +1473,6 @@ public class SimulatorV2 {
 
     // 报告指标（对应 Python report_metrics）
     public void report_metrics() {
-        // 打印区域存储成本映射
-        // if (this.regionManager != null) {
-        // System.out.println(this.regionManager.getStorageCostsWithoutBase());
-        // System.out.println(this.regionManager.getStorageCosts());
-        // }
         if (this.tracker == null)
             this.tracker = new org.example.src.model.Tracker();
         if (this.regionManager != null) {
@@ -1476,73 +1493,67 @@ public class SimulatorV2 {
     }
 
     // 选择置放策略（对应 Python _select_placement_policy）
-    private org.example.src.placement_policy.PlacementPolicy _select_placement_policy(String policy_type) {
+    private PlacementPolicy _select_placement_policy(String policy_type) {
         if ("local".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyLocal(this.config, this.totalGraph, this.logicalObjects,
+            return new PolicyLocal(this.config, this.totalGraph, this.logicalObjects,
                     this.regionManager);
         } else if ("single_region".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicySingleRegion(this.config, this.totalGraph,
+            return new PolicySingleRegion(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("replicate_all".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyReplicateAll(this.config, this.totalGraph,
+            return new PolicyReplicateAll(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("spanstore".equals(policy_type)) {
             // Python 传入 policy="spanstore" 与 trace_path；此处保持构造最简对等
-            return new org.example.src.placement_policy.PolicySpanstore(this.config, this.totalGraph,
+            return new PolicySpanstore(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("lru".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyLru(this.config, this.totalGraph, this.logicalObjects,
+            return new PolicyLru(this.config, this.totalGraph, this.logicalObjects,
                     this.regionManager);
         } else if ("teven".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyTeven(this.config, this.totalGraph, this.logicalObjects,
+            return new PolicyTeven(this.config, this.totalGraph, this.logicalObjects,
                     this.regionManager);
         } else if ("always_evict".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyAlwaysEvict(this.config, this.totalGraph,
+            return new PolicyAlwaysEvict(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("pull_on_read".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyAlwaysStore(this.config, this.totalGraph,
+            return new PolicyAlwaysStore(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("tevict_window".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyTevictNew(this.config, this.totalGraph,
+            return new PolicyTevictNew(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("tevict".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyTevictNew(this.config, this.totalGraph,
+            return new PolicyTevictNew(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("tevict_ranges".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyTevictRangesNew(this.config, this.totalGraph,
+            return new PolicyTevictRangesNew(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("optimal".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyOptimalV2(this.config, this.totalGraph,
+            return new PolicyOptimalV2(this.config, this.totalGraph,
                     this.logicalObjects,
                     this.regionManager);
         } else if ("fixedttl".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyFixedTtl(this.config, this.totalGraph,
+            return new PolicyFixedTtl(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("dynamicttl".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyDynamicTtl(this.config, this.totalGraph,
+            return new PolicyDynamicTtl(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("to_keep".equals(policy_type)) {
             // Python 为 IndividualTTL；此处映射到占位策略
-            return new org.example.src.placement_policy.PolicySkypie(this.config, this.totalGraph, this.logicalObjects,
+            return new PolicySkypie(this.config, this.totalGraph, this.logicalObjects,
                     this.regionManager);
         } else if ("ewma".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyEwma(this.config, this.totalGraph, this.logicalObjects,
+            return new PolicyEwma(this.config, this.totalGraph, this.logicalObjects,
                     this.regionManager);
         } else if ("adaptive_tier".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyAdaptiveTier(this.config, this.totalGraph,
+            return new PolicyAdaptiveTier(this.config, this.totalGraph,
                     this.logicalObjects,
                     this.regionManager);
-        } else if ("milp_ec".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyMilpEC(this.config, this.totalGraph,
-                    this.logicalObjects, this.regionManager);
         } else if ("milp_ec_new".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyMilpECnew(this.config, this.totalGraph,
-                    this.logicalObjects, this.regionManager);
-        } else if ("milp_ec_new_v2".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyMilpECnewV2(this.config, this.totalGraph,
+            return new PolicyMilpECnew(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
         } else if ("milp_ec_new_v3".equals(policy_type)) {
-            return new org.example.src.placement_policy.PolicyMilpECnewV3(this.config, this.totalGraph,
+            return new PolicyMilpECnewV3(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);//注册新策略
         } else {
             System.err.println("Error: Unknown placement policy type: [" + policy_type + "]");
@@ -1550,59 +1561,21 @@ public class SimulatorV2 {
         }
     }
 
-    /**
-     * Python artifact {@code simulator_v2.py}: for each placement region add {@code pricePut}; if
-     * {@code read_region != ""} add {@code priceGet} from the <em>last</em> {@code region} in the
-     * placement loop (not necessarily the read source). Write passes {@code readRegion} as "" so no GET.
-     */
-    private void applyPythonArtifactRequestCosts(List<String> place_regions, String readRegion, int currentReqIndex,
-            boolean shouldLog) {
-        List<String> pr = (place_regions != null) ? place_regions : Collections.<String>emptyList();
-        String lastPlacement = null;
-        for (String region : pr) {
-            Number putCostObj = (Number) totalGraph.getNodeAttr(region, "pricePut");
-            if (!this.ignoreCost) {
-                // Python helpers fallback: missing pricePut defaults to 5e-6.
-                double putCost = (putCostObj != null) ? putCostObj.doubleValue() : PY_FALLBACK_PRICE_PUT;
-                this.tracker.addRequestCost(putCost);
-                if (shouldLog) {
-                    org.example.src.utils.Logger.info(String.format(
-                            "REQ #%d [ARTIFACT-PUT] region=%s cost=$%.9f",
-                            currentReqIndex, region, putCost));
-                }
-            }
-            lastPlacement = region;
-        }
-        if (readRegion != null && !readRegion.isEmpty() && lastPlacement != null) {
-            Number getCostObj = (Number) totalGraph.getNodeAttr(lastPlacement, "priceGet");
-            if (!this.ignoreCost) {
-                // Python helpers fallback: missing priceGet defaults to 4e-7.
-                double getCost = (getCostObj != null) ? getCostObj.doubleValue() : PY_FALLBACK_PRICE_GET;
-                this.tracker.addRequestCost(getCost);
-                if (shouldLog) {
-                    org.example.src.utils.Logger.info(String.format(
-                            "REQ #%d [ARTIFACT-GET] lastPlacement=%s cost=$%.9f",
-                            currentReqIndex, lastPlacement, getCost));
-                }
-            }
-        }
-    }
-
     // 选择传输策略（对应 Python _select_transfer_policy）
-    private org.example.src.transfer_policy.TransferPolicy _select_transfer_policy(String policy_type,
-            org.example.src.placement_policy.PlacementPolicy placement_policy) {
+    private TransferPolicy _select_transfer_policy(String policy_type,
+            PlacementPolicy placement_policy) {
         if ("direct".equals(policy_type)) {
-            return new org.example.src.transfer_policy.DirectTransfer(this.config, this.totalGraph,
+            return new DirectTransfer(this.config, this.totalGraph,
                     this.logicalObjects);
         } else if ("closest".equals(policy_type)) {
-            return new org.example.src.transfer_policy.ClosestTransfer(this.config, this.totalGraph,
+            return new ClosestTransfer(this.config, this.totalGraph,
                     this.logicalObjects);
         } else if ("cheapest".equals(policy_type)) {
             if ("milp_ec_new_v3".equals(String.valueOf(this.config.placementPolicy))) {
-                return new org.example.src.transfer_policy.CheapestTransferV3(this.config, this.totalGraph,
+                return new CheapestTransferV3(this.config, this.totalGraph,
                         this.logicalObjects, this.regionManager, placement_policy);//注册最便宜的运输路径策略
             }
-            return new org.example.src.transfer_policy.CheapestTransferV2(this.config, this.totalGraph,
+            return new CheapestTransferV2(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager, placement_policy);
         } else {
             throw new IllegalArgumentException("Invalid transfer policy type");
@@ -1636,17 +1609,11 @@ public class SimulatorV2 {
      * 对 MILP 策略调用 flushPendingEvents() 处理最后一个窗口并释放 Gurobi 环境。
      */
     public void cleanupPolicy() {
-        if (placementPolicy instanceof org.example.src.placement_policy.PolicyMilpECnew) {
-            ((org.example.src.placement_policy.PolicyMilpECnew) placementPolicy)
+        if (placementPolicy instanceof PolicyMilpECnew) {
+            ((PolicyMilpECnew) placementPolicy)
                     .flushPendingEvents(Instant.now());
-        } else if (placementPolicy instanceof org.example.src.placement_policy.PolicyMilpECnewV2) {
-            ((org.example.src.placement_policy.PolicyMilpECnewV2) placementPolicy)
-                    .flushPendingEvents(Instant.now());
-        } else if (placementPolicy instanceof org.example.src.placement_policy.PolicyMilpEC) {
-            ((org.example.src.placement_policy.PolicyMilpEC) placementPolicy)
-                    .flushPendingEvents(Instant.now());
-        } else if (placementPolicy instanceof org.example.src.placement_policy.PolicyMilpECnewV3) {
-            ((org.example.src.placement_policy.PolicyMilpECnewV3) placementPolicy)//将新策略注册到清洗策略
+        } else if (placementPolicy instanceof PolicyMilpECnewV3) {
+            ((PolicyMilpECnewV3) placementPolicy)//将新策略注册到清洗策略
                     .flushPendingEvents(Instant.now());
         }
     }
@@ -1673,13 +1640,13 @@ public class SimulatorV2 {
             metrics.put("timestamp", timestamp);
 
             // Write to JSON file
-            com.google.gson.Gson gson = new com.google.gson.GsonBuilder()
+            Gson gson = new GsonBuilder()
                     .setPrettyPrinting()
                     .create();
 
-            try (java.io.FileWriter writer = new java.io.FileWriter(filename)) {
+            try (FileWriter writer = new FileWriter(filename)) {
                 gson.toJson(metrics, writer);
-                System.out.println("Simulation results written to: " + new java.io.File(filename).getAbsolutePath());
+                System.out.println("Simulation results written to: " + new File(filename).getAbsolutePath());
             }
         } catch (Exception e) {
             System.err.println("Failed to write results to JSON: " + e.getMessage());

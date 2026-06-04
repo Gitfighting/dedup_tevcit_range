@@ -12,23 +12,26 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Pure MILP builder/solver for EC(2+1) vs replicate.
+ * Pure MILP builder/solver: FB base replica (handled outside {@code x} when applicable) vs replica layout vs EC with
+ * exactly two stripe placements ({@value #NUM_EC_SHARD_SLOTS}), matching **base + 2 shards** (no third parity stripe variable).
  */
 public final class GurobiEc21MilpBuilder {
     private static final AtomicBoolean DEBUG_LP_WRITTEN = new AtomicBoolean(false);
+    /** EC branch places this many shards via {@code y[r][k]} ({@value #NUM_EC_SHARD_SLOTS} data shards; FB base replica modeled separately). */
+    public static final int NUM_EC_SHARD_SLOTS = 2;
 
     private GurobiEc21MilpBuilder() {
     }
 
-    public static LayoutDecisionV3 solve(
-            GRBEnv env,
-            MilpCoefficientBundle coeff,
-            int baseIndex,
-            List<String> regions,
-            String issueRegion,
-            Instant now,
-            double timeLimitSec,
-            double mipGap,
+    public static LayoutDecisionV3 solve(//层的决定V3解决方案
+            GRBEnv env,//ggorubi的环境
+            MilpCoefficientBundle coeff,//系数
+            int baseIndex,//基础索引
+            List<String> regions,//区域
+            String issueRegion,//触发区域
+            Instant now,//时间
+            double timeLimitSec,//时间限制
+            double mipGap,//允许的MIP间隙
             boolean strictFail) throws GRBException {
         return solve(env, coeff, baseIndex, regions, issueRegion, now, timeLimitSec, mipGap, strictFail, null, true,
                 false);
@@ -102,21 +105,31 @@ public final class GurobiEc21MilpBuilder {
 
             GRBVar z = model.addVar(0, 1, 0, GRB.BINARY, "z");
             GRBVar[] x = new GRBVar[n];
-            GRBVar[][] y = new GRBVar[n][3];
+            GRBVar[][] y = new GRBVar[n][NUM_EC_SHARD_SLOTS];
             for (int r = 0; r < n; r++) {
                 x[r] = model.addVar(0, 1, 0, GRB.BINARY, "x_" + r);
-                for (int k = 0; k < 3; k++) {
+                for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     y[r][k] = model.addVar(0, 1, 0, GRB.BINARY, "y_" + r + "_" + k);
                 }
             }
 
-            // x_r <= 1-z ; y_rk <= z
+            boolean fbFixedBase = coeff.fixedBaseFb && baseIndex >= 0 && baseIndex < n;
+            if (fbFixedBase) {
+                model.addConstr(x[baseIndex], GRB.EQUAL, 0.0, "fb_fixed_base_x0");
+            }
+
+            // Non-base: x_r + z <= 1 (replica layout excludes EC). Base (non-FB): x_base + z <= 2 so EC (z=1) may still keep x_base.
+            // FB: skip x+z at base — replica there is mandatory/off-variable; shards still use y at base.
             for (int r = 0; r < n; r++) {
-                GRBLinExpr c1 = new GRBLinExpr();
-                c1.addTerm(1.0, x[r]);
-                c1.addTerm(1.0, z);
-                model.addConstr(c1, GRB.LESS_EQUAL, 1.0, "x_le_1mz_" + r);
-                for (int k = 0; k < 3; k++) {
+                if (!fbFixedBase || r != baseIndex) {
+                    GRBLinExpr c1 = new GRBLinExpr();
+                    c1.addTerm(1.0, x[r]);
+                    c1.addTerm(1.0, z);
+                    boolean atBase = baseIndex >= 0 && baseIndex < n && r == baseIndex;
+                    model.addConstr(c1, GRB.LESS_EQUAL, atBase ? 2.0 : 1.0,
+                            atBase ? "x_base_plus_z_le_2" : "x_le_1mz_" + r);
+                }
+                for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     GRBLinExpr c2 = new GRBLinExpr();
                     c2.addTerm(1.0, y[r][k]);
                     c2.addTerm(-1.0, z);
@@ -124,19 +137,22 @@ public final class GurobiEc21MilpBuilder {
                 }
             }
 
-            // sum x >= 1-z, x_base >= 1-z
-            GRBLinExpr sx = new GRBLinExpr();
-            for (int r = 0; r < n; r++) {
-                sx.addTerm(1.0, x[r]);
+            // Coverage: non-FB uses sum x + z >= 1 and x_base + z >= 1. FB: base replica is always on (objective constant); optional extra replicas via x[r], r!=base only — no lower bound on x.
+            if (!fbFixedBase) {
+                GRBLinExpr sx = new GRBLinExpr();
+                for (int r = 0; r < n; r++) {
+                    sx.addTerm(1.0, x[r]);
+                }
+                sx.addTerm(1.0, z);
+                model.addConstr(sx, GRB.GREATER_EQUAL, 1.0, "sum_x_ge_1mz");
+                if (baseIndex >= 0 && baseIndex < n) {
+                    GRBLinExpr xb = new GRBLinExpr();
+                    xb.addTerm(1.0, x[baseIndex]);
+                    xb.addTerm(1.0, z);
+                    model.addConstr(xb, GRB.GREATER_EQUAL, 1.0, "x_base_ge_1mz");
+                }
             }
-            sx.addTerm(1.0, z);
-            model.addConstr(sx, GRB.GREATER_EQUAL, 1.0, "sum_x_ge_1mz");
             if (baseIndex >= 0 && baseIndex < n) {
-                GRBLinExpr xb = new GRBLinExpr();
-                xb.addTerm(1.0, x[baseIndex]);
-                xb.addTerm(1.0, z);
-                model.addConstr(xb, GRB.GREATER_EQUAL, 1.0, "x_base_ge_1mz");
-                // FB + 公平对比：replica 侧除 base 外至多再选 1 个整副本区（与「base+1 副本 vs base+2 片」叙事一致）
                 GRBLinExpr extraRep = new GRBLinExpr();
                 for (int r = 0; r < n; r++) {
                     if (r != baseIndex) {
@@ -146,8 +162,9 @@ public final class GurobiEc21MilpBuilder {
                 model.addConstr(extraRep, GRB.LESS_EQUAL, 1.0, "at_most_one_extra_full_replica");
             }
 
-            // sum_r y_rk = z, sum_k y_rk <= z, sum_k y_rk <= 1, x_r + sum_k y_rk <= 1
-            for (int k = 0; k < 3; k++) {
+            // sum_r y_r,k = z for each k; per-region sum_k y_r,k <= z and <= 1 (at most one stripe per region).
+            // No coupling between x and y: any region may host a shard regardless of full replica there (still bounded by x[r]+z below).
+            for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                 GRBLinExpr sy = new GRBLinExpr();
                 for (int r = 0; r < n; r++) {
                     sy.addTerm(1.0, y[r][k]);
@@ -157,7 +174,7 @@ public final class GurobiEc21MilpBuilder {
             }
             for (int r = 0; r < n; r++) {
                 GRBLinExpr row = new GRBLinExpr();
-                for (int k = 0; k < 3; k++) {
+                for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     row.addTerm(1.0, y[r][k]);
                 }
                 GRBLinExpr rowLeZ = new GRBLinExpr();
@@ -165,27 +182,17 @@ public final class GurobiEc21MilpBuilder {
                 rowLeZ.addTerm(-1.0, z);
                 model.addConstr(rowLeZ, GRB.LESS_EQUAL, 0.0, "sum_y_le_z_r" + r);
                 model.addConstr(row, GRB.LESS_EQUAL, 1.0, "sum_y_le_1_r" + r);
-
-                GRBLinExpr disjoint = new GRBLinExpr();
-                disjoint.addTerm(1.0, x[r]);
-                disjoint.multAdd(1.0, row);
-                model.addConstr(disjoint, GRB.LESS_EQUAL, 1.0, "x_plus_y_le_1_r" + r);
             }
 
-            // Objective: sum sRep*x + sum sEc*y + readBaseConst + sum readRepDelta[r]*x[r] + z*readEcZCoeff
-            // （readEcZCoeff = readEcFull − readBase；z=1 时 x≡0，读项为 readBase+readEcZCoeff = readEcFull）
+            // minimize constant(FB base replica if any) + Σ_r sRep[r]*x[r] + Σ_{r,k} sEc[r][k]*y[r][k]
             GRBLinExpr obj = new GRBLinExpr();
+            obj.addConstant(coeff.fbBaseReplicaObjectiveConstant);
             for (int r = 0; r < n; r++) {
                 obj.addTerm(coeff.sRep[r], x[r]);
-                if (coeff.readRepDelta != null && r < coeff.readRepDelta.length) {
-                    obj.addTerm(coeff.readRepDelta[r], x[r]);
-                }
-                for (int k = 0; k < 3; k++) {
+                for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     obj.addTerm(coeff.sEc[r][k], y[r][k]);
                 }
             }
-            obj.addConstant(coeff.readBaseConst + coeff.tRep);
-            obj.addTerm(coeff.readEcZCoeff + (coeff.tEc - coeff.tRep), z);
             model.setObjective(obj, GRB.MINIMIZE);
 
             if (forceEcOnly && !allowEc) {
@@ -219,11 +226,11 @@ public final class GurobiEc21MilpBuilder {
 
             boolean zVal = ok && z.get(GRB.DoubleAttr.X) >= 0.5;
             boolean[] xVal = new boolean[n];
-            boolean[][] yVal = new boolean[n][3];
+            boolean[][] yVal = new boolean[n][NUM_EC_SHARD_SLOTS];
             if (ok) {
                 for (int r = 0; r < n; r++) {
                     xVal[r] = x[r].get(GRB.DoubleAttr.X) >= 0.5;
-                    for (int k = 0; k < 3; k++) {
+                    for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                         yVal[r][k] = y[r][k].get(GRB.DoubleAttr.X) >= 0.5;
                     }
                 }

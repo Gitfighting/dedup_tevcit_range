@@ -159,7 +159,7 @@ public final class EcValueAblationMain {
     private static SimulatorV2 pickSimulator(Config loadedConfig, String configPath, String tracePath, int vm,
             boolean setbase) {
         String pp = String.valueOf(loadedConfig.placementPolicy);
-        if ("milp_ec_new".equals(pp) || "milp_ec_new_v2".equals(pp) || "milp_ec_new_v3".equals(pp)) {
+        if ("milp_ec_new".equals(pp) || "milp_ec_new_v3".equals(pp)) {
             return new SimulatorV3(configPath, tracePath, vm, setbase, 0, true, false);
         }
         return new SimulatorV2(configPath, tracePath, vm, setbase, 0, true, false);

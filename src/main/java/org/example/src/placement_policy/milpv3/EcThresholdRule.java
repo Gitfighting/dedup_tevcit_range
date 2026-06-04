@@ -22,18 +22,16 @@ import java.util.List;
  * <p>本类是<b>纯函数 + 无 Gurobi 依赖</b>，与 {@link GurobiEc21MilpBuilder}
  * 平行：调用方可在 {@code PolicyMilpECnewV3} 里通过 yaml 开关二选一。
  *
- * <p><b>与 V3 实现的对齐：</b>
+ * <p><b>与 V3 MILP 的对齐：</b>
  * <ul>
- *   <li>V3 的 EC(2+1) 物理上始终用 N_TOTAL=3 个 region，故输出的 layout
- *       永远是 3 region：base + 2 个候选区（按 (W·p_r·3 + c_{b,r}) 升序选）。</li>
- *   <li>{@code R} 仅参与 λ* 公式：默认 R=3 与 V3 物理一致；将 R 调大
- *       （例如 R=9）相当于"激进 EC 上界"，便于做对照实验。</li>
+ *   <li>V3 EC 分支对 {@link GurobiEc21MilpBuilder#NUM_EC_SHARD_SLOTS} 条 stripe 决策：**base 整副本与 MILP 分叉**，两片数据 shard 落在 **两个非 base 区**（本规则按 seatCost 选最便宜的一对）。</li>
+ *   <li>{@code R} 仅参与 λ* 公式：默认 R=3；将 R 调大（例如 R=9）相当于"激进 EC 上界"。</li>
  *   <li>p_r 用 priceStorage × 3（与 StorageCostHelper.pricePerGbForDuration 完全一致）。</li>
  * </ul>
  */
 public final class EcThresholdRule {
 
-    /** 默认 |A| = 3，与 V3 EC(2+1) 物理一致（base + 2 个候选区）。 */
+    /** 默认 |A| = 3（参与 λ* 的候选集合大小）；EC 落地仍为 {@link GurobiEc21MilpBuilder#NUM_EC_SHARD_SLOTS} 个 shard 区。 */
     public static final int DEFAULT_R = 3;
     /** 默认对象大小（GB），仅作 λ* 量级日志使用，不影响判定（因 λ* 与 S 无关）。 */
     public static final double DEFAULT_SIZE_GB = 1.0;
@@ -50,7 +48,7 @@ public final class EcThresholdRule {
         public final double windowSec;
         /** EC 数据片数，V3 中固定 K=2。 */
         public final int K;
-        /** |A|：参与 λ* 求和的 region 数（默认 3，与 V3 EC(2+1) 物理对齐）。 */
+        /** |A|：参与 λ* 求和的 region 数（默认 3）。 */
         public final int R;
         /** 全图平均跨区运费 c̄（avgNetworkCost）。 */
         public final double avgNetworkCost;
@@ -166,9 +164,8 @@ public final class EcThresholdRule {
      * 主入口：按定理 1 给出 EC/Replica 决策，构造 {@link LayoutDecisionV3}（与 MILP 求解器
      * 输出兼容，可直接塞进 {@code PolicyMilpECnewV3.decisionCache}）。
      *
-     * <p>EC 模式 layout：base 强制入（k=0），issue 若不同于 base 则入（k=1），
-     * 第三个 region 取 A 内剩余 region 按 seatCost 最小者（k=2）。
-     * 所以即使 R 配 9，落地始终是 3 region 与 V3 EC(2+1) 物理一致。
+     * <p>EC 模式 layout：**两片 shard** 落在 **两个不同的非 base region**（按 seatCost 升序取前二），与
+     * {@link GurobiEc21MilpBuilder#NUM_EC_SHARD_SLOTS} 一致。
      */
     public static DecisionResult decide(Inputs in, Instant decidedAt) {
         List<Integer> a = selectA(in);
@@ -177,7 +174,7 @@ public final class EcThresholdRule {
 
         int n = in.regions.size();
         boolean[] x = new boolean[n];
-        boolean[][] y = new boolean[n][3];
+        boolean[][] y = new boolean[n][GurobiEc21MilpBuilder.NUM_EC_SHARD_SLOTS];
 
         if (!useEc) {
             // Replica 模式：与 buildDefaultReplicaDecision 一致——x/y 全 0，
@@ -190,61 +187,21 @@ public final class EcThresholdRule {
             return new DecisionResult(dec, lamStar, in.lambdaPred, a);
         }
 
-        // EC 模式：3 个 region 各 1 个 shard。
         int baseIdx = in.baseRegionIndex;
-        int issueIdx = in.regions.indexOf(in.issueRegion);
-        // 候选 third：A 中除 base/issue 外排序最优者；若 A 不够 3 个，从全表补。
-        int thirdIdx = -1;
-        for (Integer i : a) {
-            if (i != baseIdx && (issueIdx < 0 || i != issueIdx)) {
-                thirdIdx = i;
-                break;
+        List<Integer> shardCandidates = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (i != baseIdx) {
+                shardCandidates.add(i);
             }
         }
-        if (thirdIdx < 0) {
-            // A 太小（issue==base 且 |A|<3 才会发生），从全表里补 1 个最便宜的非 base
-            List<Integer> all = new ArrayList<>();
-            for (int i = 0; i < n; i++) {
-                if (i != baseIdx && i != issueIdx) {
-                    all.add(i);
-                }
-            }
-            if (!all.isEmpty()) {
-                all.sort(Comparator.comparingDouble(i -> seatCost(in, i, baseIdx)));
-                thirdIdx = all.get(0);
-            }
-        }
-
-        // k=0 → base；k=1 → issue（或 base 兜底）；k=2 → third
-        y[baseIdx][0] = true;
-        if (issueIdx >= 0 && issueIdx != baseIdx) {
-            y[issueIdx][1] = true;
-        } else if (thirdIdx >= 0) {
-            // issue==base：把 thirdIdx 占了 k=1，再继续找一个 fourth 占 k=2
-            y[thirdIdx][1] = true;
-            int fourthIdx = -1;
-            for (int i = 0; i < n; i++) {
-                if (i != baseIdx && i != thirdIdx) {
-                    fourthIdx = i;
-                    break;
-                }
-            }
-            if (fourthIdx < 0) {
-                throw new IllegalStateException(
-                        "[EcThresholdRule] not enough regions to assign 3 EC shards (n=" + n + ")");
-            }
-            y[fourthIdx][2] = true;
-            LayoutDecisionV3 dec = new LayoutDecisionV3(
-                    1, true, x, y, baseIdx, in.issueRegion, decidedAt,
-                    0.0, new double[n], "THRESHOLD_EC");
-            return new DecisionResult(dec, lamStar, in.lambdaPred, a);
-        }
-        if (thirdIdx >= 0) {
-            y[thirdIdx][2] = true;
-        } else {
+        shardCandidates.sort(Comparator.comparingDouble(i -> seatCost(in, i, baseIdx)));
+        if (shardCandidates.size() < GurobiEc21MilpBuilder.NUM_EC_SHARD_SLOTS) {
             throw new IllegalStateException(
-                    "[EcThresholdRule] failed to select third shard region (n=" + n + ")");
+                    "[EcThresholdRule] need at least " + GurobiEc21MilpBuilder.NUM_EC_SHARD_SLOTS
+                            + " non-base regions for EC shards (n=" + n + ")");
         }
+        y[shardCandidates.get(0)][0] = true;
+        y[shardCandidates.get(1)][1] = true;
 
         LayoutDecisionV3 dec = new LayoutDecisionV3(
                 1, true, x, y, baseIdx, in.issueRegion, decidedAt,

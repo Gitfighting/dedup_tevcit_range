@@ -67,8 +67,9 @@ public class Tracker {
         storageCostsWithoutBase.add(cost);
     }
 
+    /** Ignored: PUT/GET API request fees are excluded from simulation totals and MILP-side modeling. */
     public void addRequestCost(double cost) {
-        requestCosts.add(cost);
+        // intentionally no-op
     }
 
     public void addRequestSize(java.math.BigDecimal size) {
@@ -110,7 +111,7 @@ public class Tracker {
         java.math.BigDecimal totStorageNoBaseBD = sumBigDecimal(storageCostsWithoutBase);
         double totStorageNoBase = totStorageNoBaseBD.setScale(roundDigit, java.math.RoundingMode.HALF_UP).doubleValue();
         double totRequest = round(sum(requestCosts), roundDigit);
-        totalCost = totTransfer + totStorage + totRequest;
+        totalCost = totTransfer + totStorage;
 
         Map<String, Object> m = new HashMap<>();
         m.put("Trace Duration (s)", duration);

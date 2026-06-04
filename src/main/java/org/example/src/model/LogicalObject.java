@@ -8,6 +8,8 @@ import java.util.Map;
 
 public class LogicalObject {
     private final String key;
+    /** First-write (PUT) instant for this logical key; not updated by {@link #setLastModified}. */
+    private final Instant putInstant;
     private BigDecimal size;
     private Instant lastModified;
     private Status status;
@@ -18,9 +20,14 @@ public class LogicalObject {
 
     public LogicalObject(String key, BigDecimal size, Instant lastModified, Status status) {
         this.key = key;
+        this.putInstant = lastModified;
         this.size = size;
         this.lastModified = lastModified;
         this.status = status;
+    }
+
+    public Instant getPutInstant() {
+        return putInstant;
     }
 
     public Integer getLatestVersionId() {

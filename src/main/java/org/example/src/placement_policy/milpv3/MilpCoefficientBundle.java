@@ -1,45 +1,30 @@
 package org.example.src.placement_policy.milpv3;
 
 /**
- * Input coefficient bundle for one MILP solve.
+ * Coefficients for one MILP solve: storage + placement transfer (edge {@code cost} × GB) only.
  */
 public class MilpCoefficientBundle {
+    /** Replica branch linear cost per region {@code r} (coefficient of {@code x[r]}). */
     public final double[] sRep;
+    /** EC branch linear cost per region {@code r} and stripe slot {@code k} (coefficient of {@code y[r][k]}). */
     public final double[][] sEc;
-    /** Legacy scalar read terms (kept 0 when using histogram read block below). */
-    public final double tRep;
-    public final double tEc;
+    /** TTL snapshot (seconds per region index) used when building {@code sRep}/{@code sEc}; not a decision variable. */
     public final double[] ttlSec;
 
     /**
-     * 直方图加权读项，目标中为：
-     * readBaseConst + Σ_r readRepDelta[r]·x[r] + z·readEcZCoeff，
-     * readEcZCoeff = readEcFullConst − readBaseConst。
+     * When true, {@link org.example.src.placement_policy.milpv3.GurobiEc21MilpBuilder} fixes {@code x[base]=0} and adds
+     * {@link #fbBaseReplicaObjectiveConstant} to the objective (FB whole-object replica at base is mandatory and priced outside {@code x}).
      */
-    public final double readBaseConst;
-    public final double[] readRepDelta;
-    public final double readEcZCoeff;
-    public final double readEcFullConst;
+    public final boolean fixedBaseFb;
+    /** Always-on FB term: base full-object storage (dataset horizon) + one-time placement edge from issue region to base. */
+    public final double fbBaseReplicaObjectiveConstant;
 
-    /** Filled by PolicyMilpECnewV3: predicted read/write counts for the planning horizon. */
-    public double nrPred = 1.0;
-    public double nwPred = 1.0;
-
-    public MilpCoefficientBundle(double[] sRep, double[][] sEc, double tRep, double tEc, double[] ttlSec,
-            double readBaseConst, double[] readRepDelta, double readEcZCoeff, double readEcFullConst) {
+    public MilpCoefficientBundle(double[] sRep, double[][] sEc, double[] ttlSec,
+            boolean fixedBaseFb, double fbBaseReplicaObjectiveConstant) {
         this.sRep = sRep;
         this.sEc = sEc;
-        this.tRep = tRep;
-        this.tEc = tEc;
         this.ttlSec = ttlSec;
-        this.readBaseConst = readBaseConst;
-        this.readRepDelta = readRepDelta;
-        this.readEcZCoeff = readEcZCoeff;
-        this.readEcFullConst = readEcFullConst;
-    }
-
-    /** Legacy bundle without histogram read decomposition (read Rep/EC deltas zeroed). */
-    public MilpCoefficientBundle(double[] sRep, double[][] sEc, double tRep, double tEc, double[] ttlSec) {
-        this(sRep, sEc, tRep, tEc, ttlSec, 0.0, new double[sRep.length], 0.0, 0.0);
+        this.fixedBaseFb = fixedBaseFb;
+        this.fbBaseReplicaObjectiveConstant = fbBaseReplicaObjectiveConstant;
     }
 }

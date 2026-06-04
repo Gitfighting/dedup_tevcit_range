@@ -5,14 +5,14 @@ import org.example.src.utils.CostLogger;
 public class Main {
     public static void main(String[] args) {
         // Parse command line arguments
-        String config = null;
-        String trace = null;
-        int vm = 5;
-        boolean setbase = false;
-        int simversion = 1;
-        String tag = "simulation";
+        String config = null;//yaml文件
+        String trace = null;//数据集
+        int vm = 5;//虚拟机的数量
+        boolean setbase = false;//是否设置基站
+        int simversion = 1;//仿真版本
+        String tag = "simulation";//tag标签
 
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++) {//自动读取参数命令行参数
             switch (args[i]) {
                 case "--config":
                     if (i + 1 < args.length) {
@@ -53,7 +53,7 @@ public class Main {
                     "Usage: java -jar Skystore1212.jar --config <config_file> --trace <trace_file> [--vm <num>] [--setbase <true|false>] [--simversion <version>] [--tag <tag>]");
             System.exit(1);
         }
-
+//java -jar Skystore1212.jar --config config\milp_ec_new_v3_9reg.yaml --trace Data\9reg\9reg\typeA\IBMObjectStoreTrace079Part0.typeA.mc.aug --vm 5 --setbase true --simversion 1 --tag milp_ec_new_v3_java_fb_9reg_T79
         // Initialize cost logger
         CostLogger.initialize(tag, trace, config, setbase, vm);
 
@@ -90,7 +90,6 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Simulation failed: " + e.getMessage());
             e.printStackTrace();
-            CostLogger.logError("Simulation failed for trace: " + trace, e);
             System.exit(1);
         } finally {
             CostLogger.close();

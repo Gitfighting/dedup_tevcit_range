@@ -51,7 +51,6 @@ public class Config {
     public Double milpTimeLimitSec = 2.0;
     public Double milpMipGap = 0.05;
     public Boolean milpStrictFail = true;
-    public String milpTriggerMode = "HISTOGRAM_TICK";
     /**
      * When true, MILP fixes binary {@code z=1}: only EC(2+1) stripe layouts are optimized (replica branch disabled).
      * For experiments; default false keeps EC vs replica comparison inside the solver.
@@ -62,4 +61,21 @@ public class Config {
      * When false, MILP constrains {@code z=0} (replica layouts only). Default true allows EC vs replica in the solver.
      */
     public Boolean milpEcV3AllowEc = true;
+
+    /**
+     * Epoch-second UTC for storage accounting horizon used by FB MILP fixed-base replica cost:
+     * {@code max(0, milpDatasetEndEpochSec - now.getEpochSecond())}. Aligns with {@link org.example.SimulatorV2}: last trace
+     * request time plus the same tail ({@value org.example.SimulatorV2#TRACE_ACCOUNTING_TAIL_SECONDS}s) passed to
+     * {@link org.example.src.model.RegionManager#calculateRemainingStorageCosts}.
+     * <p>
+     * May be set in YAML; if omitted, {@link org.example.SimulatorV2#run()} fills it by scanning the trace file when
+     * {@link #fixedBaseRegion} is true.
+     */
+    public Long milpDatasetEndEpochSec;
+
+    /**
+     * Optional explicit horizon (seconds) for fixed-base MILP storage when {@link #milpDatasetEndEpochSec} is unset
+     * (e.g. tests without {@link org.example.SimulatorV2} trace scan).
+     */
+    public Double milpFbReplicaHorizonSec;
 }
