@@ -1,0 +1,25 @@
+# 阶段 2 批量合成配置（PolicyMilpECnewV4_Design.md §5.2 / §10）
+# 数据源：本地 sqldump（变粒度论文 SQL Dump 同类工作负载），不走 HTTP Range
+# 用法: python scripts/run_phase2_synth_batch.py --config config/phase2_synth_batch.yaml
+
+manifest: results/finesse_merged_manifest.csv
+seed: 42
+mode: augment
+
+# 相似簇占比扫描（设计 §10 参数扫描）
+cluster_fractions:
+  - 0.05
+  - 0.10
+
+# 基线列完整性校验（增列后前 7 列必须与输入一致）
+verify_baseline: true
+skip_existing: true
+
+output_root: results/synth
+
+# 3reg × Type A–D × T15/T29/T65/T78/T79（与 SkyStore 论文实验矩阵对齐）
+trace_globs:
+  - "Data/3reg/3reg/typeA/*.mc.aug"
+  - "Data/3reg/3reg/typeB/*.mc.aug"
+  - "Data/3reg/3reg/typeC/*.mc.aug"
+  - "Data/3reg/3reg/typeD/*.mc.aug"

@@ -1,0 +1,62 @@
+@startuml PolicyMilpECnew_Flowchart
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 11
+skinparam roundCorner 8
+skinparam shadowing false
+
+title **PolicyMilpECnew 主流程**\n(基于代码实现)
+
+|写请求 (place)|
+start
+:收到写请求 req;
+:windowStats[issueRegion].addWrite(sizeGB);
+:windowEventCount++;
+:checkAndSolveWindow(req.timestamp);
+
+if (触发求解?) then (是)
+  :solveWindowBatch(now);
+  :清除 windowStats;
+endif
+
+if (decisions[issueRegion] 存在且有效?) then (是)
+  if (mode == 1 且 shardAt 完整?) then (是)
+    :返回 3 个 shard region;
+    stop
+  endif
+endif
+:返回 [issueRegion] (副本);
+stop
+
+|读请求 (updatePastRequests)|
+start
+:super.updatePastRequests()\n更新直方图;
+if (hasLocalData?) then (否)
+  :windowStats[issueRegion].addRead(sizeGB);
+endif
+:windowEventCount++;
+:checkAndSolveWindow(timestamp);
+stop
+
+|窗口求解 (checkAndSolveWindow)|
+start
+if (窗口满 OR 事件≥500\nOR region数过多?) then (是)
+  :solveWindowBatch(now);
+  :windowStartHours = reqH;
+  :windowEventCount = 0;
+endif
+stop
+
+|批量求解 (solveWindowBatch)|
+start
+:移除过期 decisions;
+:加载 sp[], tc[][], tauH[]\n(含 calcEvictCost 直方图);
+partition "对每个活跃 region" {
+  :solveRegionMilp(env, regionKey, stats);
+  :decisions.put(regionKey, RegionDecision);
+}
+:windowStats.clear();
+stop
+
+@enduml

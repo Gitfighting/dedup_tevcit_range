@@ -1,0 +1,8 @@
+placement_policy: "tevict_ranges"
+transfer_policy: "cheapest"
+regions:
+  - aws:us-east-1
+  - azure:westeurope
+  - gcp:us-west1-a
+# region_graph: 3reg/3reg.gml
+window_size: -1 

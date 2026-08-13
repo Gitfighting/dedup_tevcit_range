@@ -1,0 +1,202 @@
+We also compare SkyStore to CGP, an oracle with optimal cost
+policy (Table 3). On average, SkyStore operates within 15% of op-
+timal, while others incur 1.6–22× higher costs. SkyStore incurs
+higher costs as it aggregates statistics at bucket granularity. SkyS-
+tore performs 1.2–1.3× worse than CGP for traces (T78, T79) with a
+mixed distribution of access frequencies and recency where aggre-
+gate statistics become less accurate. Note that 𝑇even is empirically
+within 2× of optimal cost, as proven in Section 3.1.2.
+Policy
+Cost vs. Optimal
+T15
+T29
+T65
+T78
+T79
+Avg
+Always Evict
+1.4
+1.0
+77.5
+27.8
+3.1
+22.15
+Always Store
+3.9
+2.3
+1.0
+1.9
+3.4
+2.49
+Teven
+1.9
+2.2
+1.0
+1.4
+1.5
+1.59
+TTL-CC
+1.2
+1.7
+1.1
+2.7
+2.7
+1.87
+TTL-CC-obj
+1.5
+1.0
+7.5
+7.2
+2.2
+3.88
+EWMA
+1.4
+1.0
+11.0
+3.8
+2.3
+3.90
+AWS Multi-Region Bucket
+6.3
+3.5
+1.0
+2.8
+3.8
+3.49
+SkyStore
+1.1
+1.0
+1.1
+1.2
+1.3
+1.14
+Table 3: Two-Region Base and Cache: Cost vs. Optimal across
+individual traces and their average. SkyStore is, on average,
+within 14% of optimal cost.
+6.4
+Multi-Cloud: 3 Regions across 3 Clouds
+We extend our evaluation to a multi-cloud setup with three regions
+across three clouds (Section 6.2.1). We use four workloads, i.e., uni-
+form, region-aware, aggregation, and replication workloads (Sec-
+tion 6.1.3). Across these workloads, SkyStore consistently achieves
+lower costs compared to other baselines by 1.3–18.4× on average.
+Table 4 summarizes the baseline’s cost over SkyStore’s, and aver-
+ages it across traces and workload types. We compare SkyStore
+with JuiceFS instead of AWS Multi-Region Bucket as the latter does
+not operate across clouds. All policies in this experiment are run in
+the fixed base (FB) mode.
+At a high level, 3-region multi-cloud results largely mirror the
+2-region setup. Major trends across traces remain the same, but the
+absolute cost improvements differ from the two-region setup across
+each workload. This is primarily due to higher (1.8×) network fees
+in multi-cloud compared to a single-cloud setup. We highlight and
+explain outlier trends in costs for SkyStore and other baselines.
+AlwaysEvict is 9.3–29.8× more expensive than SkyStore on aver-
+age. AlwaysEvict has higher costs (29.8× and 24.0×) in region-aware
+and aggregation workloads; for read-heavy traces like T65, it can
+be 120× worse due to high cross-cloud network fees. AlwaysEvict
+Policy
+Type A
+(Uniform)
+Type B
+(Region)
+Type C
+(Aggregation)
+Type D
+(Replication) Average
+Always Evict
+9.3
+29.8
+24.0
+10.4
+18.4×
+Always Store
+1.8
+1.7
+1.7
+1.9
+1.8×
+𝑇even
+1.3
+1.3
+1.3
+1.3
+1.3×
+TTL-CC
+1.7
+1.2
+1.3
+1.8
+1.5×
+EWMA
+2.9
+4.9
+4.4
+3.0
+3.8×
+JuiceFS
+4.8
+1.9
+1.9
+4.8
+5.7×
+Table 4: 3-Region Fixed Base: baseline cost over SkyStore (×),
+averaged across traces and across workload types. On average,
+SkyStore is 1.3 to 18.4× cheaper than six other baselines.
+performs slightly better (9.3× and 10.4×) than SkyStore on uni-
+form and replication workloads. As GETs per object are distributed,
+policies have uniformly high network costs of cold misses in each
+region, narrowing their performance gap.
+EWMA has similar costs to AlwaysEvict except that it retains
+objects for slightly longer in read-heavy traces, costing 2.9 – 4.9×
+more than SkyStore on average.
+AlwaysStore and JuiceFS are 1.7–1.9× and 1.9–4.8× more ex-
+pensive than SkyStore on average, respectively. Decreasing access
+frequency and increasing recency reduces caching benefits. Thus,
+AlwaysStore incurs low costs (1.7× of SkyStore) in region-aware
+and aggregation workloads and higher costs (1.8 – 1.9×) with uni-
+form and replication workloads. Surprisingly, AlwaysStore beats
+SkyStore by 4-6% on read-heavy traces (T65) as SkyStore incurs
+higher network costs during initial metadata warmup periods. In
+contrast, JuiceFS has 2.7× higher costs than AlwaysStore on aver-
+age because JuiceFS proactively replicates objects to all regions on
+PUTs and incurs high costs for infrequently read objects. However,
+if read locations are predictable, such as region-aware and aggrega-
+tion workloads, JuiceFS is auto-configured to replicate to specific
+regions and incurs similar costs as AlwaysStore.
+TTL-CC costs 1.2–1.8× more than SkyStore on average and ad-
+justs objects TTLs based on their cache hit rate. In general, TTL-CC
+has lower costs (1.2–1.3× vs. SkyStore) for region-aware and ag-
+gregation workloads, but higher costs (1.7–1.8×) for uniform or
+replication workloads. As an exception, TTL-CC incurs 1.6× lower
+costs (for trace T79) in uniform and replication workloads than in
+region-aware and aggregation workloads. Since cold objects (61%
+of objects in T79), have even fewer accesses when GETs are dis-
+tributed across regions, TTL-CC learns this pattern quickly and
+sets shorter TTLs. However, it adapts slowly when reads are con-
+centrated in specific locations, evicts relatively warmer objects and
+incurs higher network costs.
+The 𝑇even policy incurs low costs consistently, i.e., 1.3× higher
+than SkyStore on average. It balances storage and network costs in
+multi-cloud setups and maintains low costs across different request
+distributions. 𝑇even has up to 1.7× higher costs than SkyStore as it
+stores objects even if they are not read in the future.
+6.5
+Scalability: To 9 Regions across 3 Clouds
+We now evaluate how SkyStore’s cost savings scale in the multi-
+cloud setup with an increasing number of regions. Across three
+clouds, we compare cost savings of SkyStore in three, six, and nine
+regions relative to AlwaysEvict, AlwaysStore, and commercial/aca-
+demic baselines like JuiceFS and SPANStore. Note that we evaluate
+SPANStore only in FP mode as it does not support FB mode. Across
+9 regions, SkyStore is 1.4–12.9× and 1.5–11.4× more cost-efficient
+than other baselines in FB and FP modes, respectively.
+Table 5 summarizes how scaling affects baseline costs relative
+to SkyStore, so lower cost relative to SkyStore showcases better
+scalability. SkyStore remains consistent and incurs low costs when
+scaling regions. AlwaysEvict and EWMA (in FB mode) incur lower
+costs on increasing the number of regions from 3 to 9 (18.4 to
+12.9×, 3.8 to 3.1×, respectively). On the other hand, AlwaysStore
+and JuiceFS incur higher costs (1.8 to 2.1×, 3.4 to 8.6×, respectively)
+compared to SkyStore as regions increase. This is primarily because
+10

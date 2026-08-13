@@ -1,0 +1,37 @@
+# E16: 全矩阵 p 阶梯合成 — 3/6/9-reg × typeA–D × T15/T29/T65/T78/T79
+# 11 档 p，r 分布不变（同一 manifest + seed）
+# Run: python scripts/run_phase2_synth_batch.py --config config/phase2_synth_e16_p_ladder_full.yaml
+
+manifest: results/finesse_merged_manifest.csv
+seed: 42
+mode: augment
+verify_baseline: true
+skip_existing: true
+output_root: results/synth
+
+cluster_fractions:
+  - 0.05
+  - 0.08
+  - 0.10
+  - 0.15
+  - 0.20
+  - 0.25
+  - 0.30
+  - 0.35
+  - 0.40
+  - 0.45
+  - 0.50
+
+trace_globs:
+  - "Data/3reg/3reg/typeA/*.mc.aug"
+  - "Data/3reg/3reg/typeB/*.mc.aug"
+  - "Data/3reg/3reg/typeC/*.mc.aug"
+  - "Data/3reg/3reg/typeD/*.mc.aug"
+  - "Data/6reg/6reg/typeA/*.mc.aug"
+  - "Data/6reg/6reg/typeB/*.mc.aug"
+  - "Data/6reg/6reg/typeC/*.mc.aug"
+  - "Data/6reg/6reg/typeD/*.mc.aug"
+  - "Data/9reg/9reg/typeA/*.mc.aug"
+  - "Data/9reg/9reg/typeB/*.mc.aug"
+  - "Data/9reg/9reg/typeC/*.mc.aug"
+  - "Data/9reg/9reg/typeD/*.mc.aug"

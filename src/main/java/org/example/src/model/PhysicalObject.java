@@ -17,6 +17,14 @@ public class PhysicalObject {
     private Instant storageStartTime;
     public boolean expireImmediate = false;
     private int versionId;
+    /**
+     * EC 片位身份（slot identity）：{@code SHARD_1}/{@code SHARD_2}/{@code PARITY}/{@code REPLICA}。
+     *
+     * <p>用于读恢复时强制「拿到互补片」而非两片同类片（EC(K+M) 重建需 K 个<em>不同</em>片位）。
+     * 见 {@code ec_shard_logic_review_20260328.md} §36-39。{@code null} 表示身份未知，
+     * 读路径据此退回到旧的「按成本取两片」近似（向后兼容）。
+     */
+    private String shardSlot;
 
     public PhysicalObject(String locationTag,
             String key,
@@ -126,5 +134,14 @@ public class PhysicalObject {
 
     public void setVersionId(int versionId) {
         this.versionId = versionId;
+    }
+
+    /** EC 片位身份；{@code null} 表示未知。见字段 {@link #shardSlot} 注释。 */
+    public String getShardSlot() {
+        return shardSlot;
+    }
+
+    public void setShardSlot(String shardSlot) {
+        this.shardSlot = shardSlot;
     }
 }

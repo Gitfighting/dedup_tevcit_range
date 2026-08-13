@@ -1,0 +1,51 @@
+{
+  "trace_file": "Data\\6reg\\6reg\\typeA\\IBMObjectStoreTrace065Part0.typeA.mc.aug-versioned",
+  "rows_analyzed": 141690,
+  "max_rows_limit": 400000,
+  "time_ms": {
+    "min": 0,
+    "max": 240380252,
+    "span_ms": 240380253
+  },
+  "duration_human": "2.7822 days",
+  "overall_rps": 0.589441,
+  "ops": {
+    "PUT": 2204,
+    "GET": 139486
+  },
+  "get_put_ratio_requests": 63.287659,
+  "bytes": {
+    "total_declared_size_sum": 1325962861016,
+    "get_sum": 1321186759438,
+    "put_sum": 4776101578,
+    "avg_bytes_per_request": 9358196.4925
+  },
+  "unique_objects": 2204,
+  "object_frequency": {
+    "max_per_object": 620,
+    "mean_per_object": 64.287659
+  },
+  "size_buckets": {
+    "1 MiB – 1 GiB": 75541,
+    "1 KiB – 1 MiB": 65750,
+    "<1 KiB": 399
+  },
+  "regions": 6,
+  "time_to_next_access": {
+    "column_present": true,
+    "value_minus_one_rows": 547,
+    "valid_next_timestamp_rows": 141143,
+    "fraction_valid": 0.996139
+  },
+  "time_to_next_access_same_reg": {
+    "column_present": true,
+    "value_minus_one_rows": 708,
+    "valid_same_reg_rows": 140982,
+    "fraction_valid": 0.995003
+  },
+  "cross_region_pattern": {
+    "global_next_and_same_reg_next": 140982,
+    "global_next_but_same_reg_none": 161,
+    "fraction_global_next_same_reg_none": 0.001136
+  }
+}

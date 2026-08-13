@@ -1,0 +1,3 @@
+storage_region: "aws:us-east-1"
+placement_policy: "local"
+transfer_policy: "direct"

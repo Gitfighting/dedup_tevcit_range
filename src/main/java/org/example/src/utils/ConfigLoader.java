@@ -142,6 +142,27 @@ public class ConfigLoader {
             if (data.containsKey("milp_fb_replica_horizon_sec")) {
                 config.milpFbReplicaHorizonSec = ((Number) data.get("milp_fb_replica_horizon_sec")).doubleValue();
             }
+            if (data.containsKey("milp_min_requests")) {
+                config.milpMinRequests = ((Number) data.get("milp_min_requests")).intValue();
+            }
+            if (data.containsKey("delta_enabled")) {
+                config.deltaEnabled = (Boolean) data.get("delta_enabled");
+            }
+            if (data.containsKey("ec_on_patch")) {
+                config.ecOnPatch = (Boolean) data.get("ec_on_patch");
+            }
+            if (data.containsKey("transfer_compression_enabled")) {
+                config.transferCompressionEnabled = (Boolean) data.get("transfer_compression_enabled");
+            }
+            if (data.containsKey("transfer_compression_algorithm")) {
+                config.transferCompressionAlgorithm = String.valueOf(data.get("transfer_compression_algorithm"));
+            }
+            if (data.containsKey("storage_compression_enabled")) {
+                config.storageCompressionEnabled = (Boolean) data.get("storage_compression_enabled");
+            }
+            if (data.containsKey("lz4_ratio_default")) {
+                config.lz4RatioDefault = ((Number) data.get("lz4_ratio_default")).doubleValue();
+            }
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to load config file: " + configPath, e);

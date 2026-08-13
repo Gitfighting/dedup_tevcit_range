@@ -1,0 +1,12 @@
+# 2-region typeE matching Data/2reg/*.typeE.mc-aug
+# Verified on T65: PUT → aws:us-east-1, GET → aws:us-west-2
+# Generator: multi_cloud_trace_new.py  (NOT new_trace_gen.py; that typeE is A–D mix)
+
+REGIONS_WRITE: ["aws:us-east-1"]
+REGIONS_WRITE_PROB: [1]
+REGIONS_READ: ["aws:us-west-2"]
+REGIONS_READ_PROB: [1]
+TYPE: "typeE"
+
+START_TIME: 0 days
+END_TIME: 7 days

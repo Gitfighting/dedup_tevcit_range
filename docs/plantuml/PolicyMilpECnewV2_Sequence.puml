@@ -1,0 +1,77 @@
+@startuml PolicyMilpECnewV2_Sequence
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 180
+skinparam sequence {
+  ArrowColor #2F3B52
+  LifeLineBorderColor #2F3B52
+  LifeLineBackgroundColor #F8FBFF
+  ParticipantBorderColor #1F2937
+  ParticipantBackgroundColor #EEF2FF
+}
+
+title PolicyMilpECnewV2: Runtime Sequence (Read Dataset to Cost Output)
+
+actor Driver as D #DBEAFE
+participant Main as M #DBEAFE
+participant SimulatorV3 as S #DBEAFE
+participant PolicyMilpECnewV2 as P #DCFCE7
+participant TransferPolicy as T #FEF3C7
+participant RegionManager as R #FEF3C7
+participant Tracker as K #F3E8FF
+participant "Result JSON" as J #FEE2E2
+
+D -> M: run --config --trace --tag
+M -> S: new SimulatorV3(...) [milp_ec_new_v2]
+M -> S: run()
+
+loop each CSV row (request)
+  S -> S: parse row -> Request
+
+  alt write request
+    S -> P: place(req, config)
+    P -> P: update windowStats.writeSizeGB
+    P -> P: checkAndSolveWindow(ts)
+    alt EC decision active (mode=1)
+      P --> S: placeRegions = 2 shard regions
+      S -> P: getPlacementWithSizes(req, config)
+      P --> S: {region -> req.size/2}
+    else replica decision
+      P --> S: placeRegions = [issueRegion]
+    end
+
+    S -> T: writeTransferPath(req, each region)
+    T --> S: write transfer graph(s)
+    S -> S: initiate_data_transfer(..., placementSizes)
+    S -> R: addObjectToRegion(region, PhysicalObject(size=shard/full, ttl))
+
+    S -> S: _updateTransferMetric(graph, req, effectiveSize)
+    S -> K: addTransferCost(metrics.cost)
+    S -> K: addRequestCost(pricePut per placed region)
+
+  else read request
+    S -> P: updatePastRequests(req, issueRegion)
+    P -> P: updateHistogram() 直方图累积
+    P -> P: if no local EC shard then add readSizeGB
+    P -> P: checkAndSolveWindow(ts)
+
+    S -> T: readTransferPath(req)
+    T --> S: read transfer graph + source region
+
+    S -> P: getReadTransferSize(req, config)
+    P --> S: req.size/2 when EC object else null
+    S -> S: _updateTransferMetric(graph, req, effectiveSize)
+    S -> K: addTransferCost(metrics.cost)
+    S -> K: addRequestCost(priceGet(readRegion))
+  end
+end
+
+M -> S: cleanupPolicy()
+S -> P: flushPendingEvents(now)
+S -> R: calculateRemainingStorageCosts(endTime,...)
+S -> K: addStorageCost(aggregateStorageCost)
+S -> K: getMetrics()
+K --> S: transfer + storage + request + total
+S -> J: writeResultsToJson(tag)
+
+@enduml

@@ -12,8 +12,14 @@ import org.example.src.placement_policy.milpv3.*;
 import org.example.src.utils.Definitions;
 import org.example.src.utils.Logger;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -22,15 +28,22 @@ import java.util.*;
 /**
  * MILP EC new V3 policy.
  *
- * Independent strategy implementation:
- * - extends PlacementPolicy (no inheritance from PolicyTevictRangesNew),
- * - keeps TevictRanges histogram/TTL logic copied locally,
- * - adds MILP solve + decision landing from {@link org.example.SimulatorV2#calculateTtl} on write path:
- *   whenever the {@value #PAIR_TTL_BUCKET_HOURS}h pair-TTL histogram advances, refresh TTLs and solve MILP on the
- *   same timestamp (see {@link #syncMilpIfHistogramTtlAdvanced}). {@link #findMin} may still use teven/2 until enough
- *   read samples exist; that only affects TTL values fed into coefficients, not whether Gurobi runs.
+ * <p>Independent strategy implementation:
+ * <ul>
+ *   <li>extends {@link PlacementPolicy} (no inheritance from {@link PolicyTevictRangesNew}),</li>
+ *   <li>keeps TevictRanges histogram/TTL logic copied locally,</li>
+ *   <li>adds MILP solve + decision landing on write path.</li>
+ * </ul>
+ *
+ * <p>Pair-TTL refresh follows {@link PolicyTevictRangesNew#getTevict}: 12h early return, full refresh
+ * only on bucket roll. MILP runs after that refresh via a pending queue, not on the PUT
+ * {@link org.example.SimulatorV2#calculateTtl} path. {@link #findMin} may still use teven/2 until
+ * enough read samples exist; that only affects TTL values fed into coefficients, not whether Gurobi runs.
  */
 public class PolicyMilpECnewV3 extends PlacementPolicy {
+
+    /** Histogram admission threshold in {@link #findMin}; matches {@link PolicyTevictRangesNew}. */
+    private static final int TEVICT_HISTOGRAM_MIN_REQUESTS = 1000;
     private static final int K_DATA = 2; // shard payload size = logical size / K_DATA (two data shards)
     /** MILP / placement: exactly this many EC shard regions (base replica + these shards). */
     private static final int N_EC_SHARDS = GurobiEc21MilpBuilder.NUM_EC_SHARD_SLOTS;
@@ -39,7 +52,11 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
 
     // ===== MILP =====
     private final Map<String, LayoutDecisionV3> decisionCache = new HashMap<>();
+    /** MILP deferred until {@link #getTevict} performs the same pair-TTL refresh as tevict_ranges. */
+    private final Map<String, Request> pendingMilpAfterTtlRefresh = new HashMap<>();
     private long milpTickSeq = 0L;
+    private long histVersion = 0L;
+    private static final Path MILP_SOLVE_LOG = Paths.get("results", "milp_solve_log.jsonl");
     private final double milpTimeLimitSec;
     private final double milpMipGap;
     private final boolean milpStrictFail;
@@ -112,34 +129,119 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
 
     @Override
     public void updatePastRequests(Request req, String region) {
-        // Reads/writes: histogram state. MILP only from syncMilpIfHistogramTtlAdvanced on write path (SimulatorV2.calculateTtl).
-        updateHistogramStates(req, region);
+        boolean histSwapped = updateHistogramStates(req, region);
+        boolean admit = meetsMilpAdmission(req.issueRegion);
+        LocalDateTime ts = LocalDateTime.ofInstant(req.timestamp, java.time.ZoneOffset.UTC);
+        if (windowSize > 0) {
+            if (histSwapped && admit) {
+                runMilpForIssueRegion(req.issueRegion, req.timestamp, req);
+            }
+        } else if (admit && !canReuseTtlWindow(req.issueRegion, ts)) {
+            pendingMilpAfterTtlRefresh.put(req.issueRegion, req);
+        }
     }
 
     @Override
     public List<String> place(Request req, Config config) {
         if ("write".equals(req.op)) {
-            LayoutDecisionV3 dec = decisionCache.get(req.issueRegion);
-            if (dec != null && dec.mode == 1) {
-                List<String> ecRegions = extractEcRegions(dec);
-                if (ecRegions.size() != N_EC_SHARDS) {
-                    throw new IllegalStateException(
-                            "[MILP-ECnewV3] EC mode requires " + N_EC_SHARDS + " shard regions, got " + ecRegions.size());
-                }
-                return ecRegions;
-            }
-            return Collections.singletonList(req.issueRegion);
+            return writePlacementRegions(req);
         }
-        // read: place only on miss in issueRegion
+        return readCachePlacementRegions(req);
+    }
+
+    /**
+     * After a paid read transfer, cache a <em>full</em> replica at {@code issueRegion}. A local EC shard or
+     * delta patch must not suppress placement.
+     */
+    protected List<String> readCachePlacementRegions(Request req) {
         LogicalObject lo = logicalObjects.get(req.objKey);
-        if (lo == null || lo.physicalObjects == null || !lo.physicalObjects.containsKey(req.issueRegion)) {
+        if (lo == null || lo.physicalObjects == null) {
             return Collections.singletonList(req.issueRegion);
         }
-        return Collections.emptyList();
+        if (hasReadyFullReplicaAt(lo, req.issueRegion, req.timestamp)) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(req.issueRegion);
+    }
+
+    /** True when {@code region} holds an unexpired physical copy whose size is at least the logical object size. */
+    protected boolean hasReadyFullReplicaAt(LogicalObject lo, String region, Instant at) {
+        if (lo == null || lo.physicalObjects == null) {
+            return false;
+        }
+        PhysicalObject po = lo.physicalObjects.get(region);
+        if (po == null || po.getStorageStartTime() == null || at.isBefore(po.getStorageStartTime())) {
+            return false;
+        }
+        if (po.getTtl() != Integer.MAX_VALUE && po.isExpired(at)) {
+            return false;
+        }
+        BigDecimal fullSize = lo.getSize();
+        return fullSize != null && po.getSize() != null && po.getSize().compareTo(fullSize) >= 0;
+    }
+
+    protected BigDecimal logicalFullSize(LogicalObject lo, Request req) {
+        if (lo != null && lo.getSize() != null) {
+            return lo.getSize();
+        }
+        return req.size;
+    }
+
+    /**
+     * PUT placement from cached MILP {@code x}/{@code y}: replica regions or EC shard regions.
+     * Falls back to {@code issueRegion} when no decision is cached yet.
+     */
+    protected List<String> writePlacementRegions(Request req) {
+        return regionsForWriteDecision(decisionCache.get(req.issueRegion), req.issueRegion);
+    }
+
+    /**
+     * Maps a MILP layout to simulator write regions. FB always includes {@code issueRegion} (local PUT);
+     * FP uses {@code x[]} when {@code z=0}, or EC shard regions when {@code z=1}.
+     */
+    List<String> regionsForWriteDecision(LayoutDecisionV3 dec, String issueRegion) {
+        if (dec == null) {
+            return Collections.singletonList(issueRegion);
+        }
+        if (dec.mode == 1) {
+            List<String> shards = extractEcRegions(dec);
+            if (shards.size() != N_EC_SHARDS) {
+                throw new IllegalStateException(
+                        "[MILP-ECnewV3] EC mode requires " + N_EC_SHARDS + " shard regions, got " + shards.size());
+            }
+            return shards;
+        }
+        List<String> replicas = replicaRegionsFromDecision(dec);
+        if (Boolean.TRUE.equals(config.fixedBaseRegion)) {
+            return unionDistinct(issueRegion, replicas);
+        }
+        return replicas.isEmpty() ? Collections.singletonList(issueRegion) : replicas;
+    }
+
+    private static List<String> unionDistinct(String first, List<String> rest) {
+        LinkedHashSet<String> out = new LinkedHashSet<>();
+        out.add(first);
+        if (rest != null) {
+            out.addAll(rest);
+        }
+        return new ArrayList<>(out);
     }
 
     @Override
     public Map<String, BigDecimal> getPlacementWithSizes(Request req, Config config) {
+        if ("read".equals(req.op)) {
+            List<String> cacheRegions = readCachePlacementRegions(req);
+            if (cacheRegions.isEmpty()) {
+                return null;
+            }
+            LogicalObject lo = logicalObjects.get(req.objKey);
+            BigDecimal fullSize = logicalFullSize(lo, req);
+            Map<String, BigDecimal> sized = new HashMap<>();
+            for (String region : cacheRegions) {
+                sized.put(region, fullSize);
+            }
+            return sized;
+        }
         if (!"write".equals(req.op)) {
             return null;
         }
@@ -192,20 +294,42 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
         return null;
     }
 
-    @Override//获取TTL的时间
+    /**
+     * Pair-TTL lookup aligned with {@link PolicyTevictRangesNew#getTevict}: reuse cached slice inside the
+     * {@value #PAIR_TTL_BUCKET_HOURS}h window; refresh all region pairs only when the window rolls.
+     */
+    @Override
     public double getTevict(String src, String dst, Instant timestampInstant) {
         LocalDateTime timestamp = LocalDateTime.ofInstant(timestampInstant, java.time.ZoneOffset.UTC);
-        if (debugCount < 100) {//调试模式 100次后停止 此为日志的打印，打印100条
+        if (debugCount < 100) {
             System.out.println("[DEBUG] getTevict STARTED for src=" + src + " dst=" + dst);
             debugCount++;
         }
-        ensurePairTtlsForHistogramWindow(timestamp, dst);
-        List<Double> ttlList = regionPairsTtl.get(new RegionPair(src, dst));
-        if (ttlList == null || ttlList.isEmpty()) {//如果为TTL list为空  这里为什么是为空的时候刷新？？
-            refreshAllRegionPairTtls(timestamp);//刷新所有region对的TTL
-            ttlList = regionPairsTtl.get(new RegionPair(src, dst));
+        if (seenDays.containsKey(dst) && !seenDays.get(dst).isEmpty()
+                && timestamp.isBefore(seenDays.get(dst).get(seenDays.get(dst).size() - 1)
+                        .plusHours(PAIR_TTL_BUCKET_HOURS))) {
+            List<Double> ttlList = regionPairsTtl.get(new RegionPair(src, dst));
+            if (ttlList != null && !ttlList.isEmpty()) {
+                return ttlList.get(ttlList.size() - 1);
+            }
         }
+        refreshAllRegionPairTtls(timestamp);
+        drainPendingMilpAfterTtlRefresh();
+        List<Double> ttlList = regionPairsTtl.get(new RegionPair(src, dst));
         return (ttlList == null || ttlList.isEmpty()) ? 0.0 : ttlList.get(ttlList.size() - 1);
+    }
+
+    private void drainPendingMilpAfterTtlRefresh() {
+        if (pendingMilpAfterTtlRefresh.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Request> e : new ArrayList<>(pendingMilpAfterTtlRefresh.entrySet())) {
+            String issueRegion = e.getKey();
+            Request pending = pendingMilpAfterTtlRefresh.remove(issueRegion);
+            if (pending != null && meetsMilpAdmission(issueRegion)) {
+                runMilpForIssueRegion(issueRegion, pending.timestamp, pending);
+            }
+        }
     }
 
     public void flushPendingEvents(Instant now) {
@@ -246,6 +370,7 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
                     milpEcV3AllowEc,
                     milpEcV3ForceEcOnly);
             decisionCache.put(issueRegion, dec);
+            appendMilpSolveLog(tick, now, issueRegion, coeff, dec);
             Logger.info(String.format(
                     "[MILP-ECnewV3] tick=%d issue=%s template=%s mode=%d status=%s obj=%.6f ttlSec=%s",
                     tick, issueRegion, triggerReq.objKey, dec.mode, dec.solverStatus, dec.objVal,
@@ -292,6 +417,10 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
      * zero and {@code x[base]} is fixed off in the MILP.
      * EC shard rows at base still use TTL-based {@code sEc}.
      */
+    protected double effectiveSizeRatio(LogicalObject template) {
+        return 1.0;
+    }
+
     private MilpCoefficientBundle buildCoefficients(
             String issueRegion, LogicalObject template, double[] ttlSecSnapshot, Instant now) {
         int n = regions.size();
@@ -299,13 +428,15 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
         double[] sRep = new double[n];
         double[][] sEc = new double[n][N_EC_SHARDS];
 
+        double ratio = effectiveSizeRatio(template);
         double sizeLogicGb = template.getSize()
-                .divide(BigDecimal.valueOf(Definitions.GB), 20, RoundingMode.HALF_UP).doubleValue();
+                .divide(BigDecimal.valueOf(Definitions.GB), 20, RoundingMode.HALF_UP).doubleValue() * ratio;
         double sizeShardGb = sizeLogicGb / K_DATA;
 
         int baseIdx = resolveBaseRegionIndex(template);
         boolean fixedBaseFb = Boolean.TRUE.equals(config.fixedBaseRegion) && baseIdx >= 0 && baseIdx < n;
         double fbConst = 0.0;
+        int issueIdx = regions.indexOf(issueRegion);
         if (fixedBaseFb) {
             String baseRg = regions.get(baseIdx);
             Instant putStart = template.getPutInstant();
@@ -329,6 +460,12 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
             }
             fbConst = StorageCostHelper.storageCostGb(sizeLogicGb, baseRg, horizonSec, totalGraph)
                     + edgeCostRequired(issueRegion, baseRg) * sizeLogicGb;
+            if (issueIdx >= 0 && issueIdx < n && issueIdx != baseIdx) {
+                double issueTtl = (ttlSecSnapshot != null && issueIdx < ttlSecSnapshot.length)
+                        ? Math.max(0.0, ttlSecSnapshot[issueIdx]) : 0.0;
+                fbConst += StorageCostHelper.storageCostGb(
+                        sizeLogicGb, issueRegion, issueTtl, totalGraph);
+            }
         }
 
         for (int r = 0; r < n; r++) {
@@ -353,7 +490,16 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
         }
 
         validateCoefficients(issueRegion, ttlSec, sRep, sEc);
-        return new MilpCoefficientBundle(sRep, sEc, ttlSec, fixedBaseFb, fbConst);
+        double cacheTtlSec = 0.0;
+        for (double t : ttlSec) {
+            cacheTtlSec = Math.max(cacheTtlSec, t);
+        }
+        if (cacheTtlSec <= 0.0) {
+            cacheTtlSec = PAIR_TTL_BUCKET_HOURS * 3600.0;
+        }
+        double localReadCache = fixedBaseFb ? 0.0 : StorageCostHelper.storageCostGb(
+                sizeLogicGb, issueRegion, cacheTtlSec, totalGraph);
+        return new MilpCoefficientBundle(sRep, sEc, ttlSec, fixedBaseFb, fbConst, localReadCache);
     }
 
     /**
@@ -362,57 +508,15 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
      */
     private double[] buildTtlSnapshotForIssueRegion(String issueRegion, Instant now) {
         LocalDateTime ts = LocalDateTime.ofInstant(now, java.time.ZoneOffset.UTC);
-        ensurePairTtlsForHistogramWindow(ts, issueRegion);
+        if (!canReuseTtlWindow(issueRegion, ts)) {
+            refreshAllRegionPairTtls(ts);
+        }
         double[] ttlSec = new double[regions.size()];
         for (int r = 0; r < regions.size(); r++) {
             List<Double> ttlList = regionPairsTtl.get(new RegionPair(regions.get(r), issueRegion));
             ttlSec[r] = (ttlList == null || ttlList.isEmpty()) ? 0.0 : Math.max(0.0, ttlList.get(ttlList.size() - 1));
         }
         return ttlSec;
-    }
-
-    /**
-     * Single entry point for refreshing TevictRanges pair TTLs: MILP snapshot and {@link #getTevict} share this so we
-     * do not append duplicate windows (which desynced coefficients from simulator TTL).
-     * <p>
-     * Advances TevictRanges pair-TTL histogram when the dst-region bucket rolls (every
-     * {@link #PAIR_TTL_BUCKET_HOURS} hours). On advance, appends a new TTL slice; when {@code milpTrigger} is non-null,
-     * also runs MILP for {@code milpIssueRegion} using the same refreshed TTL vector.
-     *
-     * @return true if a new TTL slice was appended (and MILP ran when trigger was provided)
-     */
-    private boolean advancePairTtlsHistogramIfNeeded(
-            LocalDateTime ts,
-            String histogramDstForPairs,
-            String milpIssueRegion,
-            Request milpTrigger) {
-        if (canReuseTtlWindow(histogramDstForPairs, ts)) {
-            return false;
-        }
-        refreshAllRegionPairTtls(ts);
-        if (milpIssueRegion != null && milpTrigger != null) {
-            runMilpForIssueRegion(milpIssueRegion, milpTrigger.timestamp, milpTrigger);
-        }
-        return true;
-    }
-
-    private void ensurePairTtlsForHistogramWindow(LocalDateTime ts, String issueRegionAsDst) {
-        advancePairTtlsHistogramIfNeeded(ts, issueRegionAsDst, null, null);
-    }
-
-    /**
-     * When the pair-TTL histogram crosses a {@value #PAIR_TTL_BUCKET_HOURS}h boundary for {@code histogramDstForPairs},
-     * refresh TTLs then solve MILP on the same timestamp so coefficient TTL matches the simulator ({@link #getTevict}).
-     *
-     * @param histogramDstForPairs second argument to {@link #getTevict} in the caller (often schedule region or issue region)
-     */
-    public void syncMilpIfHistogramTtlAdvanced(Request request, String histogramDstForPairs) {
-        if (request == null) {
-            return;
-        }
-        String dst = histogramDstForPairs != null ? histogramDstForPairs : request.issueRegion;
-        LocalDateTime ts = LocalDateTime.ofInstant(request.timestamp, java.time.ZoneOffset.UTC);
-        advancePairTtlsHistogramIfNeeded(ts, dst, request.issueRegion, request);
     }
 
     private boolean canReuseTtlWindow(String dst, LocalDateTime timestamp) {
@@ -511,6 +615,20 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
         return sb.toString();
     }
 
+    /** Full numeric JSON array (no truncation) for {@code milp_solve_log.jsonl} machine parsing. */
+    private String jsonArray(double[] arr) {
+        if (arr == null || arr.length == 0) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < arr.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(String.format("%.6f", arr[i]));
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
     private List<String> extractEcRegions(LayoutDecisionV3 dec) {
         if (dec.y == null || dec.y.length == 0) {
             return Collections.emptyList();
@@ -597,7 +715,133 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
         return ranges.length - 1;
     }
 
-    private void updateHistogramStates(Request request, String placeRegion) {
+    private boolean meetsMilpAdmission(String region) {
+        int min = milpMinRequestsThreshold();
+        int count;
+        if (windowSize == -1) {
+            count = nextNumRequests.getOrDefault(region, 0);
+        } else {
+            count = numRequests.getOrDefault(region, 0);
+        }
+        return count >= min;
+    }
+
+    /** Shared with {@link #findMin} so MILP admission and TTL histogram use the same threshold. */
+    protected int milpMinRequestsThreshold() {
+        return config.milpMinRequests != null ? config.milpMinRequests : 1000;
+    }
+
+    private void appendMilpSolveLog(
+            long tick, Instant now, String issueRegion, MilpCoefficientBundle coeff, LayoutDecisionV3 dec) {
+        try {
+            Files.createDirectories(MILP_SOLVE_LOG.getParent());
+            String line = buildMilpSolveLogLine(tick, now, issueRegion, coeff, dec);
+            Files.write(
+                    MILP_SOLVE_LOG,
+                    line.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            Logger.info("[MILP-ECnewV3] milp_solve_log append failed: " + e.getMessage());
+        }
+    }
+
+    /** JSON line for {@code milp_solve_log.jsonl}: solver outcome + concrete placement (x/y) + write-path regions. */
+    private String buildMilpSolveLogLine(
+            long tick, Instant now, String issueRegion, MilpCoefficientBundle coeff, LayoutDecisionV3 dec) {
+        String baseRegion = (dec.baseRegionIndex >= 0 && dec.baseRegionIndex < regions.size())
+                ? regions.get(dec.baseRegionIndex) : "";
+        List<String> replicaRegions = replicaRegionsFromDecision(dec);
+        List<String> ecShardRegions = extractEcRegions(dec);
+        List<String> writeRegions = writeRegionsFromDecision(dec, issueRegion);
+        String ecShardDetail = jsonEcShardDetail(dec);
+        return String.format(
+                "{\"tick\":%d,\"timestamp\":%d,\"issueRegion\":\"%s\",\"histVersion\":%d,"
+                        + "\"fixedBaseFb\":%s,\"baseRegion\":\"%s\","
+                        + "\"ttlSec\":%s,\"z\":%s,\"mode\":%d,"
+                        + "\"replicaRegions\":%s,\"ecShardRegions\":%s,\"ecShardDetail\":%s,"
+                        + "\"writeRegionsOnPut\":%s,\"localReadCacheCost\":%.8f,"
+                        + "\"objVal\":%.8f,\"solverStatus\":\"%s\"}%n",
+                tick,
+                now.getEpochSecond(),
+                issueRegion,
+                histVersion,
+                coeff.fixedBaseFb ? "true" : "false",
+                baseRegion,
+                jsonArray(coeff.ttlSec),
+                dec.mode == 1 ? "true" : "false",
+                dec.mode,
+                jsonStringArray(replicaRegions),
+                jsonStringArray(ecShardRegions),
+                ecShardDetail,
+                jsonStringArray(writeRegions),
+                coeff.localReadCacheCost,
+                dec.objVal,
+                dec.solverStatus);
+    }
+
+    /** Full-replica regions from MILP {@code x[r]} (may differ from {@link #place} write path). */
+    private List<String> replicaRegionsFromDecision(LayoutDecisionV3 dec) {
+        List<String> out = new ArrayList<>();
+        if (dec.x == null) {
+            return out;
+        }
+        for (int r = 0; r < dec.x.length && r < regions.size(); r++) {
+            if (dec.x[r]) {
+                out.add(regions.get(r));
+            }
+        }
+        return out;
+    }
+
+    /** Regions {@link #place} uses on PUT for this cached decision (execution semantics). */
+    private List<String> writeRegionsFromDecision(LayoutDecisionV3 dec, String issueRegion) {
+        return regionsForWriteDecision(dec, issueRegion);
+    }
+
+    /** Per-shard slot assignment: {@code [{\"region\":\"...\",\"slot\":0}, ...]}. */
+    private String jsonEcShardDetail(LayoutDecisionV3 dec) {
+        if (dec.y == null) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        boolean first = true;
+        for (int r = 0; r < dec.y.length && r < regions.size(); r++) {
+            if (dec.y[r] == null) {
+                continue;
+            }
+            for (int k = 0; k < dec.y[r].length; k++) {
+                if (!dec.y[r][k]) {
+                    continue;
+                }
+                if (!first) {
+                    sb.append(',');
+                }
+                first = false;
+                sb.append("{\"region\":\"").append(regions.get(r)).append("\",\"slot\":").append(k).append('}');
+            }
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private String jsonStringArray(List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append('"').append(items.get(i)).append('"');
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private boolean updateHistogramStates(Request request, String placeRegion) {
+        boolean swapped = false;
         LocalDateTime requestTime = LocalDateTime.ofInstant(request.timestamp, java.time.ZoneOffset.UTC);
         if (windowSize != -1) {
             if (lastUpdated == null || isLargeTimeGap(lastUpdated, requestTime)) {
@@ -624,6 +868,8 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
                 nextHist.clear();
                 nextNumRequests.clear();
                 nextLastHist.clear();
+                swapped = true;
+                histVersion++;
             }
         }
 
@@ -659,6 +905,7 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
                     Duration.between(requestTime, roundToNextHour(requestTime)).toNanos() / 1_000_000_000.0 / 3600.0);
             nextLastHist.get(placeRegion).merge((int) tendWindow, sizeGB, Double::sum);
         }
+        return swapped;
     }
 
     public double calcEvictCost(String region, double tevenHours, double netCost) {
@@ -733,7 +980,7 @@ public class PolicyMilpECnewV3 extends PlacementPolicy {
             }
         }
         if (!noPastData) {
-            if (y == -1 || lastUpdated == null || numReqs < 1000) {
+            if (y == -1 || lastUpdated == null || numReqs < TEVICT_HISTOGRAM_MIN_REQUESTS) {
                 ttl = teven / 3600.0 / 2.0;
             } else {
                 ttl = y;

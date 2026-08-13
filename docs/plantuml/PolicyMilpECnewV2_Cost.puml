@@ -1,0 +1,101 @@
+@startuml PolicyMilpECnewV2_Cost
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+
+title **PolicyMilpECnewV2 计费模型**\n(MILP 目标函数与 Simulator 实际计费)
+
+skinparam rectangle {
+  roundCorner 10
+  shadowing false
+}
+
+rectangle "**MILP 目标函数** (solveRegionMilp 最小化)" as MILP #E3F2FD {
+  rectangle "**写存储**" as WStore #BBDEFB {
+    rectangle "副本 (d=0)" as RepStore
+    note right of RepStore
+      sWrites * sp[r] * tauH[r] / 720 * (1-d)
+      完整对象存储成本
+    end note
+    rectangle "EC (d=1)" as ECStore
+    note right of ECStore
+      sum (sWrites/2) * sp[i] / 720 * z[i]
+      每 shard = size/2 存储
+    end note
+  }
+
+  rectangle "**写传输**" as WTrans #C8E6C9 {
+    rectangle "EC 分发" as ECDist
+    note right of ECDist
+      sum (sWrites/2) * tc[r,i] * sigma[i]
+      向 1 个远程 region 传 size/2
+    end note
+  }
+
+  rectangle "**读传输**" as RTrans #FFF9C4 {
+    rectangle "副本 (d=0)" as RepRead
+    note right of RepRead
+      sReads * avgNetworkCost * (1-d)
+      拉取完整对象
+    end note
+    rectangle "EC (d=1)" as ECRead
+    note right of ECRead
+      sum (sReads/2) * tc[i,r] * vread[i]
+      拉 1 片 = size/2
+    end note
+  }
+}
+
+rectangle "**Simulator 实际计费** (SimulatorV3 + PolicyMilpECnewV2)" as Sim #F3E5F5 {
+  rectangle "**写**" as SimW #E1BEE7 {
+    rectangle "PhysicalObject.size" as SimW1
+    note right of SimW1
+      getPlacementWithSizes()
+      返回 Map(region, size/2)
+      存储成本按 size/2
+    end note
+    rectangle "_updateTransferMetric" as SimW2
+    note right of SimW2
+      placementSizes.get(region) = size/2
+      写传输成本按 size/2
+    end note
+  }
+
+  rectangle "**读**" as SimR #D1C4E9 {
+    rectangle "getReadTransferSize()" as SimR1
+    note right of SimR1
+      EC 布局时返回 size/2
+      读传输成本按 size/2
+    end note
+  }
+
+  rectangle "**直方图**" as SimH #C5CAE9 {
+    rectangle "updateHistogram + getHistogramSizeGB" as SimH1
+    note right of SimH1
+      EC 时累积 size/2
+      calcEvictCost 的 tau 与 EC 存储一致
+    end note
+  }
+
+  rectangle "**驱逐/联动**" as SimE #FFCCBC {
+    rectangle "canEvict / getLinkedEvictionObjects" as SimE1
+    note right of SimE1
+      需 Simulator 集成
+      当前未调用
+    end note
+  }
+}
+
+MILP -[#2196F3,dashed]-> Sim : 决策驱动
+
+note bottom of MILP
+  **符号说明**
+  sp[i]: region i 存储单价
+  tc[i][j]: i 到 j 传输单价
+  tauH[i]: region i 的 tau (小时)
+  z[i]: sigma[i] * hatTau
+  K: EC_K = 2
+end note
+
+@enduml

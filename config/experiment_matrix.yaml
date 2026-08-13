@@ -1,0 +1,30 @@
+# 组合矩阵 E00–E12（PolicyMilpECnewV4_Design.md §9.5）
+# 用法: python scripts/run_experiment_matrix.py --config config/experiment_matrix.yaml
+
+output_dir: results/experiments
+hand_calc_compass: results/hand_calc/compass.csv
+trace_characteristics: results/trace_characteristics/table2_report.csv
+
+# 首版冒烟：小 trace + 少策略；全量跑时扩展 traces / policies
+traces:
+  - results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p100.delta.mc.aug
+  - Data/3reg/3reg/typeA/IBMObjectStoreTrace078Part0.typeA.mc.aug
+
+policies:
+  - id: E00
+    placement_policy: replicate_all
+    delta_enabled: false
+  - id: E01
+    placement_policy: tevict_ranges_new
+    delta_enabled: false
+  - id: E10
+    placement_policy: milp_ec_new_v3
+    delta_enabled: false
+  - id: E11
+    placement_policy: milp_ec_new_v4
+    delta_enabled: true
+    ec_on_patch: false
+  - id: E12
+    placement_policy: milp_ec_new_v4
+    delta_enabled: true
+    ec_on_patch: true

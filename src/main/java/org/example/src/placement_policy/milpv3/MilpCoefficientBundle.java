@@ -19,12 +19,19 @@ public class MilpCoefficientBundle {
     /** Always-on FB term: base full-object storage (dataset horizon) + one-time placement edge from issue region to base. */
     public final double fbBaseReplicaObjectiveConstant;
 
+    /**
+     * Expected storage cost of a full local replica left at the issue region after a read miss
+     * (SkyStore tevict semantics). Added to the objective with coefficient {@code z} (EC branch).
+     */
+    public final double localReadCacheCost;
+
     public MilpCoefficientBundle(double[] sRep, double[][] sEc, double[] ttlSec,
-            boolean fixedBaseFb, double fbBaseReplicaObjectiveConstant) {
+            boolean fixedBaseFb, double fbBaseReplicaObjectiveConstant, double localReadCacheCost) {
         this.sRep = sRep;
         this.sEc = sEc;
         this.ttlSec = ttlSec;
         this.fixedBaseFb = fixedBaseFb;
         this.fbBaseReplicaObjectiveConstant = fbBaseReplicaObjectiveConstant;
+        this.localReadCacheCost = localReadCacheCost;
     }
 }

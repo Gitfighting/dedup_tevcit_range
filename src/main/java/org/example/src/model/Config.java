@@ -78,4 +78,28 @@ public class Config {
      * (e.g. tests without {@link org.example.SimulatorV2} trace scan).
      */
     public Double milpFbReplicaHorizonSec;
+
+    /** Minimum histogram requests in an issue region before MILP runs (§9.3). */
+    public Integer milpMinRequests = 1000;
+
+    /** When true, consume trace delta columns and apply r-scaled costs (PolicyMilpECnewV4). */
+    public Boolean deltaEnabled = false;
+
+    /** Ablation: allow EC on delta patches; default false forces patch replica (E11). */
+    public Boolean ecOnPatch = false;
+
+    /** Compress bytes on cross-region transfers; objects are decompressed before storage. */
+    public Boolean transferCompressionEnabled = false;
+
+    /** Compression codec label recorded in results. Currently supported: lz4. */
+    public String transferCompressionAlgorithm = "none";
+
+    /** Store compressed physical replicas while retaining the original logical object size. */
+    public Boolean storageCompressionEnabled = false;
+
+    /**
+     * Fallback wire/logical size ratio when the trace has no {@code compressed_size} column.
+     * Used by {@code tevict_ranges_lz4}. Measured docker_image LZ4 mean ≈ 0.3443.
+     */
+    public Double lz4RatioDefault;
 }

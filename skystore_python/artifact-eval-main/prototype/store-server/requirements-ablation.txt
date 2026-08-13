@@ -1,0 +1,8 @@
+# OCP addon deps for ablation / DedupAware live stack.
+# Install alongside author requirements.txt — do not remove author pins.
+#   pip install -r requirements.txt -r requirements-ablation.txt
+
+python-dotenv>=1.0.0
+blake3>=0.3.0
+lmdb>=1.4.0
+# skyplane is stubbed via ablation/vendor_stubs (OCP); do not require full install

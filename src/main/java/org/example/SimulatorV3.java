@@ -12,10 +12,8 @@ import java.util.Map;
  *       {@code null} 时 V2 回退为整对象 {@link Request#size}。</li>
  *   <li>读：{@link #getReadTransferSize} → {@link org.example.src.placement_policy.PlacementPolicy#getReadTransferSize}；
  *       若传输路径带有 {@code segmentSizes} 则优先用之；否则 {@code null} 回退为 {@link Request#size}（见 V2
- *       {@code _updateTransferMetric}）。</li>
- *   <li>{@code milp_ec_new_v3}：写路径 {@link org.example.SimulatorV2#calculateTtl} 上，配对 TTL 直方图每 12h 滚动时
- *       {@link org.example.src.placement_policy.PolicyMilpECnewV3#syncMilpIfHistogramTtlAdvanced} 刷新 TTL 并求解 MILP；
- *       读路径仅更新直方图/可能刷新 TTL（{@link #getTevict}），不触发 MILP。</li>
+ *       {@code _updateTransferMetric}）。读 miss 落盘走 {@link #getPlacementSizesForRead}，必须为 logical 全对象大小。</li>
+ *   <li>{@code milp_ec_new_v3/v4}：配对 TTL 直方图刷新与 {@link org.example.src.placement_policy.PolicyTevictRangesNew} 一致（{@link org.example.src.placement_policy.PolicyMilpECnewV3#getTevict}）；MILP 在刷新后由 pending 队列触发，读路径不单独滚桶。</li>
  * </ul>
  */
 public class SimulatorV3 extends SimulatorV2 {

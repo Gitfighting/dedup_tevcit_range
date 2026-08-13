@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.src.model.Config;
+import org.example.src.utils.ConfigLoader;
 import org.example.src.utils.CostLogger;
 
 public class Main {
@@ -66,16 +68,18 @@ public class Main {
             System.out.println("  SimVersion: " + simversion);
             System.out.println("  Tag: " + tag);
 
-            // Create and run simulator
-            SimulatorV2 simulator = new SimulatorV2(
-                    config,
-                    trace,
-                    vm,
-                    setbase,
-                    0, // daysToIgnoreCost
-                    true, // versionEnable
-                    false // storeDecision
-            );
+            Config cfg = ConfigLoader.loadConfig(config);
+            String pp = String.valueOf(cfg.placementPolicy);
+            boolean useSimulatorV3 = simversion >= 3
+                    || "milp_ec_new_v3".equals(pp)
+                    || "milp_ec_new_v4".equals(pp);
+            if (useSimulatorV3 && simversion < 3) {
+                System.out.println("  Auto-selecting SimulatorV3 for placement_policy=" + pp);
+            }
+
+            SimulatorV2 simulator = useSimulatorV3
+                    ? new SimulatorV3(config, trace, vm, setbase, 0, true, false)
+                    : new SimulatorV2(config, trace, vm, setbase, 0, true, false);
 
             simulator.run();
 

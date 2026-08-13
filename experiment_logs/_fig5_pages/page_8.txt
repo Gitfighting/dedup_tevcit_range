@@ -1,0 +1,115 @@
+• Ratio of GET and PUT operations: Our traces also capture read
+and write dominant workload patterns. Three traces (T65, T78,
+and T79) are read-heavy, as shown in the Figure 4e. The rest (T15
+and T29) are write-heavy with 42% and 30% of PUTs. Note that
+T29 has >12M requests in total.
+6.1.3
+Multi-region, Multi-cloud workload generation. To address
+the lack of multi-cloud workloads, we use our five traces to syn-
+thetically generate such workloads in three steps.
+Step 1: From one to two regions within a cloud. We first explore
+the single-cloud, two-region base and cache setup (as described in
+Section 3.1). This setup represents a popular approach [43] where
+data is already located in one region, but the computation is run
+elsewhere, for instance, due to low resource availability (e.g., geo-
+distributed model serving service on GPUs). Recall that our traces
+are from a single region within the IBM cloud. To support this setup,
+we generate a workload in which PUT operations are directed to
+the base region and GET operations to the cache region.
+Step 2: To multiple regions and clouds. Next, we generate multi-
+region and multi-cloud workloads. Our synthesis of multi-cloud
+workloads is informed by our conversations with industry experts
+and their observations, which highlight the following patterns:
+(1) Uniform Workloads (Type A): Applications like networks of IoT
+sensors [44] and e-commerce websites [34] have uniformly
+random access patterns. For this workload, we distribute PUTs
+and GETs randomly across regions and clouds.
+(2) Region-Aware Workloads (Type B): Applications like satellite
+image analysis [7], disaster recovery [29], and cloudburst [27],
+ingest data in one but consume the data from another region.
+For this workload, we assign unique PUT and GET regions for
+each object and distribute requests accordingly.
+(3) Aggregation Workloads (Type C): Applications that collect data
+(like regional sales information, logs, etc.) at different regions [28]
+but access or analyze this data from a central region. For this
+workload, we distribute PUTs across regions, allowing data
+ingestion across regions, and dedicate GETs to a single region.
+(4) Replication Workloads (Type D): Applications like CDN [40],
+container registry [26], and geo-distributed model serving [16]
+typically write to a single region and read from multiple other
+regions. For this workload, we assign a dedicated PUT region
+for each object and distribute GETs across other regions.
+Step 3: Multi-cloud workloads. We combine our multi-cloud
+workloads into a single workload (Type E) for a single trace (T65)
+for our end-to-end experiments with real cloud deployments. This
+is necessary as each workload above stores and accesses 6.7 TB of
+data on average, and it would cost about 0.2M dollars to evaluate
+SkyStore against all workloads and setups in the cloud.
+6.2
+Deployment Settings and Baselines
+We evaluate SkyStore’s policy in two deployment settings (Sec-
+tion 6.2.1) and compare against several baselines (Section 6.2.2).
+6.2.1
+Deployment settings and metrics. Policies can operate in one
+of two modes: fixed base (FB) and free placement (FP). SkyStore
+assumes FB mode by default, where each object has a fixed, non-
+evictable base region. In FP mode, any replicas can be evicted,
+but at least one always remains. Since our closest related work,
+SPANStore operates only in FP mode, SkyStore supports both modes
+and compares against SPANStore in FP mode. We assume read-after-
+write consistency with version enabled, where each read accesses
+the latest data version.
+Multi-cloud deployment settings. Our multi-cloud deployments
+span across AWS S3, Azure Blob Storage, and GCS clouds. We run
+3-region3, 6-region4, and 9-region5 experiments where we select 1,
+2, and 3 regions from each cloud provider, respectively.
+Metrics. We compare SkyStore against other baselines on cost and
+latency metrics. We measure the total monetary cost of running a
+workload based on the standard storage offerings and bi-directional
+network costs between cloud regions. We also measure the average,
+p90, and p99 latency for GET and PUT requests.
+6.2.2
+Baselines. We compare against the following baselines:
+• Always Store / Always Evict policy always replicates objects
+to regions where GET is initiated and never evicts, or stores each
+object in a single storage location and never replicates.
+• TTL-based Eviction policies include (a) TTL = 𝑇even (Section 1),
+(b) TTL-CC [25], a dynamic policy that stochastically sets TTL
+based on the cached object’s behavior.
+• Clairvoyant Greedy Policy (CGP) (Section 3.1.1) is an oracle
+that decides to store or evict given future access times of each
+object. CGP is cost-optimal in the two-region setup.
+• EWMA uses an Exponentially Weighted Moving Average [41]
+to predict the next access time per object and chooses whether
+to evict it accordingly. We set the decay factor 𝛼to be 0.5.
+• SPANStore is a multi-cloud replication policy [55] that replicates
+objects each hour to minimize access costs. SPANStore does not
+fix a storage location and hence, we evaluate it only in the free
+placement (FP) mode.
+• Industrial Baselines include AWS Multi-Region Buckets [17]
+(and similarly, GCP Multi-Region Bucket [33]) and JuiceFS [36].
+Upon PUT, an object is asynchronously replicated to the pre-
+configured secondary region(s). We evaluate AWS in a two-
+region setup and JuiceFS in a multi-cloud setup, assuming the
+object is replicated to all other regions.
+6.3
+Single-Cloud Two Regions: Base and Cache
+We now evaluate SkyStore in a two-region base and cache setup
+and showcase its merit as a standalone caching policy. SkyStore
+consistently maintains low costs across traces, while its alternatives
+have low or comparable costs in specific cases and become prohibi-
+tively more expensive in others. On average, SkyStore has 1.4–20×
+lower costs compared to six baselines (Section-6.2.2) across five
+traces, as shown in Figure 5.
+AlwaysEvict is effective on one-hit-dominant traces, as it avoids
+unnecessary storage costs for objects never accessed again. For in-
+stance, in T15 where 48% of objects are accessed only once (Table 2),
+AlwaysEvict incus only 30% higher costs than SkyStore. It results
+in slightly higher network costs for the remaining cold objects
+accessed more than once in this trace. In traces like T29, where
+3aws:us-east-1, azure:eastus, gcp:us-east1-b
+4aws:us-east-1, aws:us-west-2, azure:eastus, azure:westus, gcp:us-east1-
+b, gcp:us-west1-a
+5aws:us-east-1, aws:us-west-2, aws:eu-west-1, azure:eastus, azure:westus,
+azure:wasteurope, gcp:us-east1-b, gcp:us-west1-a, gcp:europe-west1-b
+8

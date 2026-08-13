@@ -1,0 +1,93 @@
+@startuml PolicyMilpECnew_Cost
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+
+title **PolicyMilpECnew 计费模型**\n(MILP 目标函数与 Simulator 实际计费)
+
+skinparam rectangle {
+  roundCorner 10
+  shadowing false
+}
+
+rectangle "**MILP 目标函数** (solveRegionMilp 最小化)" as MILP #E3F2FD {
+  rectangle "**写存储**" as WStore #BBDEFB {
+    card "副本 (d=0)" as RepStore
+    note right of RepStore
+      sWrites × sp[r] × tauH[r] / 720 × (1-d)
+      完整对象存储成本
+    end note
+    card "EC (d=1)" as ECStore
+    note right of ECStore
+      Σ (sWrites/K) × sp[i] / 720 × z[i]
+      每 shard = size/2 存储
+    end note
+  }
+
+  rectangle "**写传输**" as WTrans #C8E6C9 {
+    card "EC 分发" as ECDist
+    note right of ECDist
+      Σ (sWrites/K) × tc[r→i] × sigma[i]
+      向 2 个远程 region 各传 size/2
+    end note
+  }
+
+  rectangle "**读传输**" as RTrans #FFF9C4 {
+    card "副本 (d=0)" as RepRead
+    note right of RepRead
+      sReads × avgNetworkCost × (1-d)
+      拉取完整对象
+    end note
+    card "EC (d=1)" as ECRead
+    note right of ECRead
+      Σ (sReads/K) × tc[i→r] × vread[i]
+      拉 1 片 = size/2
+    end note
+  }
+}
+
+rectangle "**Simulator 实际计费** (SimulatorV2/V3)" as Sim #F3E5F5 {
+  rectangle "**写**" as SimW #E1BEE7 {
+    card "PhysicalObject.size"
+    note right
+      getPlacementWithSizes()
+      返回 Map<region, size/2>
+      → 存储成本按 size/2
+    end note
+    card "_updateTransferMetric"
+    note right
+      placementSizes.get(region) = size/2
+      → 写传输成本按 size/2
+    end note
+  }
+
+  rectangle "**读**" as SimR #D1C4E9 {
+    card "getReadTransferSize()"
+    note right
+      EC 布局时返回 size/2
+      → 读传输成本按 size/2
+    end note
+  }
+
+  rectangle "**直方图**" as SimH #C5CAE9 {
+    card "getHistogramSizeGB()"
+    note right
+      EC 时累积 size/2
+      → calcEvictCost 的 τ* 与 EC 存储一致
+    end note
+  }
+}
+
+MILP -[#2196F3,dashed]-> Sim : 决策驱动\n(place / getPlacementWithSizes / getReadTransferSize)
+
+note bottom of MILP
+  **符号说明**
+  sp[i]: region i 存储单价
+  tc[i][j]: i→j 传输单价
+  tauH[i]: region i 的 τ* (小时)
+  z[i]: sigma[i] × hatTau
+  K: EC_K = 2
+end note
+
+@enduml

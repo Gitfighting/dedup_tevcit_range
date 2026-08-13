@@ -1,0 +1,13 @@
+placement_policy: "milp_ec_new_v4"
+transfer_policy: "cheapest"
+delta_enabled: false
+ec_on_patch: false
+milp_ec_v3_allow_ec: false
+regions:
+  - aws:us-east-1
+  - azure:westeurope
+  - gcp:us-west1-a
+window_size: -1
+milp_time_limit_sec: 2.0
+milp_mip_gap: 0.05
+milp_strict_fail: true

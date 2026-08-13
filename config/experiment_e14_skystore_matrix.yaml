@@ -1,0 +1,47 @@
+# E14: SkyStore 对齐实验矩阵
+# - 5 条 IBM trace（T15/T29/T65/T78/T79；Trace065→T65, Trace078→T78，非 T68/T69）
+# - 4 类访问模式 typeA–D
+# - 主对比 @ p=0.10（与 SkyStore 默认实验档一致）
+# - 扩展 p 阶梯 @ T79 typeA（11 档）
+#
+# Run: python scripts/run_e14_skystore_matrix.py
+#      python scripts/run_e14_skystore_matrix.py --phase synth
+#      python scripts/run_e14_skystore_matrix.py --phase matrix
+#      python scripts/run_e14_skystore_matrix.py --phase saturation
+
+# SkyStore 论文五条 trace（IBMObjectStoreTrace0NN）
+trace_ids: [T15, T29, T65, T78, T79]
+trace_numbers: ["015", "029", "065", "078", "079"]
+workload_types: [A, B, C, D]
+
+# 差分覆盖率：主矩阵用 p100；饱和度扫描用全阶梯
+primary_p: 0.10
+primary_p_tag: p100
+
+# 11 档压缩/覆盖率阶梯（cluster_fraction）
+saturation_fractions:
+  - 0.05
+  - 0.08
+  - 0.10
+  - 0.15
+  - 0.20
+  - 0.25
+  - 0.30
+  - 0.35
+  - 0.40
+  - 0.45
+  - 0.50
+
+saturation_trace: T79
+saturation_type: A
+
+v4_config: config/milp_ec_new_v4_3reg.yaml
+tevict_config: config/tevictranges_3reg.yaml
+vm: 5
+simversion: 3
+
+# T29: ~13M 请求；默认跳过，单独用 --phase matrix 且清空 skip_traces 后 -Xmx16g 跑
+skip_traces: [T29]
+maven_heap: 12g
+
+synth_root: results/synth/3reg

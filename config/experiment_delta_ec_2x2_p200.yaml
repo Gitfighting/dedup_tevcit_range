@@ -1,0 +1,20 @@
+# Delta x EC 2x2 — p200 (stronger delta coverage)
+trace: results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p200.delta.mc.aug
+trace_id: T79_typeA_p200
+tevict_config: config/tevictranges_3reg.yaml
+vm: 5
+simversion: 3
+
+corners:
+  - id: delta_ec
+    label: "δ+EC (V4 default)"
+    config: config/milp_ec_new_v4_3reg.yaml
+  - id: delta_rep
+    label: "δ only (replica MILP)"
+    config: config/ablation/v4_delta_rep.yaml
+  - id: nodelta_ec
+    label: "EC only (no δ)"
+    config: config/ablation/v4_nodelta_forceec.yaml
+  - id: nodelta_rep
+    label: "baseline (no δ, replica)"
+    config: config/ablation/v4_nodelta_rep.yaml

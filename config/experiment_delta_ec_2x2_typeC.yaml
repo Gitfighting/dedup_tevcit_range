@@ -1,0 +1,24 @@
+# Delta x EC 2x2 ablation on SkyStore-compatible T79 typeC traces (read-heavy).
+# Same trace rows / pricing as tevict baseline; only policy knobs differ.
+#
+# Run: python scripts/run_delta_ec_2x2.py config/experiment_delta_ec_2x2_typeC.yaml
+
+trace: results/synth/3reg/typeC/IBMObjectStoreTrace079Part0.typeC.p100.delta.mc.aug
+trace_id: T79_typeC_p100
+tevict_config: config/tevictranges_3reg.yaml
+vm: 5
+simversion: 3
+
+corners:
+  - id: delta_ec
+    label: "δ+EC (V4 default)"
+    config: config/milp_ec_new_v4_3reg.yaml
+  - id: delta_rep
+    label: "δ only (replica MILP)"
+    config: config/ablation/v4_delta_rep.yaml
+  - id: nodelta_ec
+    label: "EC only (no δ)"
+    config: config/ablation/v4_nodelta_forceec.yaml
+  - id: nodelta_rep
+    label: "baseline (no δ, replica)"
+    config: config/ablation/v4_nodelta_rep.yaml

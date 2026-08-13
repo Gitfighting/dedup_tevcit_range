@@ -1,0 +1,24 @@
+# E13: cluster_fraction (差分覆盖率 p) 扫描 — T79 typeA FP
+# Run: python scripts/run_delta_saturation_sweep.py
+
+trace_template: results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.{p_tag}.delta.mc.aug
+trace_id_prefix: T79_typeA
+fractions: [0.05, 0.1, 0.2, 0.3, 0.5]
+v4_config: config/milp_ec_new_v4_3reg.yaml
+tevict_config: config/tevictranges_3reg.yaml
+vm: 5
+simversion: 3
+
+# 跨 trace 扩展（p=0.1，与 SkyStore 论文一致）
+cross_traces:
+  - id: T15
+    trace: results/synth/3reg/typeA/IBMObjectStoreTrace015Part0.typeA.p100.delta.mc.aug
+  - id: T29
+    trace: results/synth/3reg/typeA/IBMObjectStoreTrace029Part0.typeA.p100.delta.mc.aug
+    skip: true  # 13M req, Java heap OOM on default JVM
+  - id: T65
+    trace: results/synth/3reg/typeA/IBMObjectStoreTrace065Part0.typeA.p100.delta.mc.aug
+  - id: T78
+    trace: results/synth/3reg/typeA/IBMObjectStoreTrace078Part0.typeA.p100.delta.mc.aug
+  - id: T79
+    trace: results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p100.delta.mc.aug

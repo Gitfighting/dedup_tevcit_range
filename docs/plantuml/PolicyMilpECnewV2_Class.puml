@@ -1,0 +1,92 @@
+@startuml PolicyMilpECnewV2_Class
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title **PolicyMilpECnewV2 类图**\n(策略隔离，直接继承 PlacementPolicy)
+
+package "org.example.src.placement_policy" {
+
+  abstract class PlacementPolicy {
+    # config : Config
+    # totalGraph : DiGraph
+    # logicalObjects : Map
+    # regionManager : RegionManager
+    --
+    + place(req, config) : List<String>
+    + getPlacementWithSizes(req, config) : Map<String, BigDecimal>
+    + getReadTransferSize(req, config) : BigDecimal
+    + updatePastRequests(req, placeRegion) : void
+    + getTevict(src, dst, timestamp) : double
+    + canEvict(obj, logical, allPhys, ts) : boolean
+    + getLinkedEvictionObjects(obj, logical, allPhys, ts) : List<PhysicalObject>
+  }
+
+  class PolicyMilpECnewV2 {
+    - {static} EC_K : int = 2
+    - {static} EC_M : int = 0
+    - {static} EC_N : int = 2
+    - windowStats : Map<String, RegionStats>
+    - decisions : Map<String, RegionDecision>
+    - milpEcTtlByRegion : Map<String, Double>
+    - pastRequests, hist, lastHist : Map
+    - ranges : double[]
+    - regionPairsTtl : Map
+    --
+    + place(req, config) : List<String>
+    + getPlacementWithSizes(req, config) : Map<String, BigDecimal>
+    + getReadTransferSize(req, config) : BigDecimal
+    + updatePastRequests(req, placeRegion) : void
+    + getTevict(src, dst, timestamp) : double
+    + canEvict(obj, logical, allPhys, ts) : boolean
+    + getLinkedEvictionObjects(obj, logical, allPhys, ts) : List<PhysicalObject>
+    + flushPendingEvents(now) : void
+    - updateHistogram(req, placeRegion) : void
+    - calcEvictCost(region, tevenHours, netCost) : double
+    - getReplicaTevict(src, dst, timestamp) : double
+    - solveWindowBatch(now) : void
+    - solveRegionMilp(env, regionKey, stats, ...) : void
+  }
+
+  class RegionStats <<inner>> {
+    + writeSizeGB : double
+    + readSizeGB : double
+    --
+    + addWrite(sizeGB) : void
+    + addRead(sizeGB) : void
+    + empty() : boolean
+  }
+
+  class RegionDecision <<inner>> {
+    + mode : int
+    + shardAt : boolean[]
+    + ttlHours : double
+    + decidedAtSec : long
+    --
+    + expired(nowSec) : boolean
+    + hasLocalData(regionIdx) : boolean
+  }
+
+  PlacementPolicy <|-- PolicyMilpECnewV2
+
+  PolicyMilpECnewV2 *-- RegionStats : windowStats
+  PolicyMilpECnewV2 *-- RegionDecision : decisions
+}
+
+note right of PolicyMilpECnewV2
+  **策略隔离**
+  不继承 PolicyTevictRangesNew
+  直方图 TTL 本类内实现
+  EC(2+0): 2 片
+end note
+
+note right of RegionDecision
+  **RegionDecision**
+  mode: 0=副本, 1=EC
+  shardAt: 2 个 shard region
+  ttlHours: EC 用 tauH[region]
+end note
+
+@enduml

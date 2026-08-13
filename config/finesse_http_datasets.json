@@ -1,0 +1,166 @@
+{
+  "datasets": {
+    "kernel": {
+      "description": "Linux kernel 连续补丁版 90..105 (cdn.kernel.org)。压缩 tar.xz；Range 在线读不落盘。注意：压缩包上 r 偏大/难成簇，论文级 D_r 以 sqldump 未压缩快照为主。",
+      "compressed": true,
+      "objects": [
+        {
+          "name": "linux-6.1.90.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.90.tar.xz"
+        },
+        {
+          "name": "linux-6.1.91.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.91.tar.xz"
+        },
+        {
+          "name": "linux-6.1.92.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.92.tar.xz"
+        },
+        {
+          "name": "linux-6.1.93.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.93.tar.xz"
+        },
+        {
+          "name": "linux-6.1.94.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.94.tar.xz"
+        },
+        {
+          "name": "linux-6.1.95.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.95.tar.xz"
+        },
+        {
+          "name": "linux-6.1.96.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.96.tar.xz"
+        },
+        {
+          "name": "linux-6.1.97.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.97.tar.xz"
+        },
+        {
+          "name": "linux-6.1.98.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.98.tar.xz"
+        },
+        {
+          "name": "linux-6.1.99.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.99.tar.xz"
+        },
+        {
+          "name": "linux-6.1.100.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.100.tar.xz"
+        },
+        {
+          "name": "linux-6.1.101.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.101.tar.xz"
+        },
+        {
+          "name": "linux-6.1.102.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.102.tar.xz"
+        },
+        {
+          "name": "linux-6.1.103.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.103.tar.xz"
+        },
+        {
+          "name": "linux-6.1.104.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.104.tar.xz"
+        },
+        {
+          "name": "linux-6.1.105.tar.xz",
+          "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.105.tar.xz"
+        }
+      ]
+    },
+    "sqldump": {
+      "description": "SQL Dump 未压缩 .sql（本地 file:）。有效 D_r 的核心来源；若有更多 mysqldump 可追加到 sqldump/ 或改为 https:// URL。",
+      "compressed": false,
+      "objects": [
+        {
+          "name": "thinkmobile_20200505.sql",
+          "url": "file:sqldump/thinkmobile_20200505.sql"
+        },
+        {
+          "name": "thinkmobile_20200730.sql",
+          "url": "file:sqldump/thinkmobile_20200730.sql"
+        },
+        {
+          "name": "thinkmobile_dev_20200722.sql",
+          "url": "file:sqldump/thinkmobile_dev_20200722.sql"
+        },
+        {
+          "name": "thinkmobile_dev_20200803.sql",
+          "url": "file:sqldump/thinkmobile_dev_20200803.sql"
+        }
+      ]
+    },
+    "macos": {
+      "description": "FSL macOS 2012 快照 16 个（每周）。tar.bz2 为 fs-hasher 归档；Range 可读。与论文原始 macOS 字节实验有差异，作多工作负载对照。",
+      "compressed": true,
+      "objects": [
+        {
+          "name": "macos-2012-01-05-005505.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-01-05-005505.tar.bz2"
+        },
+        {
+          "name": "macos-2012-01-12-012618.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-01-12-012618.tar.bz2"
+        },
+        {
+          "name": "macos-2012-01-19-002730.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-01-19-002730.tar.bz2"
+        },
+        {
+          "name": "macos-2012-01-26-015206.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-01-26-015206.tar.bz2"
+        },
+        {
+          "name": "macos-2012-02-02-002937.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-02-02-002937.tar.bz2"
+        },
+        {
+          "name": "macos-2012-02-09-010509.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-02-09-010509.tar.bz2"
+        },
+        {
+          "name": "macos-2012-02-16-004319.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-02-16-004319.tar.bz2"
+        },
+        {
+          "name": "macos-2012-02-23-002036.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-02-23-002036.tar.bz2"
+        },
+        {
+          "name": "macos-2012-03-01-022721.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-03-01-022721.tar.bz2"
+        },
+        {
+          "name": "macos-2012-03-08-162322.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-03-08-162322.tar.bz2"
+        },
+        {
+          "name": "macos-2012-03-15-001330.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-03-15-001330.tar.bz2"
+        },
+        {
+          "name": "macos-2012-03-22-014757.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-03-22-014757.tar.bz2"
+        },
+        {
+          "name": "macos-2012-03-29-051624.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-03-29-051624.tar.bz2"
+        },
+        {
+          "name": "macos-2012-04-05-012303.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-04-05-012303.tar.bz2"
+        },
+        {
+          "name": "macos-2012-04-12-184845.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-04-12-184845.tar.bz2"
+        },
+        {
+          "name": "macos-2012-04-19-023808.tar.bz2",
+          "url": "https://tracer.filesystems.org/traces/macos/2012/macos-2012-04-19-023808.tar.bz2"
+        }
+      ]
+    }
+  }
+}

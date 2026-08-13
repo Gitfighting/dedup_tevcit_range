@@ -82,8 +82,8 @@ public class SimulatorV2 {
 
     // 策略集合
     private final Set<String> evictionBasedPolicies = new HashSet<>(Arrays.asList(
-            "teven", "tevict", "tevict_ranges", "tevict_window", "optimal", "fixedttl", "to_keep", "ewma",
-            "dynamicttl", "adaptive_tier", "milp_ec_new", "milp_ec_new_v3"));//注册新策略
+            "teven", "tevict", "tevict_ranges", "tevict_ranges_lz4", "tevict_window", "optimal", "fixedttl", "to_keep", "ewma",
+            "dynamicttl", "adaptive_tier", "milp_ec_new", "milp_ec_new_v3", "milp_ec_new_v4", "tevict_get_ttl"));//注册新策略
     private final Set<String> otherEvictionPolicies = new HashSet<>(Arrays.asList(
             "lru", "always_evict", "pull_on_read", "replicate_all"));
     private final Set<String> spanstorePolicies = new HashSet<>(Arrays.asList("spanstore", "oracle"));
@@ -103,6 +103,8 @@ public class SimulatorV2 {
     private int misses = 0;
     private double hits_size = 0;
     private double misses_size = 0;
+    private BigDecimal logicalTransferBytes = BigDecimal.ZERO;
+    private BigDecimal wireTransferBytes = BigDecimal.ZERO;
     private Tracker tracker;
     protected PlacementPolicy placementPolicy;
     private TransferPolicy transferPolicy;
@@ -212,13 +214,115 @@ public class SimulatorV2 {
     private RegionManager regionManager;
     private final Map<String, LogicalObject> logicalObjects = new HashMap<>();
 
-    /** 扩展点：写请求时各 region 的数据量（EC 分片等）。默认 null 表示每 region 用完整 request.size。 */
+    /** 扩展点：写请求时各 region 的数据量（EC 分片 / delta r 缩放等）。 */
     protected Map<String, BigDecimal> getPlacementSizesForWrite(Request req) {
+        if (placementPolicy != null) {
+            Map<String, BigDecimal> sized = placementPolicy.getPlacementWithSizes(req, config);
+            if (sized != null) {
+                return sized;
+            }
+        }
         return null;
     }
 
-    /** 扩展点：读请求的传输数据量（EC 时只需拉 1 片）。默认 null 表示用完整 request.size。 */
+    /** 扩展点：读 miss 后在 reader 落盘的体积（必须为 logical 全对象大小）。 */
+    protected Map<String, BigDecimal> getPlacementSizesForRead(Request req) {
+        if (placementPolicy != null) {
+            Map<String, BigDecimal> sized = placementPolicy.getPlacementWithSizes(req, config);
+            if (sized != null) {
+                return sized;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isFullReplicaSize(BigDecimal physicalSize, BigDecimal logicalSize) {
+        return physicalSize != null && logicalSize != null && physicalSize.compareTo(logicalSize) >= 0;
+    }
+
+    private static boolean shouldWatchObject(String objKey) {
+        String prefix = System.getProperty("skystore.watchObjPrefix");
+        return prefix != null && !prefix.isEmpty() && objKey != null && objKey.contains(prefix);
+    }
+
+    /**
+     * Remote regions with a ready copy for tevict TTL / net-cost selection.
+     * MILP EC policies exclude EC shards so pair-TTL refresh matches tevict_ranges (full replicas only).
+     */
+    private List<String> collectRemoteReadyRegions(LogicalObject lo, String issueRegion, Instant at) {
+        return org.example.src.utils.TevictRegionList.collectRemoteReadyRegions(lo, issueRegion, at,
+                isMilpEcV3Family(String.valueOf(config.placementPolicy)));
+    }
+
+    private double netCostFromRemoteRegions(List<String> regionList, String issueRegion) {
+        if (regionList.isEmpty()) {
+            return this.medianNetworkCost;
+        }
+        String src = regionList.stream()
+                .min((x, y) -> {
+                    Number costX = (Number) totalGraph.getEdgeAttr(x, issueRegion, "cost");
+                    Number costY = (Number) totalGraph.getEdgeAttr(y, issueRegion, "cost");
+                    int cmp = Double.compare(costX.doubleValue(), costY.doubleValue());
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                    Number latX = (Number) totalGraph.getEdgeAttr(x, issueRegion, "latency");
+                    Number latY = (Number) totalGraph.getEdgeAttr(y, issueRegion, "latency");
+                    return Double.compare(latX.doubleValue(), latY.doubleValue());
+                })
+                .get();
+        return ((Number) totalGraph.getEdgeAttr(src, issueRegion, "cost")).doubleValue();
+    }
+
+    private static final class TevictTtlPick {
+        final String readRegion;
+        final double ttlSeconds;
+
+        TevictTtlPick(String readRegion, double ttlSeconds) {
+            this.readRegion = readRegion;
+            this.ttlSeconds = ttlSeconds;
+        }
+    }
+
+    private TevictTtlPick selectTevictTtlFromRegions(String objKey, String issueRegion, Instant timestamp,
+            List<String> regionList) {
+        String readRegion = null;
+        Double setTtl = null;
+        for (String readR : regionList) {
+            double tempTtl = placementPolicy.getTevict(readR, issueRegion, timestamp);
+            PhysicalObject phys = logicalObjects.get(objKey).physicalObjects.get(readR);
+            if (readRegion == null
+                    || phys.getTtl() == -1
+                    || (tempTtl < setTtl
+                            && timestamp.plus(Duration.ofSeconds((long) tempTtl))
+                                    .isBefore(phys.getStorageStartTime()
+                                            .plus(Duration.ofSeconds(phys.getTtl()))))) {
+                readRegion = readR;
+                setTtl = tempTtl;
+            }
+        }
+        return new TevictTtlPick(readRegion, setTtl);
+    }
+
+    private void logTevictTtlWatch(String path, Request request, String dst, List<String> regionList,
+            TevictTtlPick pick, double ttlValue, int appliedTtl) {
+        if (!shouldWatchObject(request.objKey)) {
+            return;
+        }
+        org.example.src.utils.Logger.info(String.format(
+                "[TTL-WATCH] path=%s ts=%s op=%s issue=%s dst=%s key=%s region_list=%s read_r=%s set_ttl=%.1f applied_ttl=%d",
+                path, request.timestamp, request.op, request.issueRegion, dst, request.objKey, regionList,
+                pick != null ? pick.readRegion : null, pick != null ? pick.ttlSeconds : ttlValue, appliedTtl));
+    }
+
+    /** 扩展点：读请求的传输数据量（EC 分片 / delta §7.4 恢复等）。 */
     protected BigDecimal getReadTransferSize(Request req) {
+        if (placementPolicy != null) {
+            BigDecimal xfer = placementPolicy.getReadTransferSize(req, config);
+            if (xfer != null) {
+                return xfer;
+            }
+        }
         return null;
     }
 
@@ -260,16 +364,18 @@ public class SimulatorV2 {
 
         // Update past requests for tevict-like policies (Python-aligned: read-only).
         String pp = String.valueOf(config.placementPolicy);
-        boolean shouldUpdatePast = (("tevict_ranges".equals(pp)
+        boolean shouldUpdatePast = ((isTevictRangesFamily(pp)
                 || "tevict".equals(pp)
                 || "tevict_window".equals(pp)
-                || "milp_ec_new_v3".equals(pp))
+                || isMilpEcV3Family(pp))
                 && "read".equals(op));
         if (shouldUpdatePast) {
             placementPolicy.updatePastRequests(request, request.issueRegion);
         }
 
-        Map<String, BigDecimal> placementSizes = "write".equals(op) ? getPlacementSizesForWrite(request) : null;
+        Map<String, BigDecimal> placementSizes = "write".equals(op)
+                ? getPlacementSizesForWrite(request)
+                : getPlacementSizesForRead(request);
         List<Long> transfer_times = new ArrayList<>();
         for (int i = 0; i < transfer_graphs.size(); i++) {//每个传输图一轮
            DiGraph transfer_graph = transfer_graphs.get(i);
@@ -476,39 +582,12 @@ public class SimulatorV2 {
                         // Simulate a cache hit: Handle refresh TTL for other eviction policies (teven,
                         // tevict, fixedttl)
                         List<String> evictionPolicies = Arrays.asList("teven", "tevict", "tevict_ranges",
-                                "tevict_window", "dynamicttl", "milp_ec_new_v3");
+                                "tevict_ranges_lz4", "tevict_window", "dynamicttl", "milp_ec_new_v3", "milp_ec_new_v4");
                         if (evictionPolicies.contains(String.valueOf(config.placementPolicy))) {
-                            List<String> region_list = new ArrayList<>();
-                            for (org.example.src.model.PhysicalObject obj : logicalObjects.get(key).physicalObjects
-                                    .values()) {
-                                if (!obj.getLocationTag().equals(request.issueRegion) && obj.ready(request.timestamp)) {
-                                    region_list.add(obj.getLocationTag());
-                                }
-                            }
+                            List<String> region_list = collectRemoteReadyRegions(
+                                    logicalObjects.get(key), request.issueRegion, request.timestamp);
 
-                            double net_cost;
-                            if (region_list.isEmpty()) {
-                                net_cost = this.medianNetworkCost;
-                            } else {
-                                String src_2 = region_list.stream()
-                                        .min((x, y) -> {
-                                            Number costX = (Number) totalGraph.getEdgeAttr(x, request.issueRegion,
-                                                    "cost");
-                                            Number costY = (Number) totalGraph.getEdgeAttr(y, request.issueRegion,
-                                                    "cost");
-                                            int cmp = Double.compare(costX.doubleValue(), costY.doubleValue());
-                                            if (cmp != 0)
-                                                return cmp;
-                                            Number latX = (Number) totalGraph.getEdgeAttr(x, request.issueRegion,
-                                                    "latency");
-                                            Number latY = (Number) totalGraph.getEdgeAttr(y, request.issueRegion,
-                                                    "latency");
-                                            return Double.compare(latX.doubleValue(), latY.doubleValue());
-                                        })
-                                        .get();
-                                net_cost = ((Number) totalGraph.getEdgeAttr(src_2, request.issueRegion, "cost"))
-                                        .doubleValue();
-                            }
+                            double net_cost = netCostFromRemoteRegions(region_list, request.issueRegion);
 
                             Number priceStorageNum = (Number) totalGraph.getNodeAttr(request.issueRegion,
                                     "priceStorage");
@@ -519,36 +598,19 @@ public class SimulatorV2 {
 
                             double ttlValue = (net_cost / priceStorageVal) * 60 * 60 * 24 / 3;
 
-                            if ("tevict".equals(String.valueOf(config.placementPolicy))
-                                    || "tevict_ranges".equals(String.valueOf(config.placementPolicy))
+                            TevictTtlPick tevictPick = null;
+                            if (isTevictRangesFamily(String.valueOf(config.placementPolicy))
+                                    || "tevict".equals(String.valueOf(config.placementPolicy))
                                     || "tevict_window".equals(String.valueOf(config.placementPolicy))
-                                    || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))) {
+                                    || isMilpEcV3Family(String.valueOf(config.placementPolicy))) {
                                 if (!region_list.isEmpty()) {
-                                    String read_region = null;
-                                    Double set_ttl = null;
-                                    for (String read_r : region_list) {
-                                        double temp_ttl = placementPolicy.getTevict(read_r, request.issueRegion,
-                                                request.timestamp);
-                                        org.example.src.model.PhysicalObject phys = logicalObjects
-                                                .get(request.objKey).physicalObjects.get(read_r);
-                                        if (read_region == null
-                                                || phys.getTtl() == -1
-                                                || (temp_ttl < set_ttl
-                                                        && request.timestamp.plus(Duration.ofSeconds((long) temp_ttl))
-                                                                .isBefore(phys.getStorageStartTime()
-                                                                        .plus(Duration.ofSeconds(phys.getTtl()))))) {
-                                            read_region = read_r;
-                                            set_ttl = temp_ttl;
-                                        }
-                                    }
-                                    ttlValue = set_ttl;
-                                } else if ("milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))) {
-                                    double ecTtl = placementPolicy.getTevict(physical_object_region,
-                                            request.issueRegion, request.timestamp);
-                                    if (ecTtl > 0) {
-                                        ttlValue = ecTtl;
-                                    }
+                                    tevictPick = selectTevictTtlFromRegions(
+                                            request.objKey, request.issueRegion, request.timestamp, region_list);
+                                    ttlValue = tevictPick.ttlSeconds;
                                 }
+                                // When region_list is empty, keep teven formula (same as tevict_ranges). Do not call
+                                // getTevict here: src==issue on local refresh would roll pair-TTL histogram cold and
+                                // later cross-region placements can get ttl=0.
                             } else if ("dynamicttl".equals(String.valueOf(config.placementPolicy))) {
                                 ttlValue = placementPolicy.getTtl(request.issueRegion, ttlValue);
                             }
@@ -557,6 +619,13 @@ public class SimulatorV2 {
                             onTtlComputed(request);
 
                             int ttl_rounded = (int) Math.round(ttlValue);
+                            if (tevictPick != null || (isTevictRangesFamily(String.valueOf(config.placementPolicy))
+                                    || "tevict".equals(String.valueOf(config.placementPolicy))
+                                    || "tevict_window".equals(String.valueOf(config.placementPolicy))
+                                    || isMilpEcV3Family(String.valueOf(config.placementPolicy)))) {
+                                logTevictTtlWatch("read-refresh", request, physical_object_region, region_list,
+                                        tevictPick, ttlValue, ttl_rounded);
+                            }
                             long storageDuration = Duration
                                     .between(physical_object.getStorageStartTime(), request.timestamp).getSeconds();
                             physical_object.setTtl((int) (ttl_rounded + storageDuration));
@@ -567,19 +636,33 @@ public class SimulatorV2 {
 
             // Schedule the completion of the transfer after the transfer time
             if (!schedule_place_region.isEmpty() && cache_regions.contains(schedule_place_region)) {
+                LogicalObject logicalObject = logicalObjects.get(request.objKey);
+                BigDecimal logicalFullSize = logicalObject.getSize() != null ? logicalObject.getSize() : request.size;
+                org.example.src.model.PhysicalObject existingAtPlace = logicalObject.physicalObjects
+                        .get(schedule_place_region);
+
                 // Handle overwrite for WRITE operations: if object exists, remove it to
                 // finalize cost and allow new version
                 if ("write".equals(op)
-                        && logicalObjects.get(request.objKey).physicalObjects.containsKey(schedule_place_region)) {
-                    org.example.src.model.PhysicalObject oldObj = logicalObjects.get(request.objKey).physicalObjects
-                            .get(schedule_place_region);
+                        && existingAtPlace != null) {
+                    org.example.src.model.PhysicalObject oldObj = existingAtPlace;
                     // Remove old object at the time the new one would start (or roughly now)
                     regionManager.removeObjectFromRegion(schedule_place_region, oldObj,
                             current_timestamp.plusMillis(transfer_time_millis));
-                    logicalObjects.get(request.objKey).physicalObjects.remove(schedule_place_region);
+                    logicalObject.physicalObjects.remove(schedule_place_region);
+                    existingAtPlace = null;
                 }
 
-                if (!logicalObjects.get(request.objKey).physicalObjects.containsKey(schedule_place_region)) {
+                // READ miss cache: upgrade a local shard/patch to a full replica after paid transfer.
+                if ("read".equals(op) && existingAtPlace != null
+                        && !isFullReplicaSize(existingAtPlace.getSize(), logicalFullSize)) {
+                    regionManager.removeObjectFromRegion(schedule_place_region, existingAtPlace,
+                            current_timestamp.plusMillis(transfer_time_millis));
+                    logicalObject.physicalObjects.remove(schedule_place_region);
+                    existingAtPlace = null;
+                }
+
+                if (!logicalObject.physicalObjects.containsKey(schedule_place_region)) {
                     if (!config.fixedBaseRegion
                             && logicalObjects.get(request.objKey).physicalObjects.size() == 1) {
                         for (Map.Entry<String, org.example.src.model.PhysicalObject> entry : logicalObjects
@@ -600,11 +683,16 @@ public class SimulatorV2 {
 
                     int obj_ttl = calculateTtl(request, current_timestamp, srcNode, schedule_place_region);
                     BigDecimal objSize = (placementSizes != null && placementSizes.containsKey(schedule_place_region))
-                            ? placementSizes.get(schedule_place_region) : request.size;
+                            ? placementSizes.get(schedule_place_region)
+                            : ("read".equals(op) ? logicalFullSize : request.size);
+                    BigDecimal storedObjSize = org.example.src.utils.TransferCompression.effectiveSize(
+                            request, objSize, Boolean.TRUE.equals(config.storageCompressionEnabled),
+                            config.lz4RatioDefault);
+
                     org.example.src.model.PhysicalObject phys_object = new org.example.src.model.PhysicalObject(
                             schedule_place_region,
                             request.objKey,
-                            objSize,
+                            storedObjSize,
                             obj_ttl,
                             logicalObjects.get(request.objKey),
                             org.example.src.model.Status.ready,
@@ -645,91 +733,37 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
                 // self.tevens.append(ttl / 3600)
 
             } else if ("tevict".equals(String.valueOf(config.placementPolicy))
-                    || "tevict_ranges".equals(String.valueOf(config.placementPolicy))
+                    || isTevictRangesFamily(String.valueOf(config.placementPolicy))
                     || "tevict_window".equals(String.valueOf(config.placementPolicy))
                     || "hystore_ec".equals(String.valueOf(config.placementPolicy))
                     || "hystore_lrc".equals(String.valueOf(config.placementPolicy))
                     || "milp_ec_new".equals(String.valueOf(config.placementPolicy))
-                    || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))) {//TTL注册新策略
+                    || isMilpEcV3Family(String.valueOf(config.placementPolicy))) {//TTL注册新策略
 
-                List<String> region_list = new ArrayList<>();
-                for (PhysicalObject obj : logicalObjects.get(obj_key).physicalObjects.values()) {
-                    if (!obj.getLocationTag().equals(request.issueRegion) && obj.ready(request.timestamp)) {
-                        region_list.add(obj.getLocationTag());
-                    }
-                }//收集issueregion以外已有副本的region
+                List<String> region_list = collectRemoteReadyRegions(
+                        logicalObjects.get(obj_key), request.issueRegion, request.timestamp);
 
-                if (!region_list.isEmpty()) {
-                }
-
-                double net_cost;
-                if (region_list.isEmpty()) {//region_list为空时，使用中位数网络成本
-                    net_cost = this.medianNetworkCost;
-                } else {
-                    String src_2 = region_list.stream()//region_list不为空时，使用最小成本节点
-                            .min((x, y) -> {
-                                Number costX = (Number) totalGraph.getEdgeAttr(x, request.issueRegion, "cost");
-                                Number costY = (Number) totalGraph.getEdgeAttr(y, request.issueRegion, "cost");
-                                int cmp = Double.compare(costX.doubleValue(), costY.doubleValue());
-                                if (cmp != 0)
-                                    return cmp;
-                                Number latX = (Number) totalGraph.getEdgeAttr(x, request.issueRegion, "latency");
-                                Number latY = (Number) totalGraph.getEdgeAttr(y, request.issueRegion, "latency");
-                                return Double.compare(latX.doubleValue(), latY.doubleValue());
-                            })
-                            .get();
-                    net_cost = ((Number) totalGraph.getEdgeAttr(src_2, request.issueRegion, "cost")).doubleValue();
-                }
+                double net_cost = netCostFromRemoteRegions(region_list, request.issueRegion);
 
                 Number priceStorageNum = (Number) totalGraph.getNodeAttr(request.issueRegion, "priceStorage");
                 double priceStorageVal = priceStorageNum.doubleValue();
 
                 double ttlValue = (net_cost / priceStorageVal) * 60 * 60 * 24 / 3;
 
-                // milp_ec_new_v3: on write path only — when 12h pair-TTL histogram advances, solve MILP so coeffs match TTL.
-                if ("milp_ec_new_v3".equals(String.valueOf(config.placementPolicy))
-                        && placementPolicy instanceof PolicyMilpECnewV3) {
-                    PolicyMilpECnewV3 v3 =
-                            (PolicyMilpECnewV3) placementPolicy;
-                    if (region_list.isEmpty()) {
-                        v3.syncMilpIfHistogramTtlAdvanced(request, dst);
-                    } else {
-                        v3.syncMilpIfHistogramTtlAdvanced(request, request.issueRegion);
-                    }
-                }
-
-                // milp_ec_new / milp_ec_new_v3: region_list 为空时（r0 分片首次写），也通过 getTevict 获取 MILP 统一 TTL
-                if (("milp_ec_new".equals(String.valueOf(config.placementPolicy))
-                        || "milp_ec_new_v3".equals(String.valueOf(config.placementPolicy)))
-                        && region_list.isEmpty()) {
-                    double ecTtl = placementPolicy.getTevict(source, dst, request.timestamp);
-                    if (ecTtl > 0) ttlValue = ecTtl;
-                }
+                // Pair-TTL via getTevict only when remote copies exist (tevict_ranges parity).
+                TevictTtlPick tevictPick = null;
 
                 if (!region_list.isEmpty()) {
-                    String read_region = null;
-                    Double set_ttl = null;
-                    for (String read_r : region_list) {
-                        double temp_ttl = placementPolicy.getTevict(read_r, request.issueRegion, request.timestamp);
-                        org.example.src.model.PhysicalObject phys = logicalObjects.get(obj_key).physicalObjects
-                                .get(read_r);
-                        if (read_region == null
-                                || phys.getTtl() == -1
-                                || (temp_ttl < set_ttl
-                                        && request.timestamp.plus(Duration.ofSeconds((long) temp_ttl))
-                                                .isBefore(phys.getStorageStartTime()
-                                                        .plus(Duration.ofSeconds(phys.getTtl()))))) {
-                            read_region = read_r;
-                            set_ttl = temp_ttl;
-                        }
-                    }
-                    ttlValue = set_ttl;
+                    tevictPick = selectTevictTtlFromRegions(
+                            obj_key, request.issueRegion, request.timestamp, region_list);
+                    ttlValue = tevictPick.ttlSeconds;
                 }
 
                 // Extension hook right after TTL computed.
                 onTtlComputed(request);
 
                 ttl = (int) Math.round(ttlValue);
+                logTevictTtlWatch("calculateTtl", request, dst, region_list, tevictPick, ttlValue, ttl);
                 // self.tevens.append(ttl / 3600)
 
             } else if ("fixedttl".equals(String.valueOf(config.placementPolicy))) {
@@ -782,6 +816,19 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
 
             } else if ("always_evict".equals(String.valueOf(config.placementPolicy))) {
                 ttl = 0;
+
+            } else if ("tevict_get_ttl".equals(String.valueOf(config.placementPolicy))) {
+                if (config.cacheTtl != null && config.cacheTtl > 0) {
+                    ttl = (int) Math.round(config.cacheTtl * 60 * 60);
+                } else {
+                    Number costNum = (Number) totalGraph.getEdgeAttr(source, dst, "cost");
+                    double net_cost = costNum != null ? costNum.doubleValue() : 0;
+                    if (!config.fixedBaseRegion && net_cost == 0) {
+                        net_cost = this.medianNetworkCost;
+                    }
+                    Number priceStorage = (Number) totalGraph.getNodeAttr(dst, "priceStorage");
+                    ttl = (int) Math.round((net_cost / priceStorage.doubleValue()) * 60 * 60 * 24 / 3);
+                }
 
             } else if ("replicate_all".equals(String.valueOf(config.placementPolicy))) {
                 ttl = -1;
@@ -939,12 +986,32 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
                 } catch (Exception e) {
                     req.size = BigDecimal.ZERO;
                 }
+                if (Boolean.TRUE.equals(config.transferCompressionEnabled)) {
+                    String cs = row.get("compressed_size");
+                    if (cs != null && !cs.trim().isEmpty()) {
+                        try {
+                            req.compressedSize = new BigDecimal(cs.trim());
+                        } catch (Exception e) {
+                            throw new IllegalArgumentException(
+                                    "Invalid compressed_size for " + req.objKey + ": " + cs, e);
+                        }
+                    } else if (config.lz4RatioDefault == null
+                            || config.lz4RatioDefault <= 0.0
+                            || config.lz4RatioDefault > 1.0) {
+                        throw new IllegalArgumentException(
+                                "Compression is enabled but compressed_size is missing and "
+                                        + "lz4_ratio_default is unset/invalid for " + req.objKey);
+                    }
+                    // else: leave compressedSize null → TransferCompression uses lz4RatioDefault
+                }
                 if (requestData.get("next_access_timestamp") instanceof Instant) {
                     req.nextAccessTimestamp = (Instant) requestData.get("next_access_timestamp");
                 }
                 Object nasr = requestData.get("time_to_next_access_same_reg");
                 if (nasr instanceof Instant)
                     req.nextAccessSameRegTimestamp = (Instant) nasr;
+
+                applyDeltaColumnsFromRow(row, req);
 
                 String obj_key = req.objKey;
 
@@ -969,9 +1036,11 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
                                 obj_key, req.size, req.timestamp, org.example.src.model.Status.ready);
                     }
                     this.logicalObjects.put(obj_key, logical_obj);
+                    applyDeltaColumnsToLogical(row, logical_obj);
                 } else {
                     // Update access time of the object if accessed again (e.g. LRU)
                     this.logicalObjects.get(obj_key).setLastModified(req.timestamp);
+                    applyDeltaColumnsToLogical(row, this.logicalObjects.get(obj_key));
                 }
 
                 // Extension hook for policy-specific per-request timing.
@@ -1377,7 +1446,12 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
         if (edges.isEmpty()) {
             return new TransferMetrics(0, 0, 0, 0);
         }
-        BigDecimal effectiveSize = (sizeOverride != null) ? sizeOverride : request.size;
+        BigDecimal logicalSize = (sizeOverride != null) ? sizeOverride : request.size;
+        BigDecimal effectiveSize = org.example.src.utils.TransferCompression.effectiveSize(
+                request, sizeOverride, Boolean.TRUE.equals(config.transferCompressionEnabled),
+                config.lz4RatioDefault);
+        logicalTransferBytes = logicalTransferBytes.add(logicalSize);
+        wireTransferBytes = wireTransferBytes.add(effectiveSize);
         int numPartitions = ((Number) edges.get(0).attrs.getOrDefault("num_partitions", 1)).intValue();
 
         // Calculate minimum throughput across all edges 2. 计算吞吐量
@@ -1528,6 +1602,12 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
         } else if ("tevict_ranges".equals(policy_type)) {
             return new PolicyTevictRangesNew(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);
+        } else if ("tevict_ranges_lz4".equals(policy_type)) {
+            return new PolicyTevictRangesLz4(this.config, this.totalGraph,
+                    this.logicalObjects, this.regionManager);
+        } else if ("tevict_get_ttl".equals(policy_type)) {
+            return new PolicyTevictGetTtl(this.config, this.totalGraph,
+                    this.logicalObjects, this.regionManager);
         } else if ("optimal".equals(policy_type)) {
             return new PolicyOptimalV2(this.config, this.totalGraph,
                     this.logicalObjects,
@@ -1555,6 +1635,9 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
         } else if ("milp_ec_new_v3".equals(policy_type)) {
             return new PolicyMilpECnewV3(this.config, this.totalGraph,
                     this.logicalObjects, this.regionManager);//注册新策略
+        } else if ("milp_ec_new_v4".equals(policy_type)) {
+            return new PolicyMilpECnewV4(this.config, this.totalGraph,
+                    this.logicalObjects, this.regionManager);
         } else {
             System.err.println("Error: Unknown placement policy type: [" + policy_type + "]");
             throw new IllegalArgumentException("Invalid placement policy type: " + policy_type);
@@ -1571,7 +1654,7 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
             return new ClosestTransfer(this.config, this.totalGraph,
                     this.logicalObjects);
         } else if ("cheapest".equals(policy_type)) {
-            if ("milp_ec_new_v3".equals(String.valueOf(this.config.placementPolicy))) {
+            if (isMilpEcV3Family(String.valueOf(this.config.placementPolicy))) {
                 return new CheapestTransferV3(this.config, this.totalGraph,
                         this.logicalObjects, this.regionManager, placement_policy);//注册最便宜的运输路径策略
             }
@@ -1637,6 +1720,15 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
             metrics.put("tag", tag);
             metrics.put("trace_path", this.tracePath);
             metrics.put("config_policy", this.config.placementPolicy);
+            metrics.put("transfer_compression_enabled", Boolean.TRUE.equals(config.transferCompressionEnabled));
+            metrics.put("storage_compression_enabled", Boolean.TRUE.equals(config.storageCompressionEnabled));
+            metrics.put("transfer_compression_algorithm", config.transferCompressionAlgorithm);
+            metrics.put("logical transfer bytes", logicalTransferBytes);
+            metrics.put("wire transfer bytes", wireTransferBytes);
+            metrics.put("saved transfer bytes", logicalTransferBytes.subtract(wireTransferBytes));
+            metrics.put("wire/logical transfer ratio",
+                    logicalTransferBytes.signum() == 0 ? 1.0
+                            : wireTransferBytes.divide(logicalTransferBytes, 12, RoundingMode.HALF_UP).doubleValue());
             metrics.put("timestamp", timestamp);
 
             // Write to JSON file
@@ -1651,6 +1743,49 @@ if (!config.fixedBaseRegion || !dst.equals(logicalObjects.get(obj_key).baseRegio
         } catch (Exception e) {
             System.err.println("Failed to write results to JSON: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private static boolean isMilpEcV3Family(String pp) {
+        return "milp_ec_new_v3".equals(pp) || "milp_ec_new_v4".equals(pp);
+    }
+
+    /** SkyStore tevict_ranges and compression ablation sibling (same TTL/hist). */
+    private static boolean isTevictRangesFamily(String pp) {
+        return "tevict_ranges".equals(pp) || "tevict_ranges_lz4".equals(pp);
+    }
+
+    private void applyDeltaColumnsFromRow(Map<String, String> row, Request req) {
+        // Only delta-aware policies consume these columns; gating keeps baselines provably zero-impact.
+        if (!Boolean.TRUE.equals(config.deltaEnabled) || !row.containsKey("is_base")) {
+            return;
+        }
+        String isBaseStr = row.get("is_base");
+        req.isBase = isBaseStr == null || isBaseStr.trim().isEmpty()
+                || "1".equals(isBaseStr.trim()) || "true".equalsIgnoreCase(isBaseStr.trim());
+        String bk = row.get("base_key");
+        req.baseKey = (bk == null || bk.trim().isEmpty()) ? null : bk.trim();
+        try {
+            req.deltaRatio = Double.parseDouble(row.getOrDefault("delta_ratio", "1.0"));
+        } catch (NumberFormatException e) {
+            req.deltaRatio = 1.0;
+        }
+    }
+
+    private void applyDeltaColumnsToLogical(Map<String, String> row, org.example.src.model.LogicalObject lo) {
+        // Only delta-aware policies consume these columns; gating keeps baselines provably zero-impact.
+        if (!Boolean.TRUE.equals(config.deltaEnabled) || !row.containsKey("is_base")) {
+            return;
+        }
+        lo.isBase = row.get("is_base") == null || row.get("is_base").trim().isEmpty()
+                || "1".equals(row.get("is_base").trim())
+                || "true".equalsIgnoreCase(row.get("is_base").trim());
+        String bk = row.get("base_key");
+        lo.baseKey = (bk == null || bk.trim().isEmpty()) ? null : bk.trim();
+        try {
+            lo.deltaRatio = Double.parseDouble(row.getOrDefault("delta_ratio", "1.0"));
+        } catch (NumberFormatException e) {
+            lo.deltaRatio = 1.0;
         }
     }
 }

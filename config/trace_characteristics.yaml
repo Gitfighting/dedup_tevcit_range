@@ -1,0 +1,28 @@
+# Trace Table-2 式画像（PolicyMilpECnewV4_Design.md §9.1）
+
+output_dir: results/trace_characteristics
+
+trace_globs:
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace015Part0.typeA.mc.aug"
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace029Part0.typeA.mc.aug"
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace065Part0.typeA.mc.aug"
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace078Part0.typeA.mc.aug"
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.mc.aug"
+  - "results/synth/3reg/typeA/IBMObjectStoreTrace015Part0.typeA.p100.delta.mc.aug"
+  - "results/synth/3reg/typeA/IBMObjectStoreTrace029Part0.typeA.p100.delta.mc.aug"
+  - "results/synth/3reg/typeA/IBMObjectStoreTrace065Part0.typeA.p100.delta.mc.aug"
+  - "results/synth/3reg/typeA/IBMObjectStoreTrace078Part0.typeA.p100.delta.mc.aug"
+  - "results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p100.delta.mc.aug"
+
+size_buckets_bytes:
+  tiny: [0, 1024]
+  small: [1024, 1048576]
+  medium: [1048576, 1073741824]
+  large: [1073741824, 9223372036854775807]
+
+get_freq_buckets:
+  one_hit: [1, 1]
+  cold: [2, 10]
+  warm: [11, 100]
+  hot: [101, 1000]
+  super_hot: [1001, 9223372036854775807]

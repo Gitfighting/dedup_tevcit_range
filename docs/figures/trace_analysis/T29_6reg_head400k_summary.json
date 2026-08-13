@@ -1,0 +1,49 @@
+{
+  "trace_file": "Data\\6reg\\6reg\\typeA\\IBMObjectStoreTrace029Part0.typeA.mc.aug-versioned",
+  "rows_analyzed": 400000,
+  "max_rows_limit": 400000,
+  "time_ms": {
+    "min": 0,
+    "max": 0,
+    "span_ms": 1
+  },
+  "duration_human": "0.0000 days",
+  "overall_rps": 400000000.0,
+  "ops": {
+    "PUT": 400000
+  },
+  "get_put_ratio_requests": 0.0,
+  "bytes": {
+    "total_declared_size_sum": 423811758,
+    "get_sum": 0,
+    "put_sum": 423811758,
+    "avg_bytes_per_request": 1059.5294
+  },
+  "unique_objects": 400000,
+  "object_frequency": {
+    "max_per_object": 1,
+    "mean_per_object": 1.0
+  },
+  "size_buckets": {
+    "<1 KiB": 362255,
+    "1 KiB - 1 MiB": 37745
+  },
+  "regions": 6,
+  "time_to_next_access": {
+    "column_present": true,
+    "value_minus_one_rows": 0,
+    "valid_next_timestamp_rows": 400000,
+    "fraction_valid": 1.0
+  },
+  "time_to_next_access_same_reg": {
+    "column_present": true,
+    "value_minus_one_rows": 269726,
+    "valid_same_reg_rows": 130274,
+    "fraction_valid": 0.325685
+  },
+  "cross_region_pattern": {
+    "global_next_and_same_reg_next": 130274,
+    "global_next_but_same_reg_none": 269726,
+    "fraction_global_next_same_reg_none": 0.674315
+  }
+}

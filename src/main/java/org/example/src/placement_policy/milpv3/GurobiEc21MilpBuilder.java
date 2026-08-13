@@ -118,16 +118,13 @@ public final class GurobiEc21MilpBuilder {
                 model.addConstr(x[baseIndex], GRB.EQUAL, 0.0, "fb_fixed_base_x0");
             }
 
-            // Non-base: x_r + z <= 1 (replica layout excludes EC). Base (non-FB): x_base + z <= 2 so EC (z=1) may still keep x_base.
-            // FB: skip x+z at base — replica there is mandatory/off-variable; shards still use y at base.
+            // Replica and EC are mutually exclusive per region. FB skips x+z at base (mandatory replica is off-variable).
             for (int r = 0; r < n; r++) {
                 if (!fbFixedBase || r != baseIndex) {
                     GRBLinExpr c1 = new GRBLinExpr();
                     c1.addTerm(1.0, x[r]);
                     c1.addTerm(1.0, z);
-                    boolean atBase = baseIndex >= 0 && baseIndex < n && r == baseIndex;
-                    model.addConstr(c1, GRB.LESS_EQUAL, atBase ? 2.0 : 1.0,
-                            atBase ? "x_base_plus_z_le_2" : "x_le_1mz_" + r);
+                    model.addConstr(c1, GRB.LESS_EQUAL, 1.0, "x_le_1mz_" + r);
                 }
                 for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     GRBLinExpr c2 = new GRBLinExpr();
@@ -137,7 +134,7 @@ public final class GurobiEc21MilpBuilder {
                 }
             }
 
-            // Coverage: non-FB uses sum x + z >= 1 and x_base + z >= 1. FB: base replica is always on (objective constant); optional extra replicas via x[r], r!=base only — no lower bound on x.
+            // Coverage: FP (tevict-aligned) picks one replica region OR EC; FB keeps mandatory base replica in objective constant.
             if (!fbFixedBase) {
                 GRBLinExpr sx = new GRBLinExpr();
                 for (int r = 0; r < n; r++) {
@@ -145,14 +142,12 @@ public final class GurobiEc21MilpBuilder {
                 }
                 sx.addTerm(1.0, z);
                 model.addConstr(sx, GRB.GREATER_EQUAL, 1.0, "sum_x_ge_1mz");
-                if (baseIndex >= 0 && baseIndex < n) {
-                    GRBLinExpr xb = new GRBLinExpr();
-                    xb.addTerm(1.0, x[baseIndex]);
-                    xb.addTerm(1.0, z);
-                    model.addConstr(xb, GRB.GREATER_EQUAL, 1.0, "x_base_ge_1mz");
+                GRBLinExpr repOnly = new GRBLinExpr();
+                for (int r = 0; r < n; r++) {
+                    repOnly.addTerm(1.0, x[r]);
                 }
-            }
-            if (baseIndex >= 0 && baseIndex < n) {
+                model.addConstr(repOnly, GRB.LESS_EQUAL, 1.0, "fp_at_most_one_replica");
+            } else if (baseIndex >= 0 && baseIndex < n) {
                 GRBLinExpr extraRep = new GRBLinExpr();
                 for (int r = 0; r < n; r++) {
                     if (r != baseIndex) {
@@ -184,7 +179,17 @@ public final class GurobiEc21MilpBuilder {
                 model.addConstr(row, GRB.LESS_EQUAL, 1.0, "sum_y_le_1_r" + r);
             }
 
+            int issueIdx = issueRegion != null ? regions.indexOf(issueRegion) : -1;
+            if (fbFixedBase && issueIdx >= 0 && issueIdx < n) {
+                GRBLinExpr localShards = new GRBLinExpr();
+                for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
+                    localShards.addTerm(1.0, y[issueIdx][k]);
+                }
+                model.addConstr(localShards, GRB.GREATER_EQUAL, z, "ec_local_shard_at_issue");
+            }
+
             // minimize constant(FB base replica if any) + Σ_r sRep[r]*x[r] + Σ_{r,k} sEc[r][k]*y[r][k]
+            // + read-miss local full-replica cache (w = 1 when z=1, or z=0 without x at issue)
             GRBLinExpr obj = new GRBLinExpr();
             obj.addConstant(coeff.fbBaseReplicaObjectiveConstant);
             for (int r = 0; r < n; r++) {
@@ -192,6 +197,18 @@ public final class GurobiEc21MilpBuilder {
                 for (int k = 0; k < NUM_EC_SHARD_SLOTS; k++) {
                     obj.addTerm(coeff.sEc[r][k], y[r][k]);
                 }
+            }
+            if (issueIdx >= 0 && issueIdx < n && coeff.localReadCacheCost > 0.0) {
+                GRBVar readMissLocal = model.addVar(0, 1, 0, GRB.BINARY, "read_miss_local_cache");
+                GRBLinExpr wGeZ = new GRBLinExpr();
+                wGeZ.addTerm(1.0, readMissLocal);
+                wGeZ.addTerm(-1.0, z);
+                model.addConstr(wGeZ, GRB.GREATER_EQUAL, 0.0, "read_miss_local_ge_z");
+                GRBLinExpr wGeOneMinusX = new GRBLinExpr();
+                wGeOneMinusX.addTerm(1.0, readMissLocal);
+                wGeOneMinusX.addTerm(1.0, x[issueIdx]);
+                model.addConstr(wGeOneMinusX, GRB.GREATER_EQUAL, 1.0, "read_miss_local_ge_1mx_issue");
+                obj.addTerm(coeff.localReadCacheCost, readMissLocal);
             }
             model.setObjective(obj, GRB.MINIMIZE);
 

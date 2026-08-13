@@ -1,0 +1,70 @@
+# Phase-1 ablation matrix: delta / MILP / EC / FB-FP on 3-reg T79 p100 traces.
+output_dir: results/experiments/phase1
+vm: 5
+simversion: 3
+days: 0
+
+traces:
+  - id: T79_typeA
+    path: results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p100.delta.mc.aug
+    synth_type: typeA
+    ibm_trace: IBMObjectStoreTrace079Part0
+    p_sample: 100
+  - id: T79_typeC
+    path: results/synth/3reg/typeC/IBMObjectStoreTrace079Part0.typeC.p100.delta.mc.aug
+    synth_type: typeC
+    ibm_trace: IBMObjectStoreTrace079Part0
+    p_sample: 100
+  - id: T79_typeD
+    path: results/synth/3reg/typeD/IBMObjectStoreTrace079Part0.typeD.p100.delta.mc.aug
+    synth_type: typeD
+    ibm_trace: IBMObjectStoreTrace079Part0
+    p_sample: 100
+  - id: T79_typeB
+    path: results/synth/3reg/typeB/IBMObjectStoreTrace079Part0.typeB.p100.delta.mc.aug
+    synth_type: typeB
+    ibm_trace: IBMObjectStoreTrace079Part0
+    p_sample: 100
+  - id: T79_typeA_p050
+    path: results/synth/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.p050.delta.mc.aug
+    synth_type: typeA
+    ibm_trace: IBMObjectStoreTrace079Part0
+    p_sample: 50
+    cluster_fraction: 0.05
+
+experiments:
+  - id: E01
+    goal: "V4 FP delta-off ablation (isolate delta storage/transfer)"
+    policy_config: config/milp_ec_new_v4_3reg_no_delta.yaml
+    setbase: false
+    traces: [T79_typeA]
+  - id: E02
+    goal: "V4 FP delta-on baseline after MILP fixes"
+    policy_config: config/milp_ec_new_v4_3reg.yaml
+    setbase: false
+    traces: [T79_typeA]
+  - id: E03
+    goal: "tevict FP reference on same trace"
+    policy_config: config/tevictranges_3reg.yaml
+    setbase: false
+    traces: [T79_typeA]
+  - id: E04
+    goal: "typeC/D FP — aggregation (C) and replication-read (D) access patterns"
+    policy_config: config/milp_ec_new_v4_3reg.yaml
+    setbase: false
+    traces: [T79_typeC, T79_typeD]
+  - id: E05
+    goal: "typeC/D tevict FP reference (same access patterns)"
+    policy_config: config/tevictranges_3reg.yaml
+    setbase: false
+    traces: [T79_typeC, T79_typeD]
+  - id: E10
+    goal: "typeB FP — region-aware access pattern (NOT delta similarity tier)"
+    policy_config: config/milp_ec_new_v4_3reg.yaml
+    setbase: false
+    traces: [T79_typeB]
+  - id: E11
+    goal: "cluster_fraction scan p050 vs p100 on typeA (delta coverage, not type letter)"
+    policy_config: config/milp_ec_new_v4_3reg.yaml
+    setbase: false
+    traces: [T79_typeA_p050]

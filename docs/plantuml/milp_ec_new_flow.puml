@@ -1,0 +1,91 @@
+@startuml
+' MILP-ECnew end-to-end activity flow (dataset -> real cost)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 180
+skinparam activity {
+  BorderColor #222222
+  ArrowColor #3B3B3B
+  FontColor #111111
+  StartColor #1E88E5
+  EndColor #0D47A1
+  BackgroundColor #F7F7F7
+  DiamondBackgroundColor #FFF8E1
+}
+
+title MILP-ECnew Policy: Dataset to Real Cost (Activity Flow)
+
+legend right
+|= Color |= Meaning |
+|<#E3F2FD>| L0 Input & Parsing |
+|<#E8F5E9>| L1 Policy Decision |
+|<#FFF3E0>| L2 Transfer & Placement Execution |
+|<#F3E5F5>| L3 Runtime Cost Accounting |
+|<#FFEBEE>| L4 Final Settlement & Aggregation |
+endlegend
+
+start
+
+partition "L0 Input & Parsing" #E3F2FD {
+  :Read trace file line by line;
+  :Parse row -> Request(op, objKey, issueRegion, size, timestamp);
+  :Convert GET/PUT to read/write;
+  :Ensure LogicalObject exists;
+}
+
+partition "L1 Policy Decision (PolicyMilpECnew)" #E8F5E9 {
+  if (request.op == write?) then (yes)
+    :place(req, config);
+    :Accumulate windowStats[issueRegion].writeSizeGB += sizeGB;
+    :checkAndSolveWindow(timestamp);
+    if (RegionDecision is EC and valid?) then (yes)
+      :Return 3 shard regions (EC_N=3);
+      :getPlacementWithSizes -> per region size = req.size/EC_K;
+    else (no)
+      :Return singleton region = issueRegion;
+    endif
+  else (read)
+    :updatePastRequests(req, issueRegion);
+    :If no local data by RegionDecision, add readSizeGB to windowStats;
+    :checkAndSolveWindow(timestamp);
+    :getReadTransferSize -> EC read size = req.size/EC_K (when object is EC);
+  endif
+}
+
+partition "L2 Transfer & Placement Execution" #FFF3E0 {
+  :Build transfer graph(s) by transfer policy;
+  :initiate_data_transfer(...);
+  repeat
+    :Pick next dst placement region;
+    if (write overwrite existing object?) then (yes)
+      :removeObjectFromRegion(old object), finalize storage cost;
+    endif
+    :Create PhysicalObject(size=placement size or full size, ttl=calculateTtl);
+    :logicalObjects[objKey].physicalObjects[region] = new object;
+    :regionManager.addObjectToRegion(region, object);
+  repeat while (more dst placement region?) is (yes)
+}
+
+partition "L3 Runtime Cost Accounting" #F3E5F5 {
+  :_updateTransferMetric(graph, req, effectiveSize);
+  :Network transfer cost = sum(edgeCost * effectiveSize * partitions/numPartitions);
+  :tracker.addTransferCost(metrics.cost);
+  if (read?) then (yes)
+    :tracker.addRequestCost(priceGet(readRegion));
+  else (write)
+    :tracker.addRequestCost(pricePut(each placed region));
+  endif
+}
+
+partition "L4 Final Settlement & Aggregation" #FFEBEE {
+  :End of trace;
+  :cleanupPolicy -> flushPendingEvents(now) for MILP windows;
+  :regionManager.calculateRemainingStorageCosts(endTime,...);
+  :tracker.addStorageCost(aggregateStorageCost);
+  :tracker.getMetrics();
+  :totalCost = transfer + storage + request;
+  :writeResultsToJson(tag);
+}
+
+stop
+@enduml

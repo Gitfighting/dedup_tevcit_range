@@ -1,0 +1,9 @@
+placement_policy: "tevict_ranges_lz4"
+transfer_policy: "cheapest"
+regions: ['aws:us-west-2', 'aws:us-east-1']
+window_size: -1
+# Placement = PolicyTevictRangesLz4 (identical TTL/hist to tevict_ranges).
+# Compression flags are force-enabled by the policy; lz4_ratio_default is used
+# when the trace has no compressed_size column (IBM SNIA). Docker traces with
+# compressed_size use measured per-object sizes instead.
+lz4_ratio_default: 0.3443

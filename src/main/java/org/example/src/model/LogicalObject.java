@@ -15,6 +15,11 @@ public class LogicalObject {
     private Status status;
     public Map<String, PhysicalObject> physicalObjects = new HashMap<>();
     public String baseRegion = null;
+    /** Delta cluster root key; empty when this object is a base. */
+    public String baseKey = null;
+    public boolean isBase = true;
+    /** Delta compression ratio r = |patch|/|full|; 1.0 for bases. */
+    public double deltaRatio = 1.0;
     public Map<String, PhysicalObject> latestPhysicalObjects = new HashMap<>();
     public Integer latestVersionId = null;
 

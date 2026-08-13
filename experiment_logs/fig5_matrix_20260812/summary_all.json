@@ -1,0 +1,604 @@
+[
+  {
+    "setup": "2reg",
+    "policy": "always_evict",
+    "tid": "T15",
+    "tag": "fig5_2reg_always_evict_T15",
+    "ok": true,
+    "cost": {
+      "total": 92.788285252,
+      "storage": 85.64021961,
+      "transfer": 7.148065642,
+      "request": 7.619901
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_evict_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_evict",
+    "tid": "T29",
+    "tag": "fig5_2reg_always_evict_T29",
+    "ok": true,
+    "cost": {
+      "total": 4.601848539,
+      "storage": 4.144987275,
+      "transfer": 0.456861264,
+      "request": 48.722165979
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_evict_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_evict",
+    "tid": "T65",
+    "tag": "fig5_2reg_always_evict_T65",
+    "ok": true,
+    "cost": {
+      "total": 55.055867334,
+      "storage": 2.160250625,
+      "transfer": 52.895616709,
+      "request": 0.310671
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_evict_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_evict",
+    "tid": "T78",
+    "tag": "fig5_2reg_always_evict_T78",
+    "ok": true,
+    "cost": {
+      "total": 62.907362188,
+      "storage": 13.97843524,
+      "transfer": 48.928926948,
+      "request": 3.601045
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_evict_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_evict",
+    "tid": "T79",
+    "tag": "fig5_2reg_always_evict_T79",
+    "ok": true,
+    "cost": {
+      "total": 356.372123046,
+      "storage": 279.550039437,
+      "transfer": 76.822083609,
+      "request": 0.227465
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_evict_T79.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_store",
+    "tid": "T15",
+    "tag": "fig5_2reg_always_store_T15",
+    "ok": true,
+    "cost": {
+      "total": 141.775077663,
+      "storage": 136.631021586,
+      "transfer": 5.144056077,
+      "request": 16.660310999
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_store_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_store",
+    "tid": "T29",
+    "tag": "fig5_2reg_always_store_T29",
+    "ok": true,
+    "cost": {
+      "total": 7.150826973,
+      "storage": 6.956671569,
+      "transfer": 0.194155404,
+      "request": 139.244426007
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_store_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_store",
+    "tid": "T65",
+    "tag": "fig5_2reg_always_store_T65",
+    "ok": true,
+    "cost": {
+      "total": 4.389216501,
+      "storage": 4.281749378,
+      "transfer": 0.107467123,
+      "request": 3.110881
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_store_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_store",
+    "tid": "T78",
+    "tag": "fig5_2reg_always_store_T78",
+    "ok": true,
+    "cost": {
+      "total": 24.02272808,
+      "storage": 23.43994543,
+      "transfer": 0.58278265,
+      "request": 26.375495
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_store_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "always_store",
+    "tid": "T79",
+    "tag": "fig5_2reg_always_store_T79",
+    "ok": true,
+    "cost": {
+      "total": 540.172656008,
+      "storage": 528.562277178,
+      "transfer": 11.61037883,
+      "request": 1.243915
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_always_store_T79.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T15",
+    "tag": "fig5_2reg_dedup_aware_tevict_ranges_T15",
+    "ok": true,
+    "cost": {
+      "total": 26.082910809,
+      "storage": 22.90378298,
+      "transfer": 3.179127828,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_dedup_aware_tevict_ranges_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T29",
+    "tag": "fig5_2reg_dedup_aware_tevict_ranges_T29",
+    "ok": true,
+    "cost": {
+      "total": 0.221348521,
+      "storage": 0.187875762,
+      "transfer": 0.03347276,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_dedup_aware_tevict_ranges_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T65",
+    "tag": "fig5_2reg_dedup_aware_tevict_ranges_T65",
+    "ok": true,
+    "cost": {
+      "total": 3.205460504,
+      "storage": 3.082585747,
+      "transfer": 0.122874757,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_dedup_aware_tevict_ranges_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T78",
+    "tag": "fig5_2reg_dedup_aware_tevict_ranges_T78",
+    "ok": true,
+    "cost": {
+      "total": 4.046231453,
+      "storage": 2.741544031,
+      "transfer": 1.304687422,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_dedup_aware_tevict_ranges_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T79",
+    "tag": "fig5_2reg_dedup_aware_tevict_ranges_T79",
+    "ok": true,
+    "cost": {
+      "total": 76.292126634,
+      "storage": 52.990848094,
+      "transfer": 23.30127854,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_dedup_aware_tevict_ranges_T79.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "optimal",
+    "tid": "T15",
+    "tag": "fig5_2reg_optimal_T15",
+    "ok": true,
+    "cost": {
+      "total": 90.896553308,
+      "storage": 85.749757527,
+      "transfer": 5.146795781,
+      "request": 10.382591
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_optimal_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "optimal",
+    "tid": "T29",
+    "tag": "fig5_2reg_optimal_T29",
+    "ok": true,
+    "cost": {
+      "total": 4.592898793,
+      "storage": 4.148533691,
+      "transfer": 0.444365102,
+      "request": 54.42709598
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_optimal_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "optimal",
+    "tid": "T65",
+    "tag": "fig5_2reg_optimal_T65",
+    "ok": true,
+    "cost": {
+      "total": 4.560073759,
+      "storage": 2.268258209,
+      "transfer": 2.29181555,
+      "request": 0.641061
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_optimal_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "optimal",
+    "tid": "T78",
+    "tag": "fig5_2reg_optimal_T78",
+    "ok": true,
+    "cost": {
+      "total": 16.296690817,
+      "storage": 14.44802411,
+      "transfer": 1.848666707,
+      "request": 4.877715
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_optimal_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "optimal",
+    "tid": "T79",
+    "tag": "fig5_2reg_optimal_T79",
+    "ok": true,
+    "cost": {
+      "total": 323.47805646,
+      "storage": 305.663746995,
+      "transfer": 17.814309465,
+      "request": 0.332265
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_optimal_T79.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "teven",
+    "tid": "T15",
+    "tag": "fig5_2reg_teven_T15",
+    "ok": true,
+    "cost": {
+      "total": 95.953156324,
+      "storage": 90.806360543,
+      "transfer": 5.146795781,
+      "request": 12.952230999
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_teven_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "teven",
+    "tid": "T29",
+    "tag": "fig5_2reg_teven_T29",
+    "ok": true,
+    "cost": {
+      "total": 5.024884594,
+      "storage": 4.580514401,
+      "transfer": 0.444370193,
+      "request": 132.979606005
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_teven_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "teven",
+    "tid": "T65",
+    "tag": "fig5_2reg_teven_T65",
+    "ok": true,
+    "cost": {
+      "total": 6.315338745,
+      "storage": 4.023523195,
+      "transfer": 2.29181555,
+      "request": 0.641471
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_teven_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "teven",
+    "tid": "T78",
+    "tag": "fig5_2reg_teven_T78",
+    "ok": true,
+    "cost": {
+      "total": 17.80733373,
+      "storage": 15.921004758,
+      "transfer": 1.886328972,
+      "request": 5.206445
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_teven_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "teven",
+    "tid": "T79",
+    "tag": "fig5_2reg_teven_T79",
+    "ok": true,
+    "cost": {
+      "total": 340.834340649,
+      "storage": 323.020031184,
+      "transfer": 17.814309465,
+      "request": 0.453595
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_teven_T79.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "tevict_ranges",
+    "tid": "T15",
+    "tag": "fig5_2reg_tevict_ranges_T15",
+    "ok": true,
+    "cost": {
+      "total": 92.01585372,
+      "storage": 86.713858457,
+      "transfer": 5.301995263,
+      "request": 13.271370999
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_tevict_ranges_T15.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "tevict_ranges",
+    "tid": "T29",
+    "tag": "fig5_2reg_tevict_ranges_T29",
+    "ok": true,
+    "cost": {
+      "total": 4.620866622,
+      "storage": 4.175043384,
+      "transfer": 0.445823238,
+      "request": 134.373306006
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_tevict_ranges_T29.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "tevict_ranges",
+    "tid": "T65",
+    "tag": "fig5_2reg_tevict_ranges_T65",
+    "ok": true,
+    "cost": {
+      "total": 4.385285023,
+      "storage": 4.244714449,
+      "transfer": 0.140570574,
+      "request": 0.337881
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_tevict_ranges_T65.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "tevict_ranges",
+    "tid": "T78",
+    "tag": "fig5_2reg_tevict_ranges_T78",
+    "ok": true,
+    "cost": {
+      "total": 16.792878168,
+      "storage": 14.71183108,
+      "transfer": 2.081047088,
+      "request": 5.379805
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_tevict_ranges_T78.json"
+  },
+  {
+    "setup": "2reg",
+    "policy": "tevict_ranges",
+    "tid": "T79",
+    "tag": "fig5_2reg_tevict_ranges_T79",
+    "ok": true,
+    "cost": {
+      "total": 337.017705983,
+      "storage": 309.118322333,
+      "transfer": 27.89938365,
+      "request": 0.646775
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_2reg_tevict_ranges_T79.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "always_evict",
+    "tid": "T15",
+    "tag": "fig5_9reg_always_evict_T15",
+    "ok": true,
+    "cost": {
+      "total": 106.63204862,
+      "storage": 79.906081632,
+      "transfer": 26.725966988,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_always_evict_T15.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "always_evict",
+    "tid": "T65",
+    "tag": "fig5_9reg_always_evict_T65",
+    "ok": true,
+    "cost": {
+      "total": 210.939147326,
+      "storage": 1.933364295,
+      "transfer": 209.005783031,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_always_evict_T65.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "always_store",
+    "tid": "T15",
+    "tag": "fig5_9reg_always_store_T15",
+    "ok": true,
+    "cost": {
+      "total": 161.551713229,
+      "storage": 137.330325969,
+      "transfer": 24.22138726,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_always_store_T15.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "always_store",
+    "tid": "T65",
+    "tag": "fig5_9reg_always_store_T65",
+    "ok": true,
+    "cost": {
+      "total": 19.266585761,
+      "storage": 17.464683004,
+      "transfer": 1.801902757,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_always_store_T65.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T15",
+    "tag": "fig5_9reg_dedup_aware_tevict_ranges_T15",
+    "ok": true,
+    "cost": {
+      "total": 61.582861998,
+      "storage": 48.50667908,
+      "transfer": 13.076182918,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_dedup_aware_tevict_ranges_T15.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T29",
+    "tag": "fig5_9reg_dedup_aware_tevict_ranges_T29",
+    "ok": true,
+    "cost": {
+      "total": 0.910079822,
+      "storage": 0.836814448,
+      "transfer": 0.073265374,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_dedup_aware_tevict_ranges_T29.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T65",
+    "tag": "fig5_9reg_dedup_aware_tevict_ranges_T65",
+    "ok": true,
+    "cost": {
+      "total": 16.378679536,
+      "storage": 13.480275165,
+      "transfer": 2.898404371,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_dedup_aware_tevict_ranges_T65.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T78",
+    "tag": "fig5_9reg_dedup_aware_tevict_ranges_T78",
+    "ok": true,
+    "cost": {
+      "total": 18.680284275,
+      "storage": 10.338121833,
+      "transfer": 8.342162442,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_dedup_aware_tevict_ranges_T78.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "dedup_aware_tevict_ranges",
+    "tid": "T79",
+    "tag": "fig5_9reg_dedup_aware_tevict_ranges_T79",
+    "ok": true,
+    "cost": {
+      "total": 156.57532008,
+      "storage": 113.343194392,
+      "transfer": 43.232125689,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_dedup_aware_tevict_ranges_T79.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "optimal",
+    "tid": "T15",
+    "tag": "fig5_9reg_optimal_T15",
+    "ok": true,
+    "cost": {
+      "total": 105.442495383,
+      "storage": 79.930431618,
+      "transfer": 25.512063765,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_optimal_T15.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "optimal",
+    "tid": "T65",
+    "tag": "fig5_9reg_optimal_T65",
+    "ok": true,
+    "cost": {
+      "total": 16.064781373,
+      "storage": 8.87734512,
+      "transfer": 7.187436253,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_optimal_T65.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "teven",
+    "tid": "T15",
+    "tag": "fig5_9reg_teven_T15",
+    "ok": true,
+    "cost": {
+      "total": 124.172282152,
+      "storage": 99.946509538,
+      "transfer": 24.225772614,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_teven_T15.json"
+  },
+  {
+    "setup": "9reg",
+    "policy": "teven",
+    "tid": "T65",
+    "tag": "fig5_9reg_teven_T65",
+    "ok": true,
+    "cost": {
+      "total": 29.591682721,
+      "storage": 13.602993444,
+      "transfer": 15.988689277,
+      "request": 0.0
+    },
+    "file": "results_fig5_matrix/simulation_results_fig5_9reg_teven_T65.json"
+  }
+]

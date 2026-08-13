@@ -1,0 +1,7 @@
+placement_policy: "milp_ec_new_v3"
+transfer_policy: "cheapest"
+regions: ['aws:us-west-2', 'aws:us-east-1']
+window_size: -1
+milp_time_limit_sec: 2.0//若是不设置时间，gurobi默认值为多少？
+milp_mip_gap: 0.05
+milp_strict_fail: true//是否严格执行MILP，如果为false，则不严格执行MILP，而是使用Tevict策略

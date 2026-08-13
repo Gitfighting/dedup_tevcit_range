@@ -1,0 +1,124 @@
+@startuml PolicyMilpECnew_Class
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title **PolicyMilpECnew 类图**\n(UML 建模规范)
+
+package "org.example.src.placement_policy" {
+
+  abstract class PlacementPolicy {
+    # config : Config
+    # totalGraph : DiGraph
+    # logicalObjects : Map<String, LogicalObject>
+    # regionManager : RegionManager
+    --
+    + place(req, config) : List<String>
+    + getPlacementWithSizes(req, config) : Map<String, BigDecimal>
+    + getReadTransferSize(req, config) : BigDecimal
+    + updatePastRequests(req, placeRegion) : void
+    + getTevict(src, dst, timestamp) : double
+  }
+
+  class PolicyTevictRangesNew {
+    - windowSize : long
+    # avgNetworkCost : double
+    # minNetworkCost : double
+    - hist : Map<String, Map<Integer, Double>>
+    - nextHist : Map<String, Map<Integer, Double>>
+    - lastHist : Map<String, Map<Integer, Double>>
+    - nextLastHist : Map<String, Map<Integer, Double>>
+    # regions : List<String>
+    - ranges : double[]
+    --
+    # getHistogramSizeGB(request, placeRegion) : double
+    + updatePastRequests(request, placeRegion) : void
+    + calcEvictCost(region, tevenHours, netCost) : double
+    + getTevict(src, dst, timestamp) : double
+  }
+
+  class PolicyMilpECnew {
+    - {static} EC_K : int = 2
+    - {static} EC_M : int = 1
+    - {static} EC_N : int = 3
+    - windowStats : Map<String, RegionStats>
+    - decisions : Map<String, RegionDecision>
+    - milpEcTtlByRegion : Map<String, Double>
+    - windowSizeHours : long
+    - windowEventCount : int
+    - persistentEnv : GRBEnv
+    --
+    + place(req, config) : List<String>
+    + getPlacementWithSizes(req, config) : Map<String, BigDecimal>
+    + getReadTransferSize(req, config) : BigDecimal
+    # getHistogramSizeGB(request, placeRegion) : double
+    + updatePastRequests(request, placeRegion) : void
+    + getTevict(src, dst, timestamp) : double
+    + flushPendingEvents(now) : void
+    - checkAndSolveWindow(now) : void
+    - solveWindowBatch(now) : void
+    - solveRegionMilp(env, regionKey, stats, ...) : void
+    - regionStoragePrice(region) : double
+    - regionTransCost(src, dst) : double
+  }
+
+  class RegionStats <<inner>> {
+    + writeSizeGB : double
+    + readSizeGB : double
+    --
+    + addWrite(sizeGB) : void
+    + addRead(sizeGB) : void
+    + empty() : boolean
+  }
+
+  class RegionDecision <<inner>> {
+    + mode : int
+    + shardAt : boolean[]
+    + ttlHours : double
+    + decidedAtSec : long
+    --
+    + expired(nowSec) : boolean
+    + hasLocalData(regionIdx) : boolean
+  }
+
+  PlacementPolicy <|-- PolicyTevictRangesNew
+  PolicyTevictRangesNew <|-- PolicyMilpECnew
+
+  PolicyMilpECnew *-- RegionStats : windowStats
+  PolicyMilpECnew *-- RegionDecision : decisions
+}
+
+package "org.example.src.model" {
+  class Request {
+    + objKey : String
+    + op : String
+    + size : BigDecimal
+    + issueRegion : String
+    + timestamp : Instant
+  }
+
+  class Config {
+    + placementPolicy : String
+    + windowSize : Integer
+  }
+}
+
+PolicyMilpECnew ..> Request : 使用
+PolicyMilpECnew ..> Config : 使用
+
+note right of RegionStats
+  **RegionStats**
+  窗口内某 region 的
+  聚合 writeSizeGB / readSizeGB
+end note
+
+note right of RegionDecision
+  **RegionDecision**
+  mode: 0=副本, 1=EC
+  shardAt: 3 个 shard region
+  ttlHours: EC 统一 TTL
+end note
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml PolicyMilpECnew_TTL
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+
+title **PolicyMilpECnew TTL 生命周期**\n(基于代码实现)
+
+skinparam state {
+  BackgroundColor<<tau>> #E8F5E9
+  BackgroundColor<<ec>> #E3F2FD
+  BackgroundColor<<expire>> #FFEBEE
+}
+
+state "PolicyTevictRangesNew" as Parent {
+  state "updatePastRequests" as UP {
+    state "nextHist[region]" as NH
+    state "nextLastHist[region]" as NLH
+    note right of NH
+      key: 访问间隔索引 (ranges)
+      value: 累积 GB (EC 时 = size/2)
+    end note
+  }
+  state "calcEvictCost(region, teven, netCost)" as CEC {
+    state "遍历 ranges[]" as Ranges
+    state "命中: X[i]×avgRange×storageCost" as Hit
+    state "未命中: X[i]×(tevict×storage+netCost)" as Miss
+    Ranges --> Hit : ranges[i] ≤ tevict
+    Ranges --> Miss : ranges[i] > tevict
+  }
+  UP --> CEC : hist/nextHist
+  CEC --> Parent : τ* (小时)
+}
+
+state "solveRegionMilp" as MILP {
+  state "tauH[i] = calcEvictCost(...)" as TauH
+  state "C3: hatTau ≥ tauH[i]×sigma[i]" as C3
+  state "目标函数: EC存储 ∝ hatTau" as Obj
+  TauH --> C3 : τ* 输入
+  C3 --> Obj : 最小化时 hatTau 压至 max(τ*)
+}
+
+state "RegionDecision" as RD <<ec>> {
+  state "ttlHours" as TH
+  state "decidedAtSec" as DAS
+  state "expired(nowSec)\nnowSec >= decidedAtSec + ttlHours*3600" as Exp <<expire>>
+}
+
+state "getTevict(src, dst)" as GT {
+  state "milpEcTtlByRegion.get(src)" as Cache
+  state "src==dst: tevenSec/2" as Self
+  state "super.getTevict()" as Super
+
+  Cache --> GT : ttlHours × 3600 (秒)
+  Self --> GT : 自身配对快速返回
+  Super --> GT : 跨 region 配对
+}
+
+RD --> Cache : EC 决策时写入
+Parent --> TauH : τ* 供 MILP
+
+note as Timeline
+  **decidedAtSec** ──────► **decidedAtSec + ttlHours×3600**
+  生效                    过期 (expired=true)
+end note
+
+Parent --> MILP : τ* 进入 MILP
+MILP --> RD : 生成 ttlHours 与 decidedAtSec
+RD --> GT : getTevict 时检查是否过期
+
+@enduml

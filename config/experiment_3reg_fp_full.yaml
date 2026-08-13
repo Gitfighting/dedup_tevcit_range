@@ -1,0 +1,97 @@
+# 3reg FP 全策略对比矩阵（SkyStore 论文基线 + MILP 系列）
+# FP = --setbase false（Free-Placement / 移动 base）
+#
+# 用法:
+#   python scripts/run_3reg_fp_full_matrix.py --dry-run
+#   python scripts/run_3reg_fp_full_matrix.py --phase run
+#   python scripts/run_3reg_fp_full_matrix.py --phase run --trace T79 --workload A
+#   python scripts/run_3reg_fp_full_matrix.py --phase analyze
+#
+# 任务数（默认）: 9 policies × 4 traces × 4 types = 144（跳过 T29）
+
+trace_ids: [T15, T29, T65, T78, T79]
+trace_numbers: ["015", "029", "065", "078", "079"]
+workload_types: [A, B, C, D]
+
+# T29 ~1300 万行，单独跑时把 skip_traces 清空并设 maven_heap: 16g
+skip_traces: [T29]
+
+primary_p: 0.10
+primary_p_tag: p100
+synth_fallback_fractions: [0.05]
+synth_batch_config: config/phase2_synth_batch.yaml
+
+raw_trace_root: Data/3reg/3reg
+synth_trace_root: results/synth/3reg
+
+vm: 5
+setbase: false
+maven_heap: 12g
+maven_heap_t29: 16g
+
+# trace 来源: raw = 原始 .mc.aug；synth = 增列 delta trace（V4 必须 synth）
+policies:
+  - id: always_evict
+    label: Always Evict
+    config: config/alwaysevict_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: baseline
+
+  - id: always_store
+    label: Always Store (pull_on_read)
+    config: config/alwaysstore_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: baseline
+
+  - id: teven
+    label: T_even
+    config: config/teven_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: baseline
+
+  - id: dynamicttl
+    label: TTL-CC (dynamicttl)
+    config: config/dynamicttl_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: baseline
+
+  - id: ewma
+    label: EWMA
+    config: config/ewma_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: baseline
+
+  - id: tevict
+    label: TevictRanges (SkyStore)
+    config: config/tevictranges_3reg.yaml
+    simversion: 1
+    trace_source: raw
+    category: skystore
+
+  - id: milp_ec_new
+    label: MILP-EC v1
+    config: config/milp_ec_new_3reg.yaml
+    simversion: 3
+    trace_source: raw
+    category: milp
+
+  - id: milp_ec_new_v3
+    label: MILP-EC v3
+    config: config/milp_ec_new_v3_3reg.yaml
+    simversion: 3
+    trace_source: raw
+    category: milp
+
+  - id: milp_ec_new_v4
+    label: MILP-EC v4 (delta)
+    config: config/milp_ec_new_v4_3reg.yaml
+    simversion: 3
+    trace_source: synth
+    category: milp
+
+reference_policy: tevict

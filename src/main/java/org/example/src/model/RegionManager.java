@@ -69,8 +69,7 @@ public class RegionManager {
         regions.get(region).add(physicalObject.getKey());
         regionObjects.get(region).add(physicalObject);
         regionTotSize.put(region, regionTotSize.get(region).add(physicalObject.getSize()));
-        // Log storage size update
-        if (org.example.src.utils.Logger.detailedStorage) {
+        if (org.example.src.utils.Logger.detailedStorage || shouldWatchObject(physicalObject.getKey())) {
             org.example.src.utils.Logger.info(String.format(
                     "[STORAGE-ADD] Region=%s Obj=%s Size=%s Bytes (Total Region Size=%s)",
                     region, physicalObject.getKey(), physicalObject.getSize(), regionTotSize.get(region)));
@@ -145,7 +144,7 @@ public class RegionManager {
             // org.example.src.utils.CostLogger.logStorageRemoval(
             // region, physicalObject.getKey(), sizeInGb, durationHours, cost);
 
-            if (org.example.src.utils.Logger.detailedStorage) {
+            if (org.example.src.utils.Logger.detailedStorage || shouldWatchObject(physicalObject.getKey())) {
                 org.example.src.utils.Logger.info(String.format(
                         "[STORAGE-REM] Region=%s Obj=%s Size=%.6f GB Duration=%.2f Hrs Cost=$%.9f (Price*Size*Dur)",
                         region, physicalObject.getKey(), sizeInGb, duration.getSeconds() / 3600.0, cost));
@@ -249,7 +248,17 @@ public class RegionManager {
                         .divide(BigDecimal.valueOf(Definitions.GB), 20, RoundingMode.HALF_UP);
                 BigDecimal cost = pricePerGbForDuration.multiply(sizeInGb).setScale(12, RoundingMode.HALF_UP);
 
-                if (org.example.src.utils.Logger.detailedStorage && remainingLogCount < MAX_REMAINING_LOGS) {
+                if ((org.example.src.utils.Logger.detailedStorage && remainingLogCount < MAX_REMAINING_LOGS)
+                        || shouldWatchObject(physicalObject.getKey())) {
+                    LogicalObject lo = logicalObjects.get(physicalObject.getKey());
+                    int copyCount = lo != null && lo.physicalObjects != null ? lo.physicalObjects.size() : -1;
+                    boolean singleCopy = copyCount == 1;
+                    String durationPath = physicalObject.getTtl() == -1 || singleCopy ? "full" : "ttl-cap";
+                    org.example.src.utils.Logger.info(String.format(
+                            "[REMAINING-DIAG] Region=%s Obj=%s copies=%d physTtl=%d path=%s wallH=%.2f billedH=%.2f",
+                            region, physicalObject.getKey(), copyCount, physicalObject.getTtl(), durationPath,
+                            physicalObject.storageDuration(endTime).getSeconds() / 3600.0,
+                            duration.getSeconds() / 3600.0));
                     org.example.src.utils.Logger.info(String.format(
                             "[STORAGE-REM] [REMAINING] Region=%s Obj=%s Size=%.6f GB Duration=%.2f Hrs Cost=$%.9f",
                             region, physicalObject.getKey(), sizeInGb, duration.getSeconds() / 3600.0, cost));
@@ -333,5 +342,10 @@ public class RegionManager {
                     + size.subtract(sum).abs());
         }
         System.out.println("Sum of all object sizes stored in all regions: " + size + " GB.");
+    }
+
+    private static boolean shouldWatchObject(String objKey) {
+        String prefix = System.getProperty("skystore.watchObjPrefix");
+        return prefix != null && !prefix.isEmpty() && objKey != null && objKey.contains(prefix);
     }
 }

@@ -1,0 +1,259 @@
+Always Evict
+Always Store
+Teven
+TTL-CC
+EWMA
+AWS Multi-Region Bucket
+22
+25
+Costs v.s.
+SkyStore
+1.3x
+4x
+1.7x
+1.1x
+1.3x
+6x
+0.99x
+2x
+2x
+1.7x
+0.99x
+3x
+73x
+0.97x
+0.97x
+1x
+10x
+0.98x
+23x
+1.5x
+1.2x
+2x
+3x
+2x
+2x
+3x
+1.1x
+2x
+1.7x
+3x
+T15
+T29
+T65
+T78
+T79
+Figure 5: 2-Region, Fixed Base (FB): Ratio between baseline cost vs. SkyStore. On average across traces, SkyStore is 1.4-20.0×
+cheaper than other baselines.
+Size (%)
+Read Frequency (%)
+Request Arrival
+Recency Number of Requests
+IBM Trace
+Number
+# Tiny
+(<1kB)
+# Small
+(1KB-1MB)
+# Medium
+(1MB-1GB)
+# Large
+(>1GB)
+Avg.
+(KB)
+One-Hit
+Wonders
+Cold
+(1–10)
+Warm
+(10–100)
+Hot
+(100-1K)
+Super Hot
+(>1K)
+Avg.
+#GETs
+%in first 3
+months
+%in last 4
+months
+Avg. GET Tail
+months
+Avg.
+days
+GET
+(%)
+PUT
+(%)
+Total
+(M)
+T15
+0
+80
+20
+0
+628
+48
+52
+0
+0
+0
+3
+42
+58
+2.3
+0.6
+57
+43
+1.6
+T29
+44
+56
+0
+0
+3
+2
+98
+0
+0
+0
+3
+57
+43
+3.5
+41.6
+70
+30
+13
+T65
+31
+34
+34
+0.03
+1,536
+2
+9
+22
+67
+0.1
+93
+52
+48
+3
+1.3
+99
+1
+0.3
+T78
+0
+98
+2
+0
+578
+6
+31
+51
+11
+0.1
+26
+22
+78
+0.8
+2.6
+95
+5
+2.4
+T79
+0
+40
+60
+0.35
+48,386
+17
+61
+22
+0
+0
+9
+60
+40
+4.1
+8.3
+89
+11
+0.1
+Table 2: IBM Trace Characteristics: each trace with characteristics (size, read frequency, request arrival, recency, number of
+requests) highlighted with bold and underscore.
+there is longer average recency between GETs (beyond 𝑇even), the
+cost of storing data outweighs the cost of fetching it again on the
+subsequent access. In such cases, AlwaysEvict can even outperform
+SkyStore by 1% , as SkyStore reactively caches objects and requires
+time to adjust to a lower TTL. On the other hand, on traces like T65
+and T78 with warm and hot accesses and shorter access recency,
+AlwaysEvict incurs 23–73× higher costs due to repeated network
+transfers on reads. Surprisingly, in T79 where 89% of objects are
+one-hits or cold, AlwaysEvict still costs 2× more than SkyStore.
+This is primarily due to the large average object size (48MB), which
+amplifies the network cost penalties from cache misses. On average,
+SkyStore is 20× more cost-effective than AlwaysEvict.
+Always Store replicates objects on GETs and exhibits behavior
+that almost contrasts with AlwaysEvict. On traces with lots of hot
+objects such as T65, AlwaysStore outperforms SkyStore by 3%, as
+SkyStore may evict a few hot objects and incur higher network costs
+during the initial histogram warmup phase. However, on traces
+with more infrequent or sporadic access patterns like T29 and T15,
+AlwaysStore incurs 2–4× higher costs than SkyStore. Interestingly,
+on traces with frequent repeated reads, such as T79 where 80% of
+the objects are accessed multiple times, Always Store remains 3×
+more expensive than SkyStore. This is because 60% of the objects
+in T79 have a GET tail longer than 4.1 months ( as seen in Table 2),
+which causes AlwaysStore to retain objects long after their last
+access. SkyStore evicts unaccessed objects earlier and outperforms
+AlwaysStore by 1.5–3× on T78 and T79. On average, SkyStore is
+2.2× cheaper than Always Store.
+𝑇even is a static TTL-based policy (Section 3.1.2) that stores ob-
+jects until re-fetching them becomes less expensive and balances
+storage with network costs. In our setup, the TTL for 𝑇even policy
+is one month, calculated as the ratio between average network
+cost and standard S3 prices across 22 AWS regions. 𝑇even performs
+well when all GETs occur within a month (as in T65), enabling
+timely evictions and slightly outperforming SkyStore in this case.
+However, for infrequent accesses like in T15 and T29, it stores
+objects for a full one-month TTL, leading to 1.7-2× higher costs
+compared to SkyStore. In traces with moderate access frequency
+and short recency (like T15 and T29), 𝑇even strikes a reasonable
+balance. However, SkyStore still outperforms it by 1.4× as, unlike
+𝑇even, SkyStore is aware of object access patterns and can reduce
+network costs with its adaptive TTL. On average, SkyStore is 1.4×
+more cost-effective than 𝑇even.
+TTL-CC policy[25] computes TTLs stochastically based on cache
+hits, assuming a Poisson distribution, and dynamically updates the
+TTL of all objects. This policy’s cost is within 10% of the total
+cost of SkyStore for traces with hot- or one-hit-dominant objects
+(like T15 and T65). However, for mixed traces with warm and cold
+objects like T78 and T79, TTL-CC has 2× higher cost than SkyStore.
+TTL-CC also tends to store sporadically accessed objects for longer
+in T29 and incurs 1.7× higher cost. In summary, TTL-CC results
+emphasize that dynamic TTL-based policies are a better fit for
+cloud applications. However, access patterns in the cloud are more
+complex than Poisson distributions. Overall, SkyStore is more cost-
+efficient than TTL-CC by 1.6× on average.
+EWMA predicts object access times using exponentially weighted
+moving averages and stores objects with shorter access times. This
+policy can quickly evict one-hits and cold objects and reduces stor-
+age costs by 0.99–1.3× for traces T29 and T15, respectively. How-
+ever, it carries this aggressive eviction strategy over to traces with
+hot and super-hot objects (T65, T78, and T79) and incurs 1.7–10×
+higher costs. Fine-tuning EWMA policy parameters, such as the
+decay factor, could potentially reduce these overheads. On average,
+EWMA is 3.5× more expensive than SkyStore.
+AWS Multi-Region Bucket [17] and similar commercially-available
+services behave like AlwaysStore but proactively replicate data on
+writes rather than reads. This leads to higher storage costs when
+GET appears later; in traces T15, T29, and T78, on average, objects
+are accessed 1–1.5 months after they are written, incurring 2–6×
+higher cost than SkyStore. For traces with more immediate reads
+(like T65 and T79), AWS multi-region buckets incur 0.98–3× higher
+costs than SkyStore. Overall, AWS Multi-Region Bucket is 3.1×
+more expensive than SkyStore on average.
+9

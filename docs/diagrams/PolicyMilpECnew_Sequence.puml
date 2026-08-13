@@ -1,0 +1,92 @@
+@startuml PolicyMilpECnew_Sequence
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+
+title **PolicyMilpECnew 时序图**\n写请求与读请求交互
+
+box "SimulatorV2/V3" #E8F4FD
+participant "Simulator" as Sim
+end box
+
+box "PolicyMilpECnew" #FFF4E6
+participant "PolicyMilpECnew" as PM
+participant "windowStats" as WS
+participant "decisions" as DEC
+participant "Gurobi" as G
+end box
+
+box "PolicyTevictRangesNew" #E8F5E9
+participant "父类" as Parent
+participant "hist/nextHist" as Hist
+participant "calcEvictCost" as Calc
+end box
+
+== 写请求到达 ==
+Sim -> PM: place(req, config)
+activate PM
+
+PM -> WS: addWrite(sizeGB) [issueRegion]
+PM -> PM: checkAndSolveWindow()
+
+alt 触发求解
+  PM -> PM: solveWindowBatch()
+  PM -> Calc: calcEvictCost(region, teven, netCost)
+  Calc -> Hist: 读取 hist / nextHist
+  Calc --> PM: τ* (小时)
+  PM -> G: solveRegionMilp()
+  G --> PM: d, sigma[], hatTau
+  PM -> DEC: put(regionKey, RegionDecision)
+  PM -> PM: milpEcTtlByRegion.put()
+end
+
+PM -> DEC: get(issueRegion)
+alt dec 有效且 mode==1
+  PM --> Sim: [shardRegion1, shardRegion2, shardRegion3]
+else
+  PM --> Sim: [issueRegion]
+end
+deactivate PM
+
+== 读请求到达 ==
+Sim -> PM: updatePastRequests(req, placeRegion)
+activate PM
+
+PM -> Parent: super.updatePastRequests()
+activate Parent
+Parent -> Parent: getHistogramSizeGB() [EC 时 size/2]
+Parent -> Hist: nextHist.merge(), nextLastHist.merge()
+deactivate Parent
+
+PM -> DEC: get(issueRegion)
+alt !hasLocalData
+  PM -> WS: addRead(sizeGB)
+end
+PM -> PM: checkAndSolveWindow()
+deactivate PM
+
+== Simulator 查询 TTL ==
+Sim -> PM: getTevict(src, dst, timestamp)
+activate PM
+alt milpEcTtlByRegion 有缓存
+  PM --> Sim: ttlHours * 3600 (秒)
+else src == dst
+  PM --> Sim: tevenSec / 2
+else
+  PM -> Parent: super.getTevict()
+  Parent --> Sim: regionPairsTtl 结果
+end
+deactivate PM
+
+== Simulator 查询各 region 大小 ==
+Sim -> PM: getPlacementWithSizes(req, config)
+PM -> DEC: get(issueRegion)
+PM --> Sim: Map<region, size/2> 或 null
+
+Sim -> PM: getReadTransferSize(req, config)
+PM -> PM: 检查 physicalObjects.size()==3
+PM --> Sim: size/EC_K 或 null
+
+@enduml

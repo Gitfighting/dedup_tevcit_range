@@ -1,0 +1,74 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### 日志与结果文件（不上传） ###
+logs/
+*.log
+simulation_results_*.json
+analysis_*.json
+java_result/
+python_result/
+
+### 大文件 zip（不上传） ###
+*.zip
+
+### 超大 traces / 实验 CSV（不上传） ###
+tools/smoke_v3_9reg_t29_mixed.csv
+
+### 数据集、结果、二进制（不上传） ###
+Data/
+results/
+docker_image/
+sqldump/
+DICE-main/
+target/
+.idea/
+*.jar
+*.pdf
+*.tar.gz
+*.xlsx
+
+### ECS 运维脚本含主机口令，不入库 ###
+scripts/cloud/
+scripts/ocp_remote_toolchain.py
+
+### Python 仿真日志 / 本地 traces ###
+skystore_python/**/logs/
+skystore_python/**/__pycache__/
+**/__pycache__/

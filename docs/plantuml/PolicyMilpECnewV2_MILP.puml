@@ -1,0 +1,60 @@
+@startuml PolicyMilpECnewV2_MILP
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 10
+
+title **MILP 决策流程 (solveRegionMilp)**\nEC(2+0) 单 region 求解
+
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+}
+
+|输入|
+:regionKey, RegionStats(sWrites, sReads);
+:加载 sp[], tc[][], tauH[];
+
+|约束构建|
+partition "决策变量" {
+  :d in {0,1} (副本/EC);
+  :sigma[i] in {0,1} (region i 存 shard);
+  :hatTau (EC 统一 TTL);
+  :z[i] = sigma[i] * hatTau (McCormick);
+  :vread[i] (读路由, i != rIdx);
+}
+
+partition "约束" {
+  :C1: sum sigma[i] = 2 * d;
+  :C2: sigma[rIdx] >= d;
+  :C_PROVIDER: EC 仅同厂商;
+  :C3: hatTau >= tauH[i] * sigma[i];
+  :C4: McCormick 线性化 z[i];
+  :C5: sum vread[i] = 1 * d (若 sReads>0);
+}
+
+|目标函数|
+partition "最小化" {
+  :副本存储: sWrites*sp[r]*tauH[r]/720*(1-d);
+  :EC 存储: sum (sWrites/2)*sp[i]/720*z[i];
+  :EC 分发: sum (sWrites/2)*tc[r,i]*sigma[i];
+  :副本读: sReads*avgNetworkCost*(1-d);
+  :EC 读: sum (sReads/2)*tc[i,r]*vread[i];
+}
+
+|求解|
+:model.optimize();
+
+if (OPTIMAL 或 SUBOPTIMAL?) then (是)
+  :dec = round(d);
+  :sigV[] = round(sigma[]);
+  :ht = hatTau (若<=0 用 tauH[rIdx]);
+  :decisions.put(regionKey, RegionDecision);
+  :milpEcTtlByRegion.put(region, tauH);
+else (否)
+  :记录 infeasible/timeout;
+endif
+
+stop
+
+@enduml

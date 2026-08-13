@@ -1,0 +1,7 @@
+{
+  "init_regions": ["aws:us-east-1", "aws:us-west-2"],
+  "client_from_region": "aws:us-east-1",
+  "skystore_bucket_prefix": "ablation",
+  "get_policy": "cheapest",
+  "put_policy": "skystore"
+}

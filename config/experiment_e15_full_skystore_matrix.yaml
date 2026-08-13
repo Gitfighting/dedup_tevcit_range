@@ -1,0 +1,42 @@
+# E15: SkyStore 全矩阵 — 3/6/9-reg × 5 trace × 4 type @ p=0.10
+# 每 reg 20 格；共 60 格 × (tevict + V4) = 120 次仿真
+# 2-reg：仓库仅有 typeE 原始 trace，不含 typeA–D，见 README
+#
+# Run:
+#   python scripts/run_e15_full_matrix.py --phase synth
+#   python scripts/run_e15_full_matrix.py --phase run
+#   python scripts/run_e15_full_matrix.py --phase analyze
+
+primary_p: 0.10
+
+region_configs:
+  - id: 3reg
+    tevict: config/tevictranges_3reg.yaml
+    v4: config/milp_ec_new_v4_3reg.yaml
+    synth_root: results/synth/3reg
+  - id: 6reg
+    tevict: config/tevictranges_6reg.yaml
+    v4: config/milp_ec_new_v4_6reg.yaml
+    synth_root: results/synth/6reg
+  - id: 9reg
+    tevict: config/tevictranges_9reg.yaml
+    v4: config/milp_ec_new_v4_9reg.yaml
+    synth_root: results/synth/9reg
+
+trace_ids: [T15, T29, T65, T78, T79]
+trace_numbers: ["015", "029", "065", "078", "079"]
+workload_types: [A, B, C, D]
+
+# T29 ~13M req：默认仍尝试（12g）；失败可改 skip_traces: [T29]
+skip_traces: []
+maven_heap: 12g
+vm: 5
+simversion: 3
+
+# 2-reg 仅 typeE（5 trace），可选附录实验
+run_2reg_typeE: true
+region_2reg:
+  id: 2reg
+  tevict: config/tevictranges_2reg.yaml
+  v4: config/milp_ec_new_v4_2reg.yaml
+  data_root: Data/2reg/2reg

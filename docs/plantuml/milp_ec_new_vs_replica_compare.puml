@@ -1,0 +1,93 @@
+@startuml
+' Side-by-side comparison: Replica policy vs MILP-ECnew policy
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 180
+skinparam activity {
+  BorderColor #1F2937
+  ArrowColor #334155
+  FontColor #111827
+  BackgroundColor #F9FAFB
+  DiamondBackgroundColor #FFFBEB
+}
+
+title Replica vs MILP-ECnew (Dataset -> Real Cost) Side-by-side
+
+legend right
+|= Color |= Meaning |
+|<#DBEAFE>| Shared input/runtime path |
+|<#FDE68A>| Replica-only behavior |
+|<#86EFAC>| MILP-ECnew-only behavior |
+|<#F5D0FE>| Cost accounting path |
+|<#FECACA>| Final settlement |
+endlegend
+
+start
+
+partition "Shared Input" #DBEAFE {
+  :Read dataset row;
+  :Parse -> Request(op,obj,size,issueRegion,timestamp);
+  :Ensure LogicalObject exists;
+}
+
+partition "Policy Branching" #DBEAFE {
+  if (Policy Type?) then (Replica)
+    #FDE68A:Replica branch;
+    :place(req) -> issueRegion or fixed replica set;
+    :placementSizes = null;
+    :readTransferSize = null;
+    note right
+    Fallback behavior:
+    effectiveSize = req.size
+    for read/write transfer metric
+    end note
+    :TTL from teven/tevict/fixed rules;
+  else (MILP-ECnew)
+    #86EFAC:MILP-ECnew branch;
+    :PolicyMilpECnew.place(req,config);
+    :Accumulate windowStats.write/read GB;
+    :checkAndSolveWindow -> solveRegionMilp;
+    :Cache RegionDecision(mode, shardAt[], ttlHours);
+    if (EC decision active?) then (yes)
+      :return 3 shard regions;
+      :placementSizes[region] = req.size/EC_K;
+      :readTransferSize = req.size/EC_K (EC object);
+    else (no)
+      :return issueRegion;
+      :size uses full req.size;
+    endif
+    :Histogram uses getHistogramSizeGB;
+    :EC histogram uses shard size req.size/EC_K;
+  endif
+}
+
+partition "Transfer + Object State" #DBEAFE {
+  :Build transfer graph(s);
+  :initiate_data_transfer(...);
+  :Create PhysicalObject(size=placement size or full size);
+  :RegionManager.addObjectToRegion(...);
+  if (overwrite or eviction) then (yes)
+    :RegionManager.removeObjectFromRegion(...);
+  endif
+}
+
+partition "Cost Accounting" #F5D0FE {
+  :metrics = _updateTransferMetric(graph, req, effectiveSize);
+  :tracker.addTransferCost(metrics.cost);
+  if (read) then (yes)
+    :tracker.addRequestCost(priceGet);
+  else (write)
+    :tracker.addRequestCost(pricePut per placed region);
+  endif
+}
+
+partition "Final Settlement" #FECACA {
+  :cleanupPolicy + flushPendingEvents (MILP branch);
+  :calculateRemainingStorageCosts;
+  :tracker.addStorageCost(aggregateStorageCost);
+  :totalCost = transfer + request + storage;
+  :write results JSON;
+}
+
+stop
+@enduml

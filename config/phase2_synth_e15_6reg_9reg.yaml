@@ -1,0 +1,22 @@
+# E15: 为 6-reg / 9-reg 合成 p100 delta trace（3-reg 已有）
+# Run: python scripts/run_phase2_synth_batch.py --config config/phase2_synth_e15_6reg_9reg.yaml
+
+manifest: results/finesse_merged_manifest.csv
+seed: 42
+mode: augment
+verify_baseline: true
+skip_existing: true
+output_root: results/synth
+
+cluster_fractions:
+  - 0.10
+
+trace_globs:
+  - "Data/6reg/6reg/typeA/*.mc.aug"
+  - "Data/6reg/6reg/typeB/*.mc.aug"
+  - "Data/6reg/6reg/typeC/*.mc.aug"
+  - "Data/6reg/6reg/typeD/*.mc.aug"
+  - "Data/9reg/9reg/typeA/*.mc.aug"
+  - "Data/9reg/9reg/typeB/*.mc.aug"
+  - "Data/9reg/9reg/typeC/*.mc.aug"
+  - "Data/9reg/9reg/typeD/*.mc.aug"

@@ -1,0 +1,34 @@
+@startuml PolicyMilpECnewV2_Eviction
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 11
+skinparam roundCorner 8
+skinparam shadowing false
+
+title **EC 联动驱逐**\n(getLinkedEvictionObjects)
+
+start
+:发现 obj 到期;
+
+if (obj 是副本?) then (是)
+  if (有 EC 片?) then (是)
+    :可删除副本;
+    :return [obj];
+  else (否)
+    :数据丢失风险;
+    :return [];
+  endif
+else (obj 是 EC 片)
+  if (有 副本?) then (是)
+    :可删除所有 EC 片;
+    :return 所有 EC 片;
+  else (否)
+    :数据丢失风险;
+    :return [];
+  endif
+endif
+
+stop
+
+@enduml

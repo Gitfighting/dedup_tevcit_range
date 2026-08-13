@@ -1,0 +1,59 @@
+# E16: 全矩阵 p 阶梯 — 3/6/9-reg × 20 格 × 11 档 p，r 分布不变
+# 每 reg 20 格 = 5 trace × 4 type；汇总时对 20 格求平均
+#
+# 磁盘不足时用 rolling（一次只保留一档 p 的 synth trace）：
+#   python scripts/run_e16_p_ladder_full_matrix.py --phase rolling
+#   python scripts/run_e16_p_ladder_full_matrix.py --phase rolling --p 0.05
+#
+# 传统全量（需大磁盘）：
+#   python scripts/run_e16_p_ladder_full_matrix.py --phase synth
+#   python scripts/run_e16_p_ladder_full_matrix.py --phase run
+#   python scripts/run_e16_p_ladder_full_matrix.py --phase compile
+
+fractions:
+  - 0.05
+  - 0.08
+  - 0.10
+  - 0.15
+  - 0.20
+  - 0.25
+  - 0.30
+  - 0.35
+  - 0.40
+  - 0.45
+  - 0.50
+
+# tevict 不读 delta 列，基线固定用 p100 trace；可复用 E15/E14 结果
+tevict_reference_p: 0.10
+
+region_configs:
+  - id: 3reg
+    tevict: config/tevictranges_3reg.yaml
+    v4: config/milp_ec_new_v4_3reg.yaml
+    synth_root: results/synth/3reg
+  - id: 6reg
+    tevict: config/tevictranges_6reg.yaml
+    v4: config/milp_ec_new_v4_6reg.yaml
+    synth_root: results/synth/6reg
+  - id: 9reg
+    tevict: config/tevictranges_9reg.yaml
+    v4: config/milp_ec_new_v4_9reg.yaml
+    synth_root: results/synth/9reg
+
+trace_ids: [T15, T29, T65, T78, T79]
+trace_numbers: ["015", "029", "065", "078", "079"]
+workload_types: [A, B, C, D]
+
+skip_traces: []
+maven_heap: 12g
+vm: 5
+simversion: 3
+
+synth_config: config/phase2_synth_e16_p_ladder_full.yaml
+
+# rolling 模式：每档 p 跑完后删除该档 synth trace（仿真 JSON 保留）
+rolling_delete_synth_after_run: true
+# tevict 基线 trace 用 p100；若 E15 已有结果可不保留 p100 synth
+rolling_keep_tevict_reference_on_disk: false
+manifest: results/finesse_merged_manifest.csv
+synth_seed: 42

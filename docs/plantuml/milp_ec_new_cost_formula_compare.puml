@@ -1,0 +1,55 @@
+@startuml
+' Cost formula comparison focused on accounting equations
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 180
+skinparam rectangle {
+  BorderColor #1F2937
+  FontColor #111827
+}
+skinparam arrow {
+  Color #334155
+}
+
+title Cost Formula Comparison: Replica vs MILP-ECnew
+
+legend right
+|= Color |= Meaning |
+|<#FDE68A>| Replica formula |
+|<#86EFAC>| MILP-ECnew formula |
+|<#DBEAFE>| Shared mechanism |
+|<#F5D0FE>| Runtime accumulation |
+|<#FECACA>| Final aggregate |
+endlegend
+
+rectangle "Shared Metric Engine\n_updateTransferMetric(graph, req, effectiveSize)" as Shared #DBEAFE
+rectangle "Per-edge transfer term\nedgeCost * effectiveSize * partitions/numPartitions" as EdgeTerm #DBEAFE
+
+rectangle "Replica effectiveSize\nread: req.size\nwrite: req.size per copy" as RepSize #FDE68A
+rectangle "MILP-ECnew effectiveSize\nread: req.size/EC_K (EC object)\nwrite: req.size/EC_K per shard" as EcSize #86EFAC
+
+rectangle "Transfer Cost Accumulator\ntracker.addTransferCost(metrics.cost)" as TransferAcc #F5D0FE
+rectangle "Request Cost (read)\ntracker.addRequestCost(priceGet(readRegion))" as ReadReq #F5D0FE
+rectangle "Request Cost (write)\ntracker.addRequestCost(sum pricePut(placedRegion))" as WriteReq #F5D0FE
+
+rectangle "Storage Settlement\nRegionManager.remove/calculateRemainingStorageCosts\ncost = pricePerGB(duration) * sizeGB" as StorageSettle #DBEAFE
+rectangle "Storage Accumulator\ntracker.addStorageCost(aggregateStorageCost)" as StorageAcc #F5D0FE
+
+rectangle "Total\ntotalCost = totalTransfer + totalRequest + totalStorage" as Total #FECACA
+
+RepSize --> Shared : effectiveSize input
+EcSize --> Shared : effectiveSize input
+Shared --> EdgeTerm : per-edge billing
+EdgeTerm --> TransferAcc : sum over edges
+
+ReadReq --> Total : request component
+WriteReq --> Total : request component
+TransferAcc --> Total : transfer component
+StorageSettle --> StorageAcc : settled storage cost
+StorageAcc --> Total : storage component
+
+note bottom of EcSize
+MILP-ECnew requires SimulatorV3 path\nso placement/read sizes are delegated to policy.
+end note
+
+@enduml

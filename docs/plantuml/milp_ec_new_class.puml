@@ -1,0 +1,153 @@
+@startuml
+' MILP-ECnew structural class view with layering and state-oriented notes
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 180
+skinparam class {
+  BorderColor #1F2937
+  ArrowColor #334155
+  FontColor #111827
+  AttributeFontColor #1F2937
+}
+
+title MILP-ECnew Module Class Diagram (Layered)
+
+legend right
+|= Color |= Layer |
+|<#DBEAFE>| L0 Driver/Input |
+|<#DCFCE7>| L1 Policy/Optimization |
+|<#FEF3C7>| L2 Transfer/Execution |
+|<#F3E8FF>| L3 Metrics/Cost |
+|<#FEE2E2>| L4 Storage Settlement |
+endlegend
+
+package "L0 Driver/Input" #DBEAFE {
+  class Main {
+    +main(args)
+  }
+  class SimulatorV2 {
+    +run()
+    +initiate_data_transfer(...)
+    +calculateTtl(...)
+    #getPlacementSizesForWrite(req)
+    #getReadTransferSize(req)
+    +cleanupPolicy()
+    +writeResultsToJson(tag)
+  }
+  class SimulatorV3 {
+    #getPlacementSizesForWrite(req)
+    #getReadTransferSize(req)
+  }
+}
+
+package "L1 Policy/Optimization" #DCFCE7 {
+  abstract class PlacementPolicy {
+    +place(req, config)
+    +getPlacementWithSizes(req, config)
+    +getReadTransferSize(req, config)
+    +updatePastRequests(req, region)
+    +getTevict(src, dst, ts)
+  }
+
+  class PolicyTevictRangesNew {
+    #getHistogramSizeGB(request, placeRegion)
+    +updatePastRequests(request, placeRegion)
+    +calcEvictCost(region, tevenHours, netCost)
+    +getTevict(src, dst, ts)
+  }
+
+  class PolicyMilpECnew {
+    -windowStats: Map<String, RegionStats>
+    -decisions: Map<String, RegionDecision>
+    -milpEcTtlByRegion: Map<String, Double>
+    +place(req, config)
+    +getPlacementWithSizes(req, config)
+    +getReadTransferSize(req, config)
+    #getHistogramSizeGB(request, placeRegion)
+    +updatePastRequests(request, placeRegion)
+    +flushPendingEvents(now)
+    -solveWindowBatch(now)
+    -solveRegionMilp(...)
+  }
+
+  class RegionStats {
+    +writeSizeGB
+    +readSizeGB
+  }
+
+  class RegionDecision {
+    +mode
+    +shardAt[]
+    +ttlHours
+    +decidedAtSec
+    +expired(nowSec)
+    +hasLocalData(regionIdx)
+  }
+}
+
+package "L2 Transfer/Execution" #FEF3C7 {
+  class TransferPolicy {
+    +readTransferPath(req)
+    +writeTransferPath(req, region)
+  }
+  class LogicalObject {
+    +physicalObjects: Map<region, PhysicalObject>
+  }
+  class PhysicalObject {
+    +size
+    +ttl
+    +storageStartTime
+    +locationTag
+    +ready(ts)
+  }
+}
+
+package "L3 Metrics/Cost" #F3E8FF {
+  class Tracker {
+    +addTransferCost(cost)
+    +addRequestCost(cost)
+    +addStorageCost(cost)
+    +getMetrics()
+    +totalCost
+  }
+}
+
+package "L4 Storage Settlement" #FEE2E2 {
+  class RegionManager {
+    +addObjectToRegion(region, obj)
+    +removeObjectFromRegion(region, obj, endTime)
+    +calculateRemainingStorageCosts(endTime, logicalObjects)
+    +aggregateStorageCost()
+  }
+}
+
+Main --> SimulatorV2 : create and run
+SimulatorV3 --|> SimulatorV2
+SimulatorV2 --> PlacementPolicy : placementPolicy
+SimulatorV2 --> TransferPolicy : transferPolicy
+SimulatorV2 --> Tracker : metrics accounting
+SimulatorV2 --> RegionManager : object/state settlement
+SimulatorV2 --> LogicalObject : per object state
+LogicalObject --> PhysicalObject : contains
+
+PolicyTevictRangesNew --|> PlacementPolicy
+PolicyMilpECnew --|> PolicyTevictRangesNew
+PolicyMilpECnew *-- RegionStats : window aggregate
+PolicyMilpECnew *-- RegionDecision : active decision cache
+
+RegionManager --> PhysicalObject : manage lifetime
+RegionManager --> Tracker : storage cost added by simulator
+
+note right of PolicyMilpECnew
+State zones:
+- Window state: windowStats (write/read GB)
+- Decision state: decisions (mode, shards, ttl)
+- TTL cache: milpEcTtlByRegion
+end note
+
+note bottom of Tracker
+Real total cost:
+transfer + storage + request
+end note
+
+@enduml

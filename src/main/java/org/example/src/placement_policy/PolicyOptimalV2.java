@@ -47,8 +47,8 @@ public class PolicyOptimalV2 extends PlacementPolicy {
             LogicalObject logicalObj = logicalObjects.get(key);
             boolean isBaseRegion = issueRegion.equals(logicalObj.baseRegion);
             boolean noCopies = logicalObj.physicalObjects.isEmpty();
-            boolean hasReads = req.nextAccessSameRegTimestamp != null &&
-                    !req.nextAccessSameRegTimestamp.equals(LocalDateTime.MAX);
+            boolean hasReads = req.nextAccessSameRegTimestamp != null
+                    && req.nextAccessSameRegTimestamp.toEpochMilli() != Long.MAX_VALUE;
 
             if (isBaseRegion || noCopies || hasReads) {
                 placeRegions.add(issueRegion);
@@ -105,8 +105,8 @@ public class PolicyOptimalV2 extends PlacementPolicy {
         // Use double precision
         double teven = (netCost / price * 60 * 60 * 24 / 3.0);
 
-        if (request.nextAccessSameRegTimestamp != null) {
-            // FIX: Use nanosecond precision to match Python's total_seconds() float return
+        if (request.nextAccessSameRegTimestamp != null
+                && request.nextAccessSameRegTimestamp.toEpochMilli() != Long.MAX_VALUE) {
             double timeDiff = java.time.Duration.between(request.timestamp, request.nextAccessSameRegTimestamp)
                     .toNanos() / 1_000_000_000.0;
             if (timeDiff <= teven) {

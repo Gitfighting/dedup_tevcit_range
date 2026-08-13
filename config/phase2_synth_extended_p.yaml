@@ -1,0 +1,22 @@
+# 扩展差分覆盖率 p 阶梯 — 仅 T79 typeA（E14 饱和度子实验）
+# 已有: p050 p100 p200 p300 p500
+# 新增: p080 p150 p250 p350 p400 p450
+# Run: python scripts/run_phase2_synth_batch.py --config config/phase2_synth_extended_p.yaml
+
+manifest: results/finesse_merged_manifest.csv
+seed: 42
+mode: augment
+verify_baseline: true
+skip_existing: true
+output_root: results/synth
+
+cluster_fractions:
+  - 0.08
+  - 0.15
+  - 0.25
+  - 0.35
+  - 0.40
+  - 0.45
+
+trace_globs:
+  - "Data/3reg/3reg/typeA/IBMObjectStoreTrace079Part0.typeA.mc.aug"
