@@ -1,0 +1,81 @@
+\section{Design}
+\label{sec:design}
+
+In this section, we first describe the offline chunk store.
+Next, we present TevictRanges as a pure estimator and the {GET}/{PUT} paths (Algorithm~\ref{alg:chunk}).
+Finally, we briefly describe the implementation.
+
+\subsection{Offline Chunk Store}
+
+Simulation never re-runs {CDC} on the critical path.
+A one-time index maps each object key to a packed array of uids and a logical size, plus a global length table $\ell[\mathrm{uid}]$.
+The histogram weight of object $o$ is
+\begin{equation}
+  w(o)=\sum_{u \in \mathrm{unique}(\mathrm{uids}(o))} \ell[u],
+\end{equation}
+i.e., duplicate uids inside one object are counted once~\cite{lbfs2001}.
+If $o$ is missing from the index, the policy falls back to the trace size field.
+Each chunk reference occupies a fixed $40$-byte control-plane fingerprint in the manifest; we do not fold that metadata into the storage bill (Section~\ref{sec:eval-perf}).
+
+\subsection{TevictRanges as a Pure Estimator}
+
+Placement of a new object (which regions may hold a first copy) is unchanged: ChunkTevict calls TevictRanges \texttt{place()} and \texttt{update\_past\_requests()}.
+The latter is fed a synthetic request whose size is $w(o)$ rather than $|o|$, so the histogram learns unique bytes.
+{TTL} selection is SkyStore's \texttt{calculate\_ttl}~\cite{skystore2025}, applied to the uid's current replicas rather than the object's.
+Transfer pays the cheapest holder; the lease is SkyStore's $T_{\mathrm{evict}}$ over replicas that still cover the horizon (or are immortal).
+If no other holder exists, the policy uses the same median $T_{\mathrm{even}}$ fallback.
+
+The estimator itself is SkyStore's: \texttt{TevictRangesV2.get\_tevict}$(src,dst,t)$ still scans the interval histogram at $dst$ and returns seconds.
+ChunkTevict does not edit that routine.
+What changes is the \emph{clock object}:
+SkyStore's \texttt{calculate\_ttl} walks other \emph{object} replicas, takes $\min_i T_{\mathrm{evict}}(i\!\to\!R)$ among copies whose remaining lease covers $t+T$ (or are immortal), and hangs one TTL on the object in region $R$.
+ChunkTevict runs that same min over regions that currently hold the \emph{uid}, and hangs the lease on that uid in $R$ (\texttt{RegionChunkState.chunk\_exp}).
+Histogram updates still go through \texttt{update\_past\_requests}, but the synthetic request size is $w(o)$ rather than $|o|$.
+{FB} origin {PUT}s pin every uid at $R$ forever.
+{FP} {PUT}s set a TTL only on newly installed uids (already-local chunks are not refreshed), matching SkyStore's skip-if-stored rule.
+
+\subsection{{GET} and {PUT} Paths}
+
+Algorithm~\ref{alg:chunk} summarizes one request at issuing region $R$ and time $t$.
+{PUT}s incur no transfer in this model (the client already has the bytes).
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox{0.95\columnwidth}{\scriptsize
+\textbf{Algorithm 1} ChunkTevict replay of one request.\\[2pt]
+\textbf{Input:} object key, op $\in\{\mathrm{GET},\mathrm{PUT}\}$, region $R$, time $t$.\\
+\textbf{Output:} storage/{GB}$\cdot$h updates, transfer charges, per-uid leases.\\[2pt]
+1:\ \ $U \leftarrow \mathrm{unique}(\mathrm{uids}(\mathrm{key}))$\\
+2:\ \ \textbf{if} op $=$ {PUT} \textbf{and} {FB} \textbf{then} pin every $u\in U$ at $R$ ($\mathrm{TTL}=\infty$); \textbf{return}\\
+3:\ \ \textbf{if} op $=$ {PUT} \textbf{and} {FP} \textbf{then}\\
+4:\ \ \quad install missing $u\in U$ at $R$; do \emph{not} refresh already-local uids\\
+5:\ \ \quad \textbf{for} each newly installed $u$: {TTL} $\leftarrow$ SkyStore \texttt{calculate\_ttl} on holders of $u$ (else median $T_{\mathrm{even}}/3$)\\
+6:\ \ \quad release last-copy freeze of $u$ in other regions; \textbf{return}\\
+7:\ \ \textbf{// GET}\\
+8:\ \ update TevictRanges histogram at $R$ with weight $w(\mathrm{key})$\\
+9:\ \ \textbf{for} each local non-pinned $u\in U$: refresh {TTL} $\leftarrow$ SkyStore \texttt{calculate\_ttl} on holders of $u$\\
+10: \textbf{for} each missing $u\in U$: pay cheapest holder; install $u$ at $R$; {TTL} $\leftarrow$ the same \texttt{calculate\_ttl}\\
+11: {FP}: if a second copy of $u$ now exists, expire any pending last-copy freeze elsewhere
+}}
+\caption{ChunkTevict applies SkyStore's TevictRanges \texttt{calculate\_ttl} per unique chunk.}
+\label{alg:chunk}
+\end{figure}
+
+On {GET} miss, object-level SkyStore pays for the whole object from one replica-holding region and sets one object {TTL}.
+ChunkTevict runs that same pay-and-lease pair \emph{per missing uid}, so different chunks of one object may come from different regions and expire independently.
+
+\subsection{Last-Copy Freeze ({FP} only)}
+
+When a uid's lease expires and it is the last copy, ChunkTevict does not delete it: the expiry becomes $\infty$ and the uid is marked pending.
+A later {GET} hit on that copy clears pending and installs a new finite {TTL} (SkyStore TevictRanges does the same at object granularity).
+A later {PUT} or {GET} miss that creates a second copy elsewhere expires the pending copy immediately.
+{FB} never freezes: the origin pin is already immortal.
+
+\subsection{Implementation}
+
+The replay sits alongside SkyStore's simulator and does not modify the TevictRanges core.
+The chunk store memory-maps packed uid arrays and a global length table.
+Each region keeps a dense per-uid lease vector, a pin mask, and an expiry heap.
+Transfer charges use SkyStore's directed price graph (storage {USD}/{GB}$\cdot$h and pairwise egress).
+{CDC} is performed once offline (Fast{CDC} over a content pool bound to keys by a manifest); the replay only looks up uids.
+Manifest metadata is $40$\,B per chunk reference and is excluded from the dollar bill.

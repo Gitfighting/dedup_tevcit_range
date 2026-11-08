@@ -39,11 +39,10 @@ async def start_upload(
     timestamp = datetime.now()
     put_policy = get_placement_policy(policy_ultra_dict["put_policy"], init_region_tags)
     is_skystore_policy = put_policy.name() == "skystore"
-    is_dedup_policy = put_policy.name() == "dedup_aware_tevict"
     idx = TraceIdx.get_instance().get() - 1
     req_version_id = request.version_id
 
-    if is_skystore_policy or is_dedup_policy:
+    if is_skystore_policy:
         if idx >= len(put_policy.timestamps):
             timestamp = datetime.fromtimestamp(
                 put_policy.timestamps[-1] / 1000 + idx - len(put_policy.timestamps),
@@ -113,7 +112,6 @@ async def start_upload(
             request.copy_src_bucket is not None
             or put_policy.name() == "always_store"
             or put_policy.name() == "skystore"
-            or put_policy.name() == "dedup_aware_tevict"
         )
     ):
         return Response(
@@ -166,7 +164,6 @@ async def start_upload(
         if (
             put_policy.name() == "always_store"
             or put_policy.name() == "skystore"
-            or put_policy.name() == "dedup_aware_tevict"
             or version_enabled is None
             or not version_enabled
             or existing_object.version_suspended
@@ -192,7 +189,6 @@ async def start_upload(
     if primary_exists and (
         put_policy.name() == "always_store"
         or put_policy.name() == "skystore"
-        or put_policy.name() == "dedup_aware_tevict"
     ):
         # Assume that physical bucket locators for this region already exists and we don't need to create them
         primary_write_region = [
@@ -380,7 +376,6 @@ async def complete_upload(
 ):
     put_policy = get_placement_policy(policy_ultra_dict["put_policy"], init_region_tags)
     is_skystore_policy = put_policy.name() == "skystore"
-    is_dedup_policy = put_policy.name() == "dedup_aware_tevict"
 
     stmt = (
         select(DBPhysicalObjectLocator)
@@ -399,7 +394,7 @@ async def complete_upload(
     if physical_locator.storage_start_time is None:
         idx = TraceIdx.get_instance().get() - 1
         timestamp = request.last_modified.replace(tzinfo=None)
-        if is_skystore_policy or is_dedup_policy:
+        if is_skystore_policy:
             if idx >= len(put_policy.timestamps):
                 timestamp = datetime.fromtimestamp(
                     put_policy.timestamps[-1] / 1000 + idx - len(put_policy.timestamps),
@@ -426,7 +421,6 @@ async def complete_upload(
         or policy_name == "fixed_ttl"
         or policy_name == "t_even"
         or policy_name == "skystore"
-        or policy_name == "dedup_aware_tevict"
     ):
         logical_object = physical_locator.logical_object
         logical_object.status = Status.ready
@@ -434,79 +428,3 @@ async def complete_upload(
         logical_object.etag = request.etag
         logical_object.last_modified = request.last_modified.replace(tzinfo=None)
     await db.commit()
-
-    # === Dedup: 作为后台任务，对刚上传的物理对象执行 CDC + fingerprint + 索引 ===
-    if policy_name == "dedup_aware_tevict":
-        from operations.dedup import DedupEngine
-        import os
-
-        bucket = physical_locator.bucket
-        # OCP walkthrough fix: index by LOGICAL key (GET uses request.key).
-        # physical_locator.key is often prefix+logical and would miss on lookup.
-        logical_key = (
-            physical_locator.logical_object.key
-            if physical_locator.logical_object is not None
-            else physical_locator.key
-        )
-        key = logical_key
-        region = physical_locator.location_tag
-        s3_local_path = os.path.join(
-            "/tmp", "s3-local-cache", bucket, physical_locator.key
-        )
-        s3_local_path_alt = os.path.join(
-            "/tmp", "s3-local-cache", bucket, logical_key
-        )
-
-        async def _dedup_background():
-            try:
-                engine = DedupEngine.get_or_create(
-                    chunk_root="/tmp/dedup_chunks",
-                    index_path="/tmp/dedup_index",
-                    region=region,
-                )
-                path = s3_local_path if os.path.exists(s3_local_path) else None
-                if path is None and os.path.exists(s3_local_path_alt):
-                    path = s3_local_path_alt
-                if path is None:
-                    # brief retry: sky-s3 may finish writing slightly after complete_upload
-                    import asyncio as _asyncio
-
-                    for _ in range(10):
-                        await _asyncio.sleep(0.2)
-                        if os.path.exists(s3_local_path):
-                            path = s3_local_path
-                            break
-                        if os.path.exists(s3_local_path_alt):
-                            path = s3_local_path_alt
-                            break
-                if path is None:
-                    print(
-                        f"[dedup] file not found for logical={logical_key} "
-                        f"tried={s3_local_path} and {s3_local_path_alt}"
-                    )
-                    return
-
-                manifest = engine.chunk_and_dedup_file(path, region)
-                refs = [
-                    {"fp": e.fingerprint, "size": e.size, "region": e.region}
-                    for e in manifest.entries
-                ]
-
-                total_chunks = len(manifest.entries)
-                local_hits = sum(1 for e in manifest.entries if e.region == region)
-
-                put_policy.set_obj_chunk_refs(key, refs)
-                if total_chunks > 0:
-                    put_policy.record_chunk_locality(region, local_hits, total_chunks)
-
-                print(
-                    f"[dedup] {key}: {total_chunks} chunks, "
-                    f"{local_hits} region-local ({manifest.duplicate_chunks} index-dup, "
-                    f"{manifest.new_chunks} new), "
-                    f"L={local_hits/max(total_chunks,1):.3f}, "
-                    f"dedup_ratio={manifest.dedup_ratio():.3f}, path={path}"
-                )
-            except Exception as e:
-                print(f"[dedup] ERROR processing {key}: {e}")
-
-        asyncio.create_task(_dedup_background())

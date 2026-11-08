@@ -1,0 +1,31 @@
+[
+    {
+        "Trace Duration (s)": "7 days, 1:00:33.875000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 2409805,
+        "avg request size (GB)": 0.0010360746481455864,
+        "aggregate size (GB)": 2496.737867433578,
+        "avg read latency (ms)": 68.272,
+        "avg write latency (ms)": 1.0,
+        "p50 read latency (ms)": 68.272,
+        "p90 read latency (ms)": 68.272,
+        "p99 read latency (ms)": 68.272,
+        "p50 write latency (ms)": 1.0,
+        "p90 write latency (ms)": 1.0,
+        "p99 write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 0.2,
+        "avg write tput runtime (ms)": 0.0,
+        "avg read throughput (Gbps)": 4.8169,
+        "avg write throughput (Gbps)": 10.0,
+        "total transfer cost ($)": 48.928926948,
+        "total storage cost ($)": 13.97843524,
+        "total storage cost without base ($)": 0,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 62.907362188,
+        "total cost ($)": 62.907362188,
+        "trace": "traces/fig5_work/fig5_2reg_always_evict_T78.mc-aug",
+        "config": "config/fig5_jobs/fig5_2reg_always_evict_T78.yaml",
+        "timestamp": "2026-08-19T18:30:45.306914",
+        "tag": "fig5_2reg_always_evict_T78"
+    }
+]

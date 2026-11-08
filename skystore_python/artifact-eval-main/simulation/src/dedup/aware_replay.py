@@ -1,16 +1,28 @@
 """
-Chunk-level cost replay for simulation (OCP).
+ChunkTevict cost replay.
 
-Two policies share this engine:
+TevictRanges histogram; lease is per unique chunk.
+GET miss: pay cheapest holder; TTL = min live get_tevict (source uid
+must cover now+T). GET hit: same min among live holders.
 
-  dedup_aware_tevict_ranges
-      Copied adaptive TTL + HOT vs DEDUP threshold (τ=(1-L)×T_even).
-      DEDUP holds teven/2 (prototype parity).
+FB vs FP (config.fixed_base_region, same meaning as SimulatorV2 --setbase):
 
-  tevict_ranges_dedup
-      Author TevictRangesV2 TTL unchanged.
-      Origin PUT bills full logical size (same as SkyStore primary copy).
-      Cross-region cache bills unique missing chunks + manifest.
+  FB: PUT region is pinned forever. Last-copy never moves.
+  FP PUT of a new local copy: no other holder ⇒ author's median T_even
+  (N / (S·3) · 86400 s, same formula as calculate_ttl with empty region_list);
+  other holders ⇒ min_live get_tevict. Existing local copies are not
+  refreshed on PUT.
+
+  FP last copy (author expire_immediate): do not drop the uid. Freeze
+  exp=inf. A GET hit clears the freeze and sets calculate_ttl. When a
+  second copy is created (GET miss transfer or FP PUT), the frozen copy's
+  TTL becomes now + transfer_time, where transfer_time is the transfer
+  graph RTT in seconds (author transfer_time_millis/1000), not size/throughput.
+  The frozen copy is not deleted until that expiry.
+
+Latency matches SimulatorV2._update_transfer_metric: graph avg_rtt
+(ms), not client wall time and not size/throughput. Same-region is the
+self-loop (1 ms). GET miss from several holders: max RTT (parallel).
 
 Does not modify simulator_v2.py core loop.
 """
@@ -23,29 +35,41 @@ import time
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
-import networkx as nx
+import numpy as np
 
 from src.dedup.chunk_store import ChunkStore
 from src.dedup.region_state import (
     RegionChunkState,
-    add_chunks,
-    drop_dedup_refs,
-    locality_for_object,
-    missing_bytes,
+    cheapest_src_for_uids,
+    ensure_present,
+    expire_chunk_lease,
+    holds_uids,
+    lease_covers,
+    set_chunk_lease,
     settle,
+    uid_holder_count,
 )
 from src.model.config import Config
 from src.model.request import Request
-from src.placement_policy.policy_dedup_aware_tevict_ranges import (
-    ObjFormat,
-    PolicyDedupAwareTevictRanges,
-)
-from src.placement_policy.policy_tevict_ranges_dedup import PolicyTevictRangesDedup
+from src.placement_policy.policy_chunk_tevict import PolicyChunkTevict
 from src.utils.helpers import make_nx_graph
 
 GB = float(2**30)
+
+
+def _latency_summary(xs: List[float]) -> dict:
+    if not xs:
+        return {"n": 0, "avg": 0.0, "p50": 0.0, "p90": 0.0, "p99": 0.0}
+    a = np.asarray(xs, dtype=np.float64)
+    return {
+        "n": int(a.size),
+        "avg": round(float(a.mean()), 4),
+        "p50": round(float(np.percentile(a, 50)), 4),
+        "p90": round(float(np.percentile(a, 90)), 4),
+        "p99": round(float(np.percentile(a, 99)), 4),
+    }
 
 
 def _parse_ts_ms(ts: str) -> float:
@@ -88,48 +112,14 @@ def _make_request(row: dict) -> Request:
     return Request(**kwargs)
 
 
-def run_dedup_aware_replay(
+def run_chunk_tevict_replay(
     trace: Path,
     chunk_dir: Path,
     config: Config,
     max_ops: int = 0,
     profiles_dir: Optional[Path] = None,
 ) -> dict:
-    return run_chunk_cost_replay(
-        trace,
-        chunk_dir,
-        config,
-        max_ops=max_ops,
-        profiles_dir=profiles_dir,
-        policy_name="dedup_aware_tevict_ranges",
-    )
-
-
-def run_tevict_ranges_dedup_replay(
-    trace: Path,
-    chunk_dir: Path,
-    config: Config,
-    max_ops: int = 0,
-    profiles_dir: Optional[Path] = None,
-) -> dict:
-    return run_chunk_cost_replay(
-        trace,
-        chunk_dir,
-        config,
-        max_ops=max_ops,
-        profiles_dir=profiles_dir,
-        policy_name="tevict_ranges_dedup",
-    )
-
-
-def run_chunk_cost_replay(
-    trace: Path,
-    chunk_dir: Path,
-    config: Config,
-    max_ops: int = 0,
-    profiles_dir: Optional[Path] = None,
-    policy_name: str = "dedup_aware_tevict_ranges",
-) -> dict:
+    """ChunkTevict replay."""
     t0 = time.time()
     store = ChunkStore.load(chunk_dir)
     rows = _load_ops(trace, max_ops=max_ops)
@@ -139,74 +129,125 @@ def run_chunk_cost_replay(
             if r not in regions:
                 regions.append(r)
 
-    # Same pricing graph as SimulatorV2 (src/utils/profiles)
-    total_graph: nx.DiGraph = make_nx_graph()
+    total_graph = make_nx_graph()
     keep = [r for r in regions if r in total_graph.nodes]
     if len(keep) < 2:
         raise RuntimeError(f"need >=2 priced regions, got {keep}")
 
-    ttl_dedup = policy_name == "tevict_ranges_dedup"
-    if ttl_dedup:
-        policy = PolicyTevictRangesDedup(
-            config=config,
-            total_graph=total_graph,
-            objects={},
-            regionManager=None,
-            chunk_store=store,
-        )
-    else:
-        policy = PolicyDedupAwareTevictRanges(
-            config=config,
-            total_graph=total_graph,
-            objects={},
-            regionManager=None,
-            chunk_store=store,
-        )
+    fixed_base = bool(getattr(config, "fixed_base_region", False))
+    policy = PolicyChunkTevict(
+        config=config,
+        total_graph=total_graph,
+        objects={},
+        regionManager=None,
+        chunk_store=store,
+    )
 
     st: Dict[str, RegionChunkState] = {
         r: RegionChunkState(store.n_unique) for r in keep
     }
+    for s in st.values():
+        s.enable_chunk_clock()
+
     cost = dict(storage=0.0, transfer=0.0)
     ctr = defaultdict(int)
     bytes_moved = 0.0
     heaps: Dict[str, list] = {r: [] for r in keep}
+    read_lats: List[float] = []
+    write_lats: List[float] = []
 
     def rate_gbh(r: str) -> float:
         return float(total_graph.nodes[r]["priceStorage"]) * 3 / 24.0
 
-    def egress(src: str, dst: str) -> float:
-        return float(total_graph[src][dst]["cost"])
+    def price_pair(src: str, dst: str):
+        e = total_graph[src][dst]
+        return float(e["cost"]), float(e.get("latency", 0.0))
 
-    def expire(r: str, key: str, now: float):
-        s = st[r]
-        settle(s, now, GB)
-        meta = s.cached.pop(key, None)
-        if meta is None:
-            return
-        _exp, _ttl, fmt = meta
-        if fmt == ObjFormat.DEDUP:
-            drop_dedup_refs(store, s, key)
-            s.cur_bytes -= store.manifest_bytes(key)
-        else:
-            s.cur_bytes -= store.logical_size(key)
-        ctr["evictions"] += 1
+    def edge_rtt_ms(src: str, dst: str) -> float:
+        if src is None or dst is None:
+            return 0.0
+        if total_graph.has_edge(src, dst):
+            return float(total_graph[src][dst].get("latency", 1.0 if src == dst else 0.0))
+        return 1.0 if src == dst else 0.0
 
-    def sweep(r: str, now: float):
+    def pair_ttl(src: str, dst: str, ts: datetime, cache: dict) -> float:
+        k = (src, dst)
+        if k not in cache:
+            cache[k] = float(policy.get_tevict_seconds(src, dst, ts))
+        return cache[k]
+
+    def min_live_ttl(uids: np.ndarray, now: float, ts: datetime, cache: dict) -> np.ndarray:
+        """Author min_i get_tevict with source-liveness, per uid.
+
+        First holder of the uid is always taken. An immortal holder (FB pin /
+        FP freeze, exp=inf) may replace. A smaller T is taken only if that
+        source's uid lease covers now+T.
+        No other holder ⇒ median T_even.
+        """
+        n = len(uids)
+        best = np.full(n, np.inf)
+        seen = np.zeros(n, dtype=bool)
+        others = [x for x in keep if x != reg]
+        for r in others:
+            sr = st[r]
+            has = holds_uids(sr, uids)
+            if not np.any(has):
+                continue
+            t = pair_ttl(r, reg, ts, cache)
+            covers = lease_covers(sr, uids, now, t)
+            exp = (
+                sr.chunk_exp[uids]
+                if sr.chunk_exp is not None
+                else np.full(n, np.nan)
+            )
+            immortal = (sr.pinned[uids] > 0) | np.isinf(exp)
+            take = has & ((~seen) | immortal | ((t < best) & covers))
+            best[take] = t
+            seen |= has
+        best[~seen] = policy.median_teven_seconds(reg)
+        return best
+
+    def sweep(r: str, now: float, final: bool = False) -> None:
         s = st[r]
         settle(s, now, GB)
         h = heaps[r]
         while h and h[0][0] <= now:
-            exp, key = heapq.heappop(h)
-            cur = s.cached.get(key)
-            if cur is not None and cur[0] <= now and abs(cur[0] - exp) < 1e-9:
-                expire(r, key, now)
+            exp, uid, gen = heapq.heappop(h)
+            if s.chunk_gen is None or int(s.chunk_gen[uid]) != gen:
+                continue
+            if s.pinned[uid] > 0:
+                continue
+            if not final and not fixed_base and uid_holder_count(st, uid) <= 1:
+                s.chunk_exp[uid] = np.inf
+                s.pending_uids.add(uid)
+                ctr["last_copy_hold"] += 1
+                continue
+            if expire_chunk_lease(store, s, uid, bill=True):
+                ctr["chunk_evictions"] += 1
+                s.pending_uids.discard(uid)
 
-    # Find a default base/src for first PUT region per object
-    obj_base: Dict[str, str] = {}
+    def release_pending(uid: int, now: float, keep_region: str, delay_s: float) -> None:
+        """Author: last copy expire_immediate → set_ttl(now - start + transfer_s).
+
+        That is expiry = now + transfer_s (graph RTT, not throughput).
+        Do not drop the frozen uid immediately.
+        """
+        if fixed_base:
+            return
+        exp = now + max(float(delay_s), 0.0)
+        for r in keep:
+            if r == keep_region:
+                continue
+            sr = st[r]
+            if uid in sr.pending_uids:
+                sr.pending_uids.discard(uid)
+                set_chunk_lease(sr, np.array([uid], dtype=np.int64), exp, heaps[r])
+                ctr["pending_release"] += 1
 
     for row in rows:
         req = _make_request(row)
         now = req.timestamp.timestamp()
+        ts = req.timestamp
         reg = req.issue_region
         if reg not in st:
             ctr["skip_region"] += 1
@@ -221,121 +262,138 @@ def run_chunk_cost_replay(
 
         s = st[reg]
         settle(s, now, GB)
+        # Ordered uid list = reconstruct recipe. Billing/TTL use unique uids
+        # (intra-object repeats must not double-count storage or transfer).
+        ordered = store.uids(key)
+        uids = np.unique(np.asarray(ordered))
 
-        # histogram learning (author Phase-1 input)
-        policy.update_past_requests(req, reg)
+        if req.op == "read":
+            policy.update_past_requests(req, reg)
 
         if req.op == "write":
             ctr["put"] += 1
-            if key not in s.pinned_objs:
-                s.pinned_objs.add(key)
-                obj_base[key] = reg
-                if ttl_dedup:
-                    # Origin is a normal full object (same as SkyStore PUT).
-                    # Chunk pin is only for locality / missing-chunk transfer.
-                    add_chunks(store, s, key, pin=True, bill=False)
-                    s.cur_bytes += store.logical_size(key)
-                    ctr["base_logical_bytes"] += store.logical_size(key)
-                else:
-                    add_chunks(store, s, key, pin=True)
-            continue
-
-        # GET
-        ctr["get"] += 1
-        if key in s.cached or key in s.pinned_objs:
-            ctr["hit"] += 1
-            if key in s.cached:
-                src = obj_base.get(key, keep[0] if keep[0] != reg else keep[-1])
-                if src == reg:
-                    src = next(x for x in keep if x != reg)
-                cur_fmt = s.cached[key][2]
-                ttl, fmt = policy.resolve_cache(req, src, reg, L=s.L)
-                refresh = ttl > 0 and (
-                    (ttl_dedup and cur_fmt == ObjFormat.DEDUP)
-                    or (not ttl_dedup and fmt == ObjFormat.HOT and cur_fmt == ObjFormat.HOT)
-                )
-                if refresh:
-                    exp = now + ttl
-                    s.cached[key] = (exp, ttl, cur_fmt)
-                    heapq.heappush(heaps[reg], (exp, key))
-            continue
-
-        # miss: pull from cheapest other region that has content
-        src_cands = [
-            r
-            for r in keep
-            if r != reg
-            and (key in st[r].pinned_objs or key in st[r].cached)
-        ]
-        if not src_cands:
-            # fall back to base if known
-            if key in obj_base and obj_base[key] != reg:
-                src_cands = [obj_base[key]]
-            else:
-                ctr["miss_no_src"] += 1
+            if len(uids) == 0:
                 continue
-        src = min(src_cands, key=lambda x: egress(x, reg))
-
-        L_obj = locality_for_object(store, s, key)
-        setter = getattr(policy, "set_region_L", None)
-        if setter is not None:
-            setter(reg, s.L)
-        ttl, fmt = policy.resolve_cache(req, src, reg, L=L_obj)
-
-        if (not ttl_dedup) and fmt == ObjFormat.HOT:
-            xfer = store.logical_size(key)
-            cost["transfer"] += egress(src, reg) * (xfer / GB)
-            bytes_moved += xfer
-            s.cur_bytes += store.logical_size(key)
-            if ttl > 0:
-                exp = now + ttl
-                s.cached[key] = (exp, ttl, fmt)
-                heapq.heappush(heaps[reg], (exp, key))
+            present = holds_uids(s, uids)
+            hit = uids[present]
+            miss = uids[~present]
+            if fixed_base:
+                ensure_present(store, s, uids, pin=True, bill=True)
+                if s.chunk_exp is not None:
+                    s.chunk_exp[uids] = np.inf
             else:
-                s.cur_bytes -= store.logical_size(key)
-            ctr["cache_hot"] += 1
-        else:
-            xfer = missing_bytes(store, s, key)
-            cost["transfer"] += egress(src, reg) * (xfer / GB)
-            bytes_moved += xfer
-            if ttl_dedup:
-                if ttl > 0:
-                    add_chunks(store, s, key, pin=False)
-                    s.cur_bytes += store.manifest_bytes(key)
-                    exp = now + ttl
-                    s.cached[key] = (exp, ttl, ObjFormat.DEDUP)
-                    heapq.heappush(heaps[reg], (exp, key))
-                    ctr["cache_dedup"] += 1
-                else:
-                    ctr["no_cache"] += 1
-            else:
-                add_chunks(store, s, key, pin=False)
-                hold = policy.compute_teven_seconds(src, reg) / 2.0
-                exp = now + max(hold, 1.0)
-                s.cached[key] = (exp, hold, fmt)
-                s.cur_bytes += store.manifest_bytes(key)
-                heapq.heappush(heaps[reg], (exp, key))
-                ctr["cache_dedup"] += 1
+                # Author calculate_ttl (FP): new copy only.
+                # no other replica → median T_even; else min get_tevict from holders.
+                # Already present: skip (do not refresh).
+                if len(miss) > 0:
+                    ensure_present(store, s, miss, pin=False, bill=True)
+                    srcs, _ = cheapest_src_for_uids(st, reg, miss, keep, price_pair)
+                    ttl_cache: dict = {}
+                    med = policy.median_teven_seconds(reg)
+                    has_src = np.array([x is not None for x in srcs], dtype=bool)
+                    if np.any(~has_src):
+                        set_chunk_lease(
+                            s, miss[~has_src], now + max(med, 0.0), heaps[reg]
+                        )
+                        ctr["put_ttl_median_teven"] += 1
+                    if np.any(has_src):
+                        pull = miss[has_src]
+                        ttls = min_live_ttl(pull, now, ts, ttl_cache)
+                        for tval in np.unique(ttls):
+                            set_chunk_lease(
+                                s,
+                                pull[ttls == tval],
+                                now + max(float(tval), 0.0),
+                                heaps[reg],
+                            )
+                        ctr["put_ttl_tevict"] += 1
+                    for uid in miss.tolist():
+                        # FP PUT write graph is local: author RTT = self-loop (1 ms).
+                        release_pending(
+                            int(uid), now, reg, edge_rtt_ms(reg, reg) / 1000.0
+                        )
+            ctr["put_hit_chunks"] += int(len(hit))
+            ctr["put_miss_chunks"] += int(len(miss))
+            # PUT is write-local (author): self-loop RTT, same as SimulatorV2.
+            write_lats.append(edge_rtt_ms(reg, reg))
+            continue
 
-    # settle remaining storage
+        ctr["get"] += 1
+        if len(uids) == 0:
+            continue
+        present = holds_uids(s, uids)
+        hit = uids[present]
+        need = uids[~present]
+        ctr["get_hit_chunks"] += int(len(hit))
+        ctr["get_miss_chunks"] += int(len(need))
+        ttl_cache: dict = {}
+
+        if len(hit) > 0:
+            timed = hit[s.pinned[hit] == 0]
+            if len(timed) > 0:
+                best = min_live_ttl(timed, now, ts, ttl_cache)
+                for tval in np.unique(best):
+                    set_chunk_lease(
+                        s, timed[best == tval], now + max(float(tval), 0.0), heaps[reg]
+                    )
+                # Author GET hit: expire_immediate = False, then set_ttl.
+                # Last-copy freeze is lifted; do not treat this copy as pending.
+                for uid in timed.tolist():
+                    if uid in s.pending_uids:
+                        s.pending_uids.discard(int(uid))
+
+        if len(need) == 0:
+            ctr["hit"] += 1
+            read_lats.append(edge_rtt_ms(reg, reg))
+            continue
+
+        srcs, unit_c = cheapest_src_for_uids(st, reg, need, keep, price_pair)
+        ok = np.array([x is not None for x in srcs], dtype=bool)
+        if not np.any(ok):
+            ctr["miss_no_src"] += 1
+            continue
+        if not np.all(ok):
+            # Cannot restore the object: some unique chunks have no holder.
+            ctr["partial_no_src"] += 1
+        pull = need[ok]
+        srcs = srcs[ok]
+        unit_c = unit_c[ok]
+        nbytes = store.lens_u[pull].astype(np.float64)
+        cost["transfer"] += float(np.dot(nbytes / GB, unit_c))
+        bytes_moved += int(nbytes.sum())
+        ensure_present(store, s, pull, pin=False, bill=True)
+        # Parallel fetch: GET waits on the slowest paid edge (author uses max RTT).
+        rtts = [edge_rtt_ms(str(src), reg) for src in srcs]
+        if len(hit) > 0:
+            rtts.append(edge_rtt_ms(reg, reg))
+        read_lats.append(max(rtts) if rtts else edge_rtt_ms(reg, reg))
+
+        ttls = min_live_ttl(pull, now, ts, ttl_cache)
+        for tval in np.unique(ttls):
+            set_chunk_lease(
+                s, pull[ttls == tval], now + max(float(tval), 0.0), heaps[reg]
+            )
+        if not fixed_base:
+            # Author: one transfer_time_millis = max edge RTT on this miss.
+            delay_s = (max(rtts) if rtts else 1.0) / 1000.0
+            for uid in pull.tolist():
+                release_pending(int(uid), now, reg, delay_s)
+        ctr["cache_chunk"] += 1
+
     end = max((_make_request(r).timestamp.timestamp() for r in rows), default=0.0)
     for r in keep:
-        sweep(r, end + 1)
+        sweep(r, end + 1, final=True)
         settle(st[r], end + 1, GB)
         cost["storage"] += st[r].gbh * rate_gbh(r)
 
     wall = time.time() - t0
     total = cost["storage"] + cost["transfer"]
-    extra = {}
-    if ttl_dedup:
-        extra["policy_keep_decisions"] = policy.stats_keep
-        extra["policy_skip_decisions"] = policy.stats_skip
-    else:
-        extra["policy_hot_decisions"] = policy.stats_hot
-        extra["policy_dedup_decisions"] = policy.stats_dedup
+    lat_read = _latency_summary(read_lats)
+    lat_write = _latency_summary(write_lats)
     return {
         "ok": True,
-        "policy": policy_name,
+        "policy": "chunk_tevict",
+        "fixed_base_region": fixed_base,
         "trace": str(trace),
         "chunk_dir": str(chunk_dir),
         "max_ops": max_ops or len(rows),
@@ -345,14 +403,11 @@ def run_chunk_cost_replay(
         "total storage cost ($)": round(cost["storage"], 9),
         "total transfer cost ($)": round(cost["transfer"], 9),
         "bytes_transferred_gb": round(bytes_moved / GB, 6),
+        "avg read latency (ms)": lat_read["avg"],
+        "avg write latency (ms)": lat_write["avg"],
+        "latency": {"read": lat_read, "write": lat_write},
         "stats": dict(ctr),
-        **extra,
-        "region_L": {r: round(st[r].L, 4) for r in keep},
         "wall_s": round(wall, 2),
-        "zero_error_manifest_note": (
-            "chunk store built by chunk_objects.py from "
-            "/data/manifests/*.mc-aug.manifest.csv.gz (remap_zero exact/trim/pad/extent)"
-        ),
     }
 
 
@@ -362,7 +417,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--trace", required=True)
     ap.add_argument("--chunks", required=True)
-    ap.add_argument("--config", default="config/tevictranges_2reg_dedup.yaml")
+    ap.add_argument("--config", default="config/chunk_tevict_2reg_fb.yaml")
     ap.add_argument("--max-ops", type=int, default=0)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
@@ -370,13 +425,9 @@ def main():
     from src.utils.helpers import load_config
 
     cfg = load_config(args.config)
-    name = cfg.placement_policy or "dedup_aware_tevict_ranges"
-    runner = (
-        run_tevict_ranges_dedup_replay
-        if name == "tevict_ranges_dedup"
-        else run_dedup_aware_replay
-    )
-    result = runner(
+    if (cfg.placement_policy or "chunk_tevict") != "chunk_tevict":
+        raise SystemExit(f"unknown policy {cfg.placement_policy}")
+    result = run_chunk_tevict_replay(
         Path(args.trace),
         Path(args.chunks),
         cfg,

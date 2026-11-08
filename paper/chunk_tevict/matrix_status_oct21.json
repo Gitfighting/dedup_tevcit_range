@@ -1,0 +1,89 @@
+{
+  "when": "2026-10-21T09:45",
+  "counts": {
+    "FB 2reg": {
+      "done": 40,
+      "miss": 0
+    },
+    "FB 3reg": {
+      "done": 160,
+      "miss": 0
+    },
+    "FB 6reg": {
+      "done": 160,
+      "miss": 0
+    },
+    "FB 9reg": {
+      "done": 156,
+      "miss": 4
+    },
+    "FP 3reg": {
+      "done": 100,
+      "miss": 0
+    },
+    "FP 6reg": {
+      "done": 99,
+      "miss": 1
+    },
+    "FP 9reg": {
+      "done": 96,
+      "miss": 4
+    }
+  },
+  "missing": [
+    [
+      "9reg",
+      "A",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "B",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "C",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "D",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "6reg",
+      "A",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "A",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "B",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "C",
+      "replicate_all",
+      "T29"
+    ],
+    [
+      "9reg",
+      "D",
+      "replicate_all",
+      "T29"
+    ]
+  ]
+}

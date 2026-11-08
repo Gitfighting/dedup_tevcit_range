@@ -1,0 +1,48 @@
+%% ChunkTevict --- IEEE conference draft (IEEEtran, two-column)
+%% Build: .\compile.ps1   (pdflatex + bibtex x2)
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\hyphenation{Chunk-Tevict Tevict-Ranges Sky-Store}
+
+\begin{document}
+
+\title{ChunkTevict: Chunk-Granularity TevictRanges\\
+for Geo-Distributed Object Storage}
+
+\author{
+\IEEEauthorblockN{Anonymous Authors}
+\IEEEauthorblockA{Anonymous Institution}
+}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Geo-distributed storage, object placement, TTL, content-defined chunking, cost optimization
+\end{IEEEkeywords}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/motivation}
+\input{sections/design}
+\input{sections/eval}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

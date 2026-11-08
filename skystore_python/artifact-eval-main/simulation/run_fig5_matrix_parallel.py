@@ -5,7 +5,10 @@ Parallel Fig.5-style matrix.
 Runs from simulation ROOT so get_full_path() works.
 Each job gets its own config + trace symlink to avoid versioned-trace races.
 
-Denominator for ratios: dedup_aware_tevict_ranges.
+Denominator for ratios: tevict_ranges (SkyStore).
+
+Default placement mode is FB (`--setbase`). Pass `--fp` for free-placement;
+FP result tags get a `_fp` suffix so they do not overwrite FB files.
 
 Scheduling:
   - --workers targets ~85% of CPU (default)
@@ -66,15 +69,22 @@ SETUP_REGIONS = {
     ],
 }
 
+# SkyStore Fig.5 (2reg FB): Always Evict, Always Store, Teven, TTL-CC, EWMA, AWS Multi-Region.
+# SkyStore Table 4 (3reg FB): same plus JuiceFS instead of AWS Multi-Region.
+# tevict_ranges = object-level SkyStore (extra row/bar).
+# dynamicttl = TTL-CC; ewma = EWMA (alpha=0.5); replicate_all = AWS-MR (2reg) / JuiceFS (3+reg).
+# optimal (SkyStore Table 3 CGP) is off the default matrix; pass --policies ...optimal... to run it.
 ALL_POLICIES = [
     "always_evict",
     "always_store",
     "teven",
+    "dynamicttl",
+    "ewma",
+    "replicate_all",
     "tevict_ranges",
-    "optimal",
-    "dedup_aware_tevict_ranges",
-    "tevict_ranges_dedup",
+    "chunk_tevict",
 ]
+FOLLOWUP_POLICIES = ["dynamicttl", "ewma", "replicate_all"]
 
 
 def log(msg: str) -> None:
@@ -85,13 +95,22 @@ def log(msg: str) -> None:
         f.write(line + "\n")
 
 
-def make_tag(setup: str, wtype: str, policy: str, tid: str) -> str:
-    """Result tag. 2reg uses typeE; multi-reg typeA keeps legacy name (no type infix)."""
+def make_tag(
+    setup: str, wtype: str, policy: str, tid: str, fixed_base: bool = True
+) -> str:
+    """Result tag. 2reg uses typeE; multi-reg typeA keeps legacy name (no type infix).
+
+    FB tags stay unsuffixed so existing matrix files are reused. FP adds `_fp`.
+    """
     if setup == "2reg":
-        return f"fig5_2reg_{policy}_{tid}"
-    if wtype.upper() == "A" and setup in ("3reg", "6reg", "9reg"):
-        return f"fig5_{setup}_{policy}_{tid}"
-    return f"fig5_{setup}_type{wtype.upper()}_{policy}_{tid}"
+        tag = f"fig5_2reg_{policy}_{tid}"
+    elif wtype.upper() == "A" and setup in ("3reg", "6reg", "9reg"):
+        tag = f"fig5_{setup}_{policy}_{tid}"
+    else:
+        tag = f"fig5_{setup}_type{wtype.upper()}_{policy}_{tid}"
+    if not fixed_base:
+        tag += "_fp"
+    return tag
 
 
 def find_trace(setup: str, num: str, wtype: str) -> Path | None:
@@ -155,7 +174,8 @@ def cleanup_job_artifacts(tag: str, rel_trace: str) -> None:
 def run_one(job: dict) -> dict:
     setup, policy, tid, num = job["setup"], job["policy"], job["tid"], job["num"]
     wtype = job.get("wtype", "A" if setup == "9reg" else "E")
-    tag = make_tag(setup, wtype, policy, tid)
+    fixed_base = bool(job.get("fixed_base", True))
+    tag = make_tag(setup, wtype, policy, tid, fixed_base=fixed_base)
     t0 = time.time()
     result = {
         "setup": setup,
@@ -164,6 +184,7 @@ def run_one(job: dict) -> dict:
         "num": num,
         "wtype": wtype,
         "tag": tag,
+        "fixed_base_region": fixed_base,
         "ok": False,
     }
     rel_trace = f"traces/fig5_work/{tag}.mc-aug"
@@ -175,12 +196,9 @@ def run_one(job: dict) -> dict:
         result["trace"] = str(trace)
         out_json = OUT / f"simulation_results_{tag}.json"
 
-        if policy in ("dedup_aware_tevict_ranges", "tevict_ranges_dedup"):
+        if policy == "chunk_tevict":
             sys.path.insert(0, str(ROOT))
-            from src.dedup.aware_replay import (
-                run_dedup_aware_replay,
-                run_tevict_ranges_dedup_replay,
-            )
+            from src.dedup.aware_replay import run_chunk_tevict_replay
             from src.model.config import Config
 
             cfg = Config(
@@ -188,18 +206,14 @@ def run_one(job: dict) -> dict:
                 transfer_policy="cheapest",
                 regions=list(SETUP_REGIONS[setup]),
                 window_size=-1,
+                fixed_base_region=fixed_base,
                 chunk_store_dir=f"/data/dedup_exp/T{num}",
             )
             chunk_dir = Path(f"/data/dedup_exp/T{num}")
             if not (chunk_dir / "lens_u.npy").is_file():
                 result["error"] = f"missing chunks {chunk_dir}"
                 return result
-            runner = (
-                run_tevict_ranges_dedup_replay
-                if policy == "tevict_ranges_dedup"
-                else run_dedup_aware_replay
-            )
-            data = runner(trace, chunk_dir, cfg, max_ops=0)
+            data = run_chunk_tevict_replay(trace, chunk_dir, cfg, max_ops=0)
             OUT.mkdir(parents=True, exist_ok=True)
             out_json.write_text(json.dumps([data], indent=2), encoding="utf-8")
             result["ok"] = bool(data.get("ok"))
@@ -212,6 +226,12 @@ def run_one(job: dict) -> dict:
             result["stats"] = data.get("stats")
             result["wall_s"] = round(time.time() - t0, 2)
             result["file"] = str(out_json)
+            result["latency"] = data.get("latency")
+            result["avg read latency (ms)"] = data.get("avg read latency (ms)")
+            result["avg write latency (ms)"] = data.get("avg write latency (ms)")
+            lat_r = (data.get("latency") or {}).get("read") or {}
+            result["p90 read latency (ms)"] = lat_r.get("p90")
+            result["p99 read latency (ms)"] = lat_r.get("p99")
             return result
 
         CFG_DIR.mkdir(parents=True, exist_ok=True)
@@ -225,6 +245,9 @@ def run_one(job: dict) -> dict:
             "teven": "teven",
             "tevict_ranges": "tevict_ranges",
             "optimal": "optimal",
+            "dynamicttl": "dynamicttl",
+            "ewma": "ewma",
+            "replicate_all": "replicate_all",
         }[policy]
         cfg_body = (
             f'placement_policy: "{place}"\n'
@@ -256,10 +279,11 @@ def run_one(job: dict) -> dict:
             "--config", rel_cfg,
             "--trace", rel_trace,
             "--vm", "5",
-            "--setbase",
             "--simversion", "1",
             "--tag", tag,
         ]
+        if fixed_base:
+            cmd.append("--setbase")
         proc = subprocess.run(
             cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=job.get("timeout", 7200)
         )
@@ -282,6 +306,10 @@ def run_one(job: dict) -> dict:
         }
         result["wall_s"] = round(time.time() - t0, 2)
         result["file"] = str(out_json)
+        result["avg read latency (ms)"] = cost["raw"].get("avg read latency (ms)")
+        result["avg write latency (ms)"] = cost["raw"].get("avg write latency (ms)")
+        result["p90 read latency (ms)"] = cost["raw"].get("p90 read latency (ms)")
+        result["p99 read latency (ms)"] = cost["raw"].get("p99 read latency (ms)")
         cleanup_job_artifacts(tag, rel_trace)
         return result
     except Exception:
@@ -291,7 +319,9 @@ def run_one(job: dict) -> dict:
         return result
 
 
-def build_jobs(setups, policies, tids, types_by_setup: dict[str, list[str]]):
+def build_jobs(
+    setups, policies, tids, types_by_setup: dict[str, list[str]], fixed_base: bool = True
+):
     jobs = []
     for setup in setups:
         wtypes = types_by_setup.get(setup, ["E"] if setup == "2reg" else ["A"])
@@ -305,8 +335,10 @@ def build_jobs(setups, policies, tids, types_by_setup: dict[str, list[str]]):
                             "policy": policy,
                             "tid": tid,
                             "num": TAGS[tid],
-                            "timeout": 14400 if tid == "T29" else 5400,
+                            # T29 is long; T78 2reg ChunkTevict was ~2.0 h historically.
+                            "timeout": 57600 if tid == "T29" else (14400 if tid == "T78" else 7200),
                             "heavy": tid in HEAVY_TIDS,
+                            "fixed_base": fixed_base,
                         }
                     )
     jobs.sort(
@@ -399,6 +431,11 @@ def main():
         help="Workload types for 9reg, e.g. A or A,B,C,D. Empty => 2reg=E, 9reg=A.",
     )
     ap.add_argument("--force", action="store_true")
+    ap.add_argument(
+        "--fp",
+        action="store_true",
+        help="Free-placement (omit --setbase). Default is FB. FP result tags get _fp suffix.",
+    )
     args = ap.parse_args()
 
     setups = [s.strip() for s in args.setups.split(",") if s.strip()]
@@ -412,19 +449,22 @@ def main():
         else:
             types_by_setup[s] = type_list or ["A"]
 
-    jobs = build_jobs(setups, policies, tids, types_by_setup)
+    jobs = build_jobs(setups, policies, tids, types_by_setup, fixed_base=not args.fp)
     OUT.mkdir(parents=True, exist_ok=True)
     CFG_DIR.mkdir(parents=True, exist_ok=True)
     TRACE_WORK.mkdir(parents=True, exist_ok=True)
+    mode = "FP" if args.fp else "FB"
     log(
         f"jobs={len(jobs)} workers={args.workers} max_heavy={args.max_heavy} "
-        f"types={types_by_setup} (target ~85% CPU, T29 capped)"
+        f"types={types_by_setup} mode={mode} (target ~85% CPU, T29 capped)"
     )
 
     todo = []
     summary = []
     for j in jobs:
-        tag = make_tag(j["setup"], j["wtype"], j["policy"], j["tid"])
+        tag = make_tag(
+            j["setup"], j["wtype"], j["policy"], j["tid"], fixed_base=j.get("fixed_base", True)
+        )
         path = OUT / f"simulation_results_{tag}.json"
         if path.is_file() and not args.force:
             try:

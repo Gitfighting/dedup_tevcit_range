@@ -1,0 +1,36 @@
+\section{Introduction}
+\label{sec:intro}
+
+With the prevalence of public-cloud object storage, geo-distributed applications pay for three things: bytes stored over time, bytes transferred across regions or providers, and {API} calls.
+When clients in several regions read and write the same bucket, a local replica avoids a future cross-region miss but accrues storage cost until it is evicted.
+Storing every object everywhere wastes {GB}$\cdot$h; refetching on every read wastes egress.
+SkyStore~\cite{skystore2025} casts this trade-off as a caching problem without a capacity limit: replicate on read, and evict a replica when keeping it is predicted to cost more than fetching it again.
+Its eviction policy, TevictRanges, learns a per-region {TTL} from a histogram of past inter-access times and beats Always Evict, Always Store, and a fixed break-even {TTL} ($T_{\mathrm{even}}$) on {IBM} Cloud Object Store traces~\cite{snia_ibm2019}.
+
+TevictRanges, like the object-level Optimal that SkyStore compares against, makes every decision per \emph{object}.
+A {GET} miss materializes the full object in the issuing region; the histogram is weighted by the object's logical size; every live replica is billed at full size.
+That matches the {S3} {API}, but not the bytes that actually differ between objects.
+Content-defined chunking ({CDC})~\cite{lbfs2001,rabin1981} splits data into variable-length chunks identified by fingerprint, and versioned datasets---source trees, packages, images---share most of their chunks.
+When two objects share a chunk, an object-level clock stores that chunk twice under two independent leases, and a miss on the second object transfers it again even though it is already in the region.
+In other words, the estimator is fine; the unit it is applied to is too coarse.
+
+Therefore, we propose \textbf{ChunkTevict}.
+ChunkTevict keeps TevictRanges' interval histogram and $T_{\mathrm{evict}}$ estimator, and SkyStore's {TTL} selection rule, but applies them to each unique chunk in each region.
+The histogram learns from an object's \emph{unique} chunk bytes.
+A miss fetches only the chunks that are not local, each from its cheapest holder, and each chunk carries its own lease.
+SkyStore's fixed-base ({FB}) and free-placement ({FP}) semantics are preserved: an {FB} origin copy is pinned forever, and under {FP} the last remaining copy of a chunk is never dropped.
+
+The main contributions of this paper are summarized as follows.
+\begin{itemize}
+  \item First, we analyze the limitation of object-granularity TevictRanges.
+  When object content overlaps, SkyStore and even its object-level Optimal store and move the same chunks repeatedly; on two regions, Optimal remains $2.27$--$11.73\times$ more expensive than ChunkTevict.
+  \item Second, based on this observation, we propose ChunkTevict, which changes the billing and lease unit from objects to unique chunks while leaving SkyStore's estimator and {TTL} rule untouched.
+  \item Third, we bind five {IBM} traces to real versioned content, chunk it offline, and replay SkyStore's evaluation (its Fig.~5, Tables~3--5, and Fig.~6) with the same baselines.
+  SkyStore costs $2.18$--$11.80\times$ ChunkTevict in two regions, $6.40\times$ on average across four three-region workload types, and $5.00\times$ under three-region free placement.
+\end{itemize}
+
+The rest of the paper is organized as follows.
+Section~\ref{sec:related} reviews geo-placement, {TTL} caches, and chunking.
+Section~\ref{sec:problem} analyzes object-granularity TevictRanges.
+Section~\ref{sec:design} presents ChunkTevict.
+Section~\ref{sec:eval} reports experimental results, and Section~\ref{sec:conclusion} concludes.

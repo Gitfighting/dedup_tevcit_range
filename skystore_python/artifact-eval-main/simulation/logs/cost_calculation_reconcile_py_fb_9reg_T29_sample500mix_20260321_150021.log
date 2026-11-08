@@ -1,0 +1,13 @@
+====================================================================================================
+Cost Calculation Log - Started at: 2026-03-21 15:00:21.462
+====================================================================================================
+
+CONFIGURATION:
+  Tag:            reconcile_py_fb_9reg_T29_sample500mix
+  Config File:    config/tevictranges_9reg.yaml
+  Trace Dataset:  D:/JavaProjects/Skystore1212/Data/9reg/9reg/typeA/IBMObjectStoreTrace029Part0.typeA.mc.aug.sample500mix
+  Mode:           Fixed-Base (FB)
+  Number of VMs:  5
+
+====================================================================================================
+

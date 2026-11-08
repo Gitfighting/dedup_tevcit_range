@@ -1,0 +1,63 @@
+\section{Problem Statement}
+\label{sec:problem}
+
+In this section, we discuss the limitation of applying TevictRanges at object granularity.
+
+\subsection{TevictRanges in Brief}
+
+SkyStore stores an object in the region that writes it and replicates it to a region that reads it, paying the cheapest egress edge.
+Each replica then gets a {TTL}.
+TevictRanges maintains, per destination region, a histogram of time-to-next-access weighted by object size $|o|$; $T_{\mathrm{evict}}(s\!\to\!d)$ is the horizon that minimizes predicted storage-plus-refetch cost at $d$ when the miss would be served from $s$.
+On a miss, SkyStore takes the minimum $T_{\mathrm{evict}}$ over other replicas whose own lease still covers that horizon; if there is no other replica, it falls back to a median break-even time.
+Always Evict never keeps a remote copy, Always Store never evicts, and $T_{\mathrm{even}}$ uses one break-even time from list prices.
+SkyStore's Optimal knows future object accesses but still decides per object.
+
+\subsection{Observations}
+
+{CDC} maps object $o$ to a sequence of chunk identifiers ({uid}s) with lengths $\ell[\mathrm{uid}]$.
+In a region, the bytes that occupy storage are $\sum \ell[\mathrm{uid}]$ over uids with a live lease, not $\sum |o|$ over live objects.
+
+\paragraph{Observation 1 (objects share chunks).}
+Once trace keys are bound to versioned content (Section~\ref{sec:eval-data}), most chunks written by a {PUT} already exist in the issuing region.
+In two-region replay, $82.3\%$ ({T}15), $97.0\%$ ({T}29), $87.9\%$ ({T}78), and $81.3\%$ ({T}79) of {PUT} chunk references are already local.
+{T}65 is colder on {PUT} ($39.7\%$) but its {GET}s hit local chunks $99.8\%$ of the time.
+An object-level {PUT} or cached replica is nonetheless billed at full size.
+
+\paragraph{Observation 2 (object Optimal is not byte-optimal).}
+Table~\ref{tab:2reg-opt} shows that two-region object-level Optimal is $3.60\times$, $11.73\times$, $2.27\times$, $6.51\times$, and $6.23\times$ ChunkTevict on {T}15/{T}29/{T}65/{T}78/{T}79.
+Knowing future object accesses does not help when the bill is per object: Optimal still stores and moves whole keys.
+
+\paragraph{Observation 3 (the extremes fail differently).}
+Always Evict explodes on hot read traces: $27.39\times$ ChunkTevict on two-region {T}65, $96.1\%$ of it transfer.
+Always Store explodes on large, long-lived objects: $10.40\times$ on {T}79, $97.9\%$ of it storage.
+TevictRanges sits between the extremes at object granularity; ChunkTevict uses the same rule on unique chunks.
+
+These observations suggest that a finer \emph{clock}---not a better estimator---is what object-level geo-{TTL}s are missing.
+
+Fig.~\ref{fig:mismatch} sketches the mismatch.
+Object $A$ and object $B$ share $\mathrm{uid}_2$.
+An object miss on $B$ recopies $\mathrm{uid}_2$ and starts a second lease, even if $\mathrm{uid}_2$ is already live for $A$.
+ChunkTevict transfers only missing uids and keeps one lease per uid per region.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  box/.style={draw, rounded corners=1pt, align=center, inner sep=3pt},
+  arr/.style={-{Latex}, thick}
+]
+\node[box] (oa) {object $A$\\$\mathrm{uid}_1,\mathrm{uid}_2$};
+\node[box, right=1.15cm of oa] (ob) {object $B$\\$\mathrm{uid}_2,\mathrm{uid}_3$};
+\node[box, below=0.85cm of oa] (la) {lease$(A)$\\full $|A|$};
+\node[box, below=0.85cm of ob] (lb) {lease$(B)$\\full $|B|$};
+\draw[arr] (oa) -- (la);
+\draw[arr] (ob) -- (lb);
+\node[below=0.15cm of la, font=\scriptsize\itshape, text width=3.4cm, align=center] {object clock: $\mathrm{uid}_2$ billed twice};
+\node[box, below=2.15cm of oa] (c1) {$\mathrm{uid}_1$};
+\node[box, right=0.35cm of c1] (c2) {$\mathrm{uid}_2$};
+\node[box, right=0.35cm of c2] (c3) {$\mathrm{uid}_3$};
+\node[below=0.12cm of c2, font=\scriptsize\itshape] {chunk clock: one lease per uid};
+\end{tikzpicture}
+\caption{Object-level TevictRanges keeps independent leases for $A$ and $B$ even when they share $\mathrm{uid}_2$. ChunkTevict stores $\mathrm{uid}_2$ once per region.}
+\label{fig:mismatch}
+\end{figure}

@@ -8,13 +8,12 @@ from operations.policy.placement_policy.policy_always_evict import AlwaysEvict
 from operations.policy.placement_policy.policy_teven import Teven
 from operations.policy.placement_policy.policy_fixed_ttl import FixedTTL
 from operations.policy.placement_policy.policy_skystore import SkyStore
-from operations.policy.placement_policy.policy_dedup_aware_tevict import DedupAwareTevict
 
 
 def eviction_policies() -> List[str]:
     return [
         "always_evict", "always_store", "fixed_ttl", "t_even",
-        "skystore", "dedup_aware_tevict",
+        "skystore",
     ]
 
 
@@ -35,7 +34,5 @@ def get_placement_policy(name: str, init_regions: List[str]) -> PlacementPolicy:
         return FixedTTL(init_regions)
     elif name == "skystore":
         return SkyStore.get_instance(init_regions)
-    elif name == "dedup_aware_tevict":
-        return DedupAwareTevict.get_instance(init_regions)
     else:
         raise ValueError(f"Unknown policy name: {name}")

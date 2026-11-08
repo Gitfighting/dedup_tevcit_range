@@ -1,0 +1,422 @@
+[
+  {
+    "tag": "fig5_2reg_chunk_tevict_T15",
+    "setup": "2reg",
+    "wtype": "E",
+    "tid": "T15",
+    "total": 25.21891851,
+    "storage": 22.118107897,
+    "transfer": 3.100810613,
+    "wall_s": 3612.66,
+    "stats": {
+      "put": 671586,
+      "put_hit_chunks": 40241982,
+      "put_miss_chunks": 8629073,
+      "get": 904041,
+      "get_hit_chunks": 24151878,
+      "get_miss_chunks": 19150630,
+      "cache_chunk": 468214,
+      "hit": 435827,
+      "chunk_evictions": 19069314
+    }
+  },
+  {
+    "tag": "fig5_2reg_chunk_tevict_T65",
+    "setup": "2reg",
+    "wtype": "E",
+    "tid": "T65",
+    "total": 2.009758662,
+    "storage": 1.952775217,
+    "transfer": 0.056983445,
+    "wall_s": 1802.13,
+    "stats": {
+      "put": 3065,
+      "put_hit_chunks": 164789,
+      "put_miss_chunks": 250157,
+      "get": 280021,
+      "get_hit_chunks": 191780332,
+      "get_miss_chunks": 346492,
+      "cache_chunk": 2700,
+      "hit": 277321,
+      "chunk_evictions": 98415
+    }
+  },
+  {
+    "tag": "fig5_2reg_chunk_tevict_T78",
+    "setup": "2reg",
+    "wtype": "E",
+    "tid": "T78",
+    "total": 2.503947304,
+    "storage": 2.168751551,
+    "transfer": 0.335195754,
+    "wall_s": 7265.72,
+    "stats": {
+      "put": 132360,
+      "put_hit_chunks": 4906866,
+      "put_miss_chunks": 673740,
+      "get": 2277445,
+      "get_hit_chunks": 240232715,
+      "get_miss_chunks": 2055680,
+      "cache_chunk": 174718,
+      "hit": 2102727,
+      "chunk_evictions": 2012619
+    }
+  },
+  {
+    "tag": "fig5_2reg_chunk_tevict_T79",
+    "setup": "2reg",
+    "wtype": "E",
+    "tid": "T79",
+    "total": 51.91698916,
+    "storage": 45.016258777,
+    "transfer": 6.900730382,
+    "wall_s": 1981.07,
+    "stats": {
+      "put": 12582,
+      "put_hit_chunks": 37819643,
+      "put_miss_chunks": 8691500,
+      "get": 101645,
+      "get_hit_chunks": 318323567,
+      "get_miss_chunks": 40443090,
+      "cache_chunk": 37348,
+      "hit": 64297,
+      "chunk_evictions": 39227050
+    }
+  },
+  {
+    "tag": "fig5_3reg_chunk_tevict_T15",
+    "setup": "3reg",
+    "wtype": "A",
+    "tid": "T15",
+    "total": 36.68530639,
+    "storage": 31.609314752,
+    "transfer": 5.075991637,
+    "wall_s": 1493.06,
+    "stats": {
+      "put": 671586,
+      "put_hit_chunks": 34041095,
+      "put_miss_chunks": 14829960,
+      "get": 904041,
+      "get_hit_chunks": 36867077,
+      "get_miss_chunks": 6435431,
+      "cache_chunk": 309449,
+      "hit": 594592,
+      "chunk_evictions": 5962654
+    }
+  },
+  {
+    "tag": "fig5_3reg_chunk_tevict_T65",
+    "setup": "3reg",
+    "wtype": "A",
+    "tid": "T65",
+    "total": 3.057076994,
+    "storage": 2.651658101,
+    "transfer": 0.405418892,
+    "wall_s": 1039.68,
+    "stats": {
+      "put": 3065,
+      "put_hit_chunks": 118141,
+      "put_miss_chunks": 296805,
+      "get": 280021,
+      "get_hit_chunks": 191581869,
+      "get_miss_chunks": 544955,
+      "hit": 274114,
+      "cache_chunk": 5907,
+      "chunk_evictions": 97945
+    }
+  },
+  {
+    "tag": "fig5_3reg_chunk_tevict_T78",
+    "setup": "3reg",
+    "wtype": "A",
+    "tid": "T78",
+    "total": 4.221546859,
+    "storage": 3.279655766,
+    "transfer": 0.941891093,
+    "wall_s": 5092.65,
+    "stats": {
+      "put": 132360,
+      "put_hit_chunks": 4510734,
+      "put_miss_chunks": 1069872,
+      "get": 2277445,
+      "get_hit_chunks": 241003021,
+      "get_miss_chunks": 1285374,
+      "cache_chunk": 173735,
+      "hit": 2103710,
+      "chunk_evictions": 789128
+    }
+  },
+  {
+    "tag": "fig5_3reg_chunk_tevict_T79",
+    "setup": "3reg",
+    "wtype": "A",
+    "tid": "T79",
+    "total": 71.184738148,
+    "storage": 62.886209727,
+    "transfer": 8.298528422,
+    "wall_s": 499.83,
+    "stats": {
+      "put": 12582,
+      "put_hit_chunks": 30922321,
+      "put_miss_chunks": 15588822,
+      "get": 101645,
+      "get_hit_chunks": 349843332,
+      "get_miss_chunks": 8923325,
+      "cache_chunk": 29682,
+      "hit": 71963,
+      "chunk_evictions": 8515697
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeB_chunk_tevict_T15",
+    "setup": "3reg",
+    "wtype": "B",
+    "tid": "T15",
+    "total": 35.842473999,
+    "storage": 31.550315663,
+    "transfer": 4.292158336,
+    "wall_s": 1517.01,
+    "stats": {
+      "put": 671586,
+      "put_hit_chunks": 33966124,
+      "put_miss_chunks": 14904931,
+      "get": 904041,
+      "get_hit_chunks": 37909764,
+      "get_miss_chunks": 5392744,
+      "hit": 680958,
+      "cache_chunk": 223083,
+      "chunk_evictions": 4983045
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeB_chunk_tevict_T65",
+    "setup": "3reg",
+    "wtype": "B",
+    "tid": "T65",
+    "total": 1.647853851,
+    "storage": 1.487974423,
+    "transfer": 0.159879428,
+    "wall_s": 922.31,
+    "stats": {
+      "put": 3065,
+      "put_hit_chunks": 105446,
+      "put_miss_chunks": 309500,
+      "get": 280021,
+      "get_hit_chunks": 191951860,
+      "get_miss_chunks": 174964,
+      "cache_chunk": 1744,
+      "hit": 278277,
+      "chunk_evictions": 67759
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeB_chunk_tevict_T78",
+    "setup": "3reg",
+    "wtype": "B",
+    "tid": "T78",
+    "total": 3.331581641,
+    "storage": 2.847662992,
+    "transfer": 0.483918649,
+    "wall_s": 5040.3,
+    "stats": {
+      "put": 132360,
+      "put_hit_chunks": 4663522,
+      "put_miss_chunks": 917084,
+      "get": 2277445,
+      "get_hit_chunks": 241649339,
+      "get_miss_chunks": 639056,
+      "cache_chunk": 79559,
+      "hit": 2197886,
+      "chunk_evictions": 439098
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeB_chunk_tevict_T79",
+    "setup": "3reg",
+    "wtype": "B",
+    "tid": "T79",
+    "total": 67.769228127,
+    "storage": 62.746473868,
+    "transfer": 5.022754258,
+    "wall_s": 458.11,
+    "stats": {
+      "put": 12582,
+      "put_hit_chunks": 30902126,
+      "put_miss_chunks": 15609017,
+      "get": 101645,
+      "get_hit_chunks": 353167532,
+      "get_miss_chunks": 5599125,
+      "cache_chunk": 9706,
+      "hit": 91939,
+      "chunk_evictions": 5381606
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeC_chunk_tevict_T15",
+    "setup": "3reg",
+    "wtype": "C",
+    "tid": "T15",
+    "total": 35.681423265,
+    "storage": 31.522200822,
+    "transfer": 4.159222443,
+    "wall_s": 1691.96,
+    "stats": {
+      "put": 671586,
+      "put_hit_chunks": 33956803,
+      "put_miss_chunks": 14914252,
+      "get": 904041,
+      "get_hit_chunks": 38270393,
+      "get_miss_chunks": 5032115,
+      "hit": 694187,
+      "cache_chunk": 209854,
+      "chunk_evictions": 4664561
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeC_chunk_tevict_T65",
+    "setup": "3reg",
+    "wtype": "C",
+    "tid": "T65",
+    "total": 1.594645438,
+    "storage": 1.480506121,
+    "transfer": 0.114139316,
+    "wall_s": 767.82,
+    "stats": {
+      "put": 3065,
+      "put_hit_chunks": 119118,
+      "put_miss_chunks": 295828,
+      "get": 280021,
+      "get_hit_chunks": 191991090,
+      "get_miss_chunks": 135734,
+      "cache_chunk": 1786,
+      "hit": 278235,
+      "chunk_evictions": 39811
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeC_chunk_tevict_T78",
+    "setup": "3reg",
+    "wtype": "C",
+    "tid": "T78",
+    "total": 3.37371382,
+    "storage": 2.908060968,
+    "transfer": 0.465652852,
+    "wall_s": 4821.62,
+    "stats": {
+      "put": 132360,
+      "put_hit_chunks": 4513042,
+      "put_miss_chunks": 1067564,
+      "get": 2277445,
+      "get_hit_chunks": 241702122,
+      "get_miss_chunks": 586273,
+      "cache_chunk": 78441,
+      "hit": 2199004,
+      "chunk_evictions": 403755
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeC_chunk_tevict_T79",
+    "setup": "3reg",
+    "wtype": "C",
+    "tid": "T79",
+    "total": 64.678786207,
+    "storage": 61.407214896,
+    "transfer": 3.271571311,
+    "wall_s": 296.12,
+    "stats": {
+      "put": 12582,
+      "put_hit_chunks": 30817055,
+      "put_miss_chunks": 15694088,
+      "get": 101645,
+      "get_hit_chunks": 355324493,
+      "get_miss_chunks": 3442164,
+      "cache_chunk": 10424,
+      "hit": 91221,
+      "chunk_evictions": 3375350
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeD_chunk_tevict_T15",
+    "setup": "3reg",
+    "wtype": "D",
+    "tid": "T15",
+    "total": 36.600060946,
+    "storage": 31.564736916,
+    "transfer": 5.03532403,
+    "wall_s": 1510.12,
+    "stats": {
+      "put": 671586,
+      "put_hit_chunks": 34024628,
+      "put_miss_chunks": 14846427,
+      "get": 904041,
+      "get_hit_chunks": 36919402,
+      "get_miss_chunks": 6383106,
+      "cache_chunk": 309825,
+      "hit": 594216,
+      "chunk_evictions": 5935228
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeD_chunk_tevict_T65",
+    "setup": "3reg",
+    "wtype": "D",
+    "tid": "T65",
+    "total": 3.055498352,
+    "storage": 2.645988923,
+    "transfer": 0.409509428,
+    "wall_s": 998.03,
+    "stats": {
+      "put": 3065,
+      "put_hit_chunks": 104773,
+      "put_miss_chunks": 310173,
+      "get": 280021,
+      "get_hit_chunks": 191583977,
+      "get_miss_chunks": 542847,
+      "cache_chunk": 5775,
+      "hit": 274246,
+      "chunk_evictions": 107377
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeD_chunk_tevict_T78",
+    "setup": "3reg",
+    "wtype": "D",
+    "tid": "T78",
+    "total": 4.187006825,
+    "storage": 3.22546997,
+    "transfer": 0.961536855,
+    "wall_s": 4872.53,
+    "stats": {
+      "put": 132360,
+      "put_hit_chunks": 4667879,
+      "put_miss_chunks": 912727,
+      "get": 2277445,
+      "get_hit_chunks": 240973820,
+      "get_miss_chunks": 1314575,
+      "cache_chunk": 175581,
+      "hit": 2101864,
+      "chunk_evictions": 793399
+    }
+  },
+  {
+    "tag": "fig5_3reg_typeD_chunk_tevict_T79",
+    "setup": "3reg",
+    "wtype": "D",
+    "tid": "T79",
+    "total": 71.385181093,
+    "storage": 64.493911405,
+    "transfer": 6.891269688,
+    "wall_s": 484.13,
+    "stats": {
+      "put": 12582,
+      "put_hit_chunks": 30633870,
+      "put_miss_chunks": 15877273,
+      "get": 101645,
+      "get_hit_chunks": 351261911,
+      "get_miss_chunks": 7504746,
+      "cache_chunk": 30082,
+      "hit": 71563,
+      "chunk_evictions": 7184962
+    }
+  }
+]

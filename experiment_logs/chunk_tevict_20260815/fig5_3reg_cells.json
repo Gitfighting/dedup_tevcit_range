@@ -1,0 +1,482 @@
+{
+  "A|T15|always_evict": {
+    "total": 101.23544471,
+    "storage": 77.674188418,
+    "transfer": 23.561256292
+  },
+  "A|T15|always_store": {
+    "total": 136.422899145,
+    "storage": 115.934964917,
+    "transfer": 20.487934228
+  },
+  "A|T15|teven": {
+    "total": 114.79718006,
+    "storage": 94.304432327,
+    "transfer": 20.492747733
+  },
+  "A|T15|tevict_ranges": {
+    "total": 100.052381866,
+    "storage": 79.446003458,
+    "transfer": 20.606378408
+  },
+  "A|T15|optimal": {
+    "total": 98.408612871,
+    "storage": 77.717732704,
+    "transfer": 20.690880167
+  },
+  "A|T15|chunk_tevict": {
+    "total": 36.68530639,
+    "storage": 31.609314752,
+    "transfer": 5.075991637
+  },
+  "A|T65|always_evict": {
+    "total": 160.398838025,
+    "storage": 1.975770949,
+    "transfer": 158.423067076
+  },
+  "A|T65|always_store": {
+    "total": 6.718550452,
+    "storage": 5.797106742,
+    "transfer": 0.92144371
+  },
+  "A|T65|teven": {
+    "total": 6.724115473,
+    "storage": 5.79444062,
+    "transfer": 0.929674853
+  },
+  "A|T65|tevict_ranges": {
+    "total": 6.851067361,
+    "storage": 5.747440405,
+    "transfer": 1.103626956
+  },
+  "A|T65|optimal": {
+    "total": 6.571782739,
+    "storage": 5.641964904,
+    "transfer": 0.929817835
+  },
+  "A|T65|chunk_tevict": {
+    "total": 3.057076994,
+    "storage": 2.651658101,
+    "transfer": 0.405418892
+  },
+  "A|T78|always_evict": {
+    "total": 173.312700624,
+    "storage": 12.681456747,
+    "transfer": 160.631243877
+  },
+  "A|T78|always_store": {
+    "total": 31.284267422,
+    "storage": 26.554154499,
+    "transfer": 4.730112923
+  },
+  "A|T78|teven": {
+    "total": 29.004680756,
+    "storage": 20.990967843,
+    "transfer": 8.013712913
+  },
+  "A|T78|tevict_ranges": {
+    "total": 27.841462355,
+    "storage": 19.156961884,
+    "transfer": 8.684500471
+  },
+  "A|T78|optimal": {
+    "total": 23.700428666,
+    "storage": 15.790754571,
+    "transfer": 7.909674095
+  },
+  "A|T78|chunk_tevict": {
+    "total": 4.221546859,
+    "storage": 3.279655766,
+    "transfer": 0.941891093
+  },
+  "A|T79|always_evict": {
+    "total": 520.174911955,
+    "storage": 250.760690727,
+    "transfer": 269.414221228
+  },
+  "A|T79|always_store": {
+    "total": 560.086987815,
+    "storage": 497.031921476,
+    "transfer": 63.055066339
+  },
+  "A|T79|teven": {
+    "total": 419.125762663,
+    "storage": 349.94970445,
+    "transfer": 69.176058213
+  },
+  "A|T79|tevict_ranges": {
+    "total": 398.175674869,
+    "storage": 306.025764873,
+    "transfer": 92.149909996
+  },
+  "A|T79|optimal": {
+    "total": 358.359598254,
+    "storage": 287.775535814,
+    "transfer": 70.58406244
+  },
+  "A|T79|chunk_tevict": {
+    "total": 71.184738148,
+    "storage": 62.886209727,
+    "transfer": 8.298528422
+  },
+  "B|T15|always_evict": {
+    "total": 101.417304157,
+    "storage": 77.693810095,
+    "transfer": 23.723494062
+  },
+  "B|T15|always_store": {
+    "total": 125.642298852,
+    "storage": 108.580511546,
+    "transfer": 17.061787306
+  },
+  "B|T15|teven": {
+    "total": 108.628282484,
+    "storage": 91.56409394,
+    "transfer": 17.064188544
+  },
+  "B|T15|tevict_ranges": {
+    "total": 96.349431107,
+    "storage": 79.223742436,
+    "transfer": 17.125688671
+  },
+  "B|T15|optimal": {
+    "total": 94.826872029,
+    "storage": 77.762683485,
+    "transfer": 17.064188544
+  },
+  "B|T15|chunk_tevict": {
+    "total": 35.842473999,
+    "storage": 31.550315663,
+    "transfer": 4.292158336
+  },
+  "B|T65|always_evict": {
+    "total": 217.28027576,
+    "storage": 1.935583686,
+    "transfer": 215.344692074
+  },
+  "B|T65|always_store": {
+    "total": 3.689555,
+    "storage": 3.170781689,
+    "transfer": 0.518773311
+  },
+  "B|T65|teven": {
+    "total": 3.68903997,
+    "storage": 3.170266659,
+    "transfer": 0.518773311
+  },
+  "B|T65|tevict_ranges": {
+    "total": 3.78266678,
+    "storage": 3.150328007,
+    "transfer": 0.632338773
+  },
+  "B|T65|optimal": {
+    "total": 3.646056211,
+    "storage": 3.1272829,
+    "transfer": 0.518773311
+  },
+  "B|T65|chunk_tevict": {
+    "total": 1.647853851,
+    "storage": 1.487974423,
+    "transfer": 0.159879428
+  },
+  "B|T78|always_evict": {
+    "total": 178.605126398,
+    "storage": 12.689746285,
+    "transfer": 165.915380113
+  },
+  "B|T78|always_store": {
+    "total": 20.298431548,
+    "storage": 18.379528762,
+    "transfer": 1.918902786
+  },
+  "B|T78|teven": {
+    "total": 19.670897036,
+    "storage": 16.549766976,
+    "transfer": 3.12113006
+  },
+  "B|T78|tevict_ranges": {
+    "total": 19.599389338,
+    "storage": 15.588532205,
+    "transfer": 4.010857133
+  },
+  "B|T78|optimal": {
+    "total": 17.671769694,
+    "storage": 14.550730651,
+    "transfer": 3.121039043
+  },
+  "B|T78|chunk_tevict": {
+    "total": 3.331581641,
+    "storage": 2.847662992,
+    "transfer": 0.483918649
+  },
+  "B|T79|always_evict": {
+    "total": 473.255874747,
+    "storage": 249.758811754,
+    "transfer": 223.497062993
+  },
+  "B|T79|always_store": {
+    "total": 463.130643792,
+    "storage": 419.257268654,
+    "transfer": 43.873375138
+  },
+  "B|T79|teven": {
+    "total": 362.545044519,
+    "storage": 318.671669381,
+    "transfer": 43.873375138
+  },
+  "B|T79|tevict_ranges": {
+    "total": 335.492590537,
+    "storage": 289.216672833,
+    "transfer": 46.275917704
+  },
+  "B|T79|optimal": {
+    "total": 321.952787578,
+    "storage": 278.07941244,
+    "transfer": 43.873375138
+  },
+  "B|T79|chunk_tevict": {
+    "total": 67.769228127,
+    "storage": 62.746473868,
+    "transfer": 5.022754258
+  },
+  "C|T15|always_evict": {
+    "total": 102.401860008,
+    "storage": 77.723414997,
+    "transfer": 24.678445011
+  },
+  "C|T15|always_store": {
+    "total": 129.420851495,
+    "storage": 111.638743992,
+    "transfer": 17.782107503
+  },
+  "C|T15|teven": {
+    "total": 110.207752218,
+    "storage": 92.422591534,
+    "transfer": 17.785160684
+  },
+  "C|T15|tevict_ranges": {
+    "total": 97.209628104,
+    "storage": 79.359116043,
+    "transfer": 17.850512061
+  },
+  "C|T15|optimal": {
+    "total": 95.583185088,
+    "storage": 77.798024404,
+    "transfer": 17.785160684
+  },
+  "C|T15|chunk_tevict": {
+    "total": 35.681423265,
+    "storage": 31.522200822,
+    "transfer": 4.159222443
+  },
+  "C|T65|always_evict": {
+    "total": 145.535590082,
+    "storage": 1.969568427,
+    "transfer": 143.566021655
+  },
+  "C|T65|always_store": {
+    "total": 3.585060188,
+    "storage": 3.285379277,
+    "transfer": 0.299680911
+  },
+  "C|T65|teven": {
+    "total": 3.584503273,
+    "storage": 3.284822362,
+    "transfer": 0.299680911
+  },
+  "C|T65|tevict_ranges": {
+    "total": 3.648328566,
+    "storage": 3.266370392,
+    "transfer": 0.381958174
+  },
+  "C|T65|optimal": {
+    "total": 3.538508551,
+    "storage": 3.23882764,
+    "transfer": 0.299680911
+  },
+  "C|T65|chunk_tevict": {
+    "total": 1.594645438,
+    "storage": 1.480506121,
+    "transfer": 0.114139316
+  },
+  "C|T78|always_evict": {
+    "total": 185.561511123,
+    "storage": 12.688648352,
+    "transfer": 172.872862771
+  },
+  "C|T78|always_store": {
+    "total": 20.956866046,
+    "storage": 18.95913961,
+    "transfer": 1.997726436
+  },
+  "C|T78|teven": {
+    "total": 19.980828184,
+    "storage": 16.854342765,
+    "transfer": 3.126485419
+  },
+  "C|T78|tevict_ranges": {
+    "total": 20.088322092,
+    "storage": 15.89431528,
+    "transfer": 4.194006812
+  },
+  "C|T78|optimal": {
+    "total": 17.988211701,
+    "storage": 14.861831951,
+    "transfer": 3.12637975
+  },
+  "C|T78|chunk_tevict": {
+    "total": 3.37371382,
+    "storage": 2.908060968,
+    "transfer": 0.465652852
+  },
+  "C|T79|always_evict": {
+    "total": 435.883585626,
+    "storage": 253.388672183,
+    "transfer": 182.494913443
+  },
+  "C|T79|always_store": {
+    "total": 459.809441784,
+    "storage": 419.281578747,
+    "transfer": 40.527863037
+  },
+  "C|T79|teven": {
+    "total": 357.565395683,
+    "storage": 317.037532646,
+    "transfer": 40.527863037
+  },
+  "C|T79|tevict_ranges": {
+    "total": 332.123995765,
+    "storage": 287.399880135,
+    "transfer": 44.72411563
+  },
+  "C|T79|optimal": {
+    "total": 320.453313902,
+    "storage": 279.925450865,
+    "transfer": 40.527863037
+  },
+  "C|T79|chunk_tevict": {
+    "total": 64.678786207,
+    "storage": 61.407214896,
+    "transfer": 3.271571311
+  },
+  "D|T15|always_evict": {
+    "total": 101.279127164,
+    "storage": 77.740794989,
+    "transfer": 23.538332175
+  },
+  "D|T15|always_store": {
+    "total": 136.275436274,
+    "storage": 115.818056869,
+    "transfer": 20.457379405
+  },
+  "D|T15|teven": {
+    "total": 114.772135358,
+    "storage": 94.310103484,
+    "transfer": 20.462031874
+  },
+  "D|T15|tevict_ranges": {
+    "total": 100.084641389,
+    "storage": 79.499243048,
+    "transfer": 20.585398341
+  },
+  "D|T15|optimal": {
+    "total": 98.441804462,
+    "storage": 77.784169851,
+    "transfer": 20.657634611
+  },
+  "D|T15|chunk_tevict": {
+    "total": 36.600060946,
+    "storage": 31.564736916,
+    "transfer": 5.03532403
+  },
+  "D|T65|always_evict": {
+    "total": 189.10654701,
+    "storage": 1.955849966,
+    "transfer": 187.150697044
+  },
+  "D|T65|always_store": {
+    "total": 6.75438555,
+    "storage": 5.794146746,
+    "transfer": 0.960238804
+  },
+  "D|T65|teven": {
+    "total": 6.758557798,
+    "storage": 5.791363898,
+    "transfer": 0.9671939
+  },
+  "D|T65|tevict_ranges": {
+    "total": 6.886125381,
+    "storage": 5.742394625,
+    "transfer": 1.143730756
+  },
+  "D|T65|optimal": {
+    "total": 6.610177974,
+    "storage": 5.642895009,
+    "transfer": 0.967282965
+  },
+  "D|T65|chunk_tevict": {
+    "total": 3.055498352,
+    "storage": 2.645988923,
+    "transfer": 0.409509428
+  },
+  "D|T78|always_evict": {
+    "total": 173.77191496,
+    "storage": 12.674785096,
+    "transfer": 161.097129864
+  },
+  "D|T78|always_store": {
+    "total": 31.378354341,
+    "storage": 26.629747435,
+    "transfer": 4.748606906
+  },
+  "D|T78|teven": {
+    "total": 29.056247735,
+    "storage": 21.046072739,
+    "transfer": 8.010174996
+  },
+  "D|T78|tevict_ranges": {
+    "total": 27.917717164,
+    "storage": 19.210717874,
+    "transfer": 8.70699929
+  },
+  "D|T78|optimal": {
+    "total": 23.741817799,
+    "storage": 15.828875193,
+    "transfer": 7.912942606
+  },
+  "D|T78|chunk_tevict": {
+    "total": 4.187006825,
+    "storage": 3.22546997,
+    "transfer": 0.961536855
+  },
+  "D|T79|always_evict": {
+    "total": 502.843768838,
+    "storage": 255.563625645,
+    "transfer": 247.280143193
+  },
+  "D|T79|always_store": {
+    "total": 572.774374574,
+    "storage": 508.026674017,
+    "transfer": 64.747700557
+  },
+  "D|T79|teven": {
+    "total": 427.901200292,
+    "storage": 355.839608987,
+    "transfer": 72.061591305
+  },
+  "D|T79|tevict_ranges": {
+    "total": 401.604071164,
+    "storage": 309.726715699,
+    "transfer": 91.877355465
+  },
+  "D|T79|optimal": {
+    "total": 363.179024143,
+    "storage": 290.391510121,
+    "transfer": 72.787514022
+  },
+  "D|T79|chunk_tevict": {
+    "total": 71.385181093,
+    "storage": 64.493911405,
+    "transfer": 6.891269688
+  }
+}

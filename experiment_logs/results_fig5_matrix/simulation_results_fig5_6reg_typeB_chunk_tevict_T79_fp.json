@@ -1,0 +1,57 @@
+[
+  {
+    "ok": true,
+    "policy": "chunk_tevict",
+    "fixed_base_region": false,
+    "trace": "/data/sim_exp/python_simulation/traces6/typeB/IBMObjectStoreTrace079Part0.typeB.mc.aug",
+    "chunk_dir": "/data/dedup_exp/T079",
+    "max_ops": 114227,
+    "ops": 114227,
+    "regions": [
+      "aws:us-east-1",
+      "aws:us-west-2",
+      "azure:eastus",
+      "azure:westeurope",
+      "gcp:us-east1-b",
+      "gcp:us-west1-a"
+    ],
+    "total cost without request ($)": 59.912354445,
+    "total storage cost ($)": 49.984899237,
+    "total transfer cost ($)": 9.927455208,
+    "bytes_transferred_gb": 227.672234,
+    "avg read latency (ms)": 15.2574,
+    "avg write latency (ms)": 1.0,
+    "latency": {
+      "read": {
+        "n": 101645,
+        "avg": 15.2574,
+        "p50": 1.0,
+        "p90": 68.272,
+        "p99": 147.811
+      },
+      "write": {
+        "n": 12582,
+        "avg": 1.0,
+        "p50": 1.0,
+        "p90": 1.0,
+        "p99": 1.0
+      }
+    },
+    "stats": {
+      "put": 12582,
+      "put_ttl_median_teven": 12460,
+      "put_hit_chunks": 25553521,
+      "put_miss_chunks": 20957622,
+      "put_ttl_tevict": 5074,
+      "get": 101645,
+      "get_hit_chunks": 331998738,
+      "get_miss_chunks": 26767919,
+      "cache_chunk": 19888,
+      "hit": 81757,
+      "chunk_evictions": 38431235,
+      "last_copy_hold": 7896435,
+      "pending_release": 396467
+    },
+    "wall_s": 3129.88
+  }
+]

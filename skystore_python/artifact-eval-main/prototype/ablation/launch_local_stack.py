@@ -12,7 +12,7 @@ Usage (on server)::
 
   cd /data/ablation_exp/prototype
   python3 ablation/launch_local_stack.py --policy skystore
-  python3 ablation/launch_local_stack.py --policy dedup_aware_tevict --stop
+  python3 ablation/launch_local_stack.py --policy skystore --stop
 """
 from __future__ import annotations
 
@@ -319,7 +319,6 @@ def main() -> None:
             "always_store",
             "t_even",
             "skystore",
-            "dedup_aware_tevict",
         ],
     )
     ap.add_argument("--stop", action="store_true")

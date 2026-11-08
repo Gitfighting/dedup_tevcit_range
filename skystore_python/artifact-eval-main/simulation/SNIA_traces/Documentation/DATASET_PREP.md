@@ -169,6 +169,8 @@ timestamp,op,issue_region,obj_key,size,time_to_next_access,time_to_next_access_s
 
 # 4. Real content files (download list)
 
+逐步命令（建目录 → wget → 解压 → ISO 拷贝 → remap → 同族 tar → FastCDC）见 **[CONTENT_POOL_STEPS.md](CONTENT_POOL_STEPS.md)**。下面是文件与 URL 清单。
+
 Archives go to `/data/datasets/<family>/`. Extracted trees go to `/data/file_pool/<name>/`. Mapping never reads SNIA bytes; it reads this pool.
 
 China mirrors are optional (Aliyun). Canonical URLs below are the official ones.

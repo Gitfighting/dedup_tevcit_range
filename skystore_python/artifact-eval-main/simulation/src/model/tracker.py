@@ -55,6 +55,19 @@ class Tracker:
     def compute_sum(self, data_list):
         return round(sum(data_list), self.round_digit) if data_list else 0
 
+    def compute_percentile(self, data_list, p: float) -> float:
+        if not data_list:
+            return 0.0
+        xs = sorted(data_list)
+        if len(xs) == 1:
+            return round(float(xs[0]), 4)
+        k = (len(xs) - 1) * (p / 100.0)
+        f = int(k)
+        c = min(f + 1, len(xs) - 1)
+        if f == c:
+            return round(float(xs[f]), 4)
+        return round(float(xs[f] + (xs[c] - xs[f]) * (k - f)), 4)
+
     def get_metrics(self):
         tot_transfer_cost = self.compute_sum(self.transfer_costs)
         tot_storage_cost = self.compute_sum(self.storage_costs)
@@ -75,6 +88,12 @@ class Tracker:
             "aggregate size (GB)": self.compute_sum(self.request_sizes) / GB,
             "avg read latency (ms)": self.compute_average(self.latency_data["read"]),
             "avg write latency (ms)": self.compute_average(self.latency_data["write"]),
+            "p50 read latency (ms)": self.compute_percentile(self.latency_data["read"], 50),
+            "p90 read latency (ms)": self.compute_percentile(self.latency_data["read"], 90),
+            "p99 read latency (ms)": self.compute_percentile(self.latency_data["read"], 99),
+            "p50 write latency (ms)": self.compute_percentile(self.latency_data["write"], 50),
+            "p90 write latency (ms)": self.compute_percentile(self.latency_data["write"], 90),
+            "p99 write latency (ms)": self.compute_percentile(self.latency_data["write"], 99),
             "avg read tput runtime (ms)": self.compute_average(
                 self.tput_runtime_data["read"]
             )

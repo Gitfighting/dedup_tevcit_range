@@ -1,0 +1,25 @@
+[
+    {
+        "Trace Duration (s)": "7 days, 0:03:03.429000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 114227,
+        "avg request size (GB)": 0.03870966389793903,
+        "aggregate size (GB)": 4421.688778065145,
+        "avg read latency (ms)": 56.4627,
+        "avg write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 4.5,
+        "avg write tput runtime (ms)": 3.5,
+        "avg read throughput (Gbps)": 12.0136,
+        "avg write throughput (Gbps)": 14.0095,
+        "total transfer cost ($)": 138.965474749,
+        "total storage cost ($)": 383.376407936,
+        "total storage cost without base ($)": 119.28365319,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 522.341882685,
+        "total cost ($)": 522.341882685,
+        "trace": "traces/fig5_work/fig5_9reg_typeD_tevict_ranges_T79.mc-aug",
+        "config": "config/fig5_jobs/fig5_9reg_typeD_tevict_ranges_T79.yaml",
+        "timestamp": "2026-08-13T21:08:15.759030",
+        "tag": "fig5_9reg_typeD_tevict_ranges_T79"
+    }
+]

@@ -1,0 +1,31 @@
+[
+    {
+        "Trace Duration (s)": "7 days, 0:39:32.500000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 283086,
+        "avg request size (GB)": 0.009358540006633848,
+        "aggregate size (GB)": 2649.271656330675,
+        "avg read latency (ms)": 3.2318,
+        "avg write latency (ms)": 1.0,
+        "p50 read latency (ms)": 1.0,
+        "p90 read latency (ms)": 1.0,
+        "p99 read latency (ms)": 93.987,
+        "p50 write latency (ms)": 1.0,
+        "p90 write latency (ms)": 1.0,
+        "p99 write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 0.8,
+        "avg write tput runtime (ms)": 0.1,
+        "avg read throughput (Gbps)": 13.788,
+        "avg write throughput (Gbps)": 14.0972,
+        "total transfer cost ($)": 1.640257753,
+        "total storage cost ($)": 3.771185139,
+        "total storage cost without base ($)": 1.782278969,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 5.411442892,
+        "total cost ($)": 5.411442892,
+        "trace": "traces/fig5_work/fig5_9reg_typeB_dynamicttl_T65.mc-aug",
+        "config": "config/fig5_jobs/fig5_9reg_typeB_dynamicttl_T65.yaml",
+        "timestamp": "2026-08-21T13:10:12.898743",
+        "tag": "fig5_9reg_typeB_dynamicttl_T65"
+    }
+]

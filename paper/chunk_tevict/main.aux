@@ -1,0 +1,108 @@
+\relax 
+\citation{skystore2025}
+\citation{snia_ibm2019}
+\citation{lbfs2001,rabin1981}
+\citation{spanstore2013}
+\citation{volley2010}
+\citation{uluyol2020}
+\citation{skystore2025}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{}{section.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{}\protected@file@percent }
+\newlabel{sec:related}{{II}{1}{}{section.2}{}}
+\citation{ttl_cc2019}
+\citation{lbfs2001}
+\citation{rabin1981}
+\citation{zhang2019finesse,xia2016dare,ye2021fast}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Geo-Distributed Object Placement}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}{TTL} Caches}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Chunking and Deduplication}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Problem Statement}{2}{}\protected@file@percent }
+\newlabel{sec:problem}{{III}{2}{}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}TevictRanges in Brief}{2}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Object-level TevictRanges keeps independent leases for $A$ and $B$ even when they share $\mathrm  {uid}_2$. ChunkTevict stores $\mathrm  {uid}_2$ once per region.}}{2}{}\protected@file@percent }
+\newlabel{fig:mismatch}{{1}{2}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Observations}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {III-B}0a}Observation 1 (objects share chunks).}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {III-B}0b}Observation 2 (object Optimal is not byte-optimal).}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {III-B}0c}Observation 3 (the extremes fail differently).}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Design}{2}{}\protected@file@percent }
+\newlabel{sec:design}{{IV}{2}{}{section.4}{}}
+\citation{lbfs2001}
+\citation{skystore2025}
+\citation{skystore2025}
+\citation{ye2021fast}
+\citation{snia_ibm2019,skystore2025}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Offline Chunk Store}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}TevictRanges as a Pure Estimator}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}{GET} and {PUT} Paths}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Last-Copy Freeze ({FP} only)}{3}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces ChunkTevict applies SkyStore's TevictRanges \texttt  {calculate\_ttl} per unique chunk.}}{3}{}\protected@file@percent }
+\newlabel{alg:chunk}{{2}{3}{}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Implementation}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Evaluation}{3}{}\protected@file@percent }
+\newlabel{sec:eval}{{V}{3}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}A. Datasets}{3}{}\protected@file@percent }
+\newlabel{sec:eval-data}{{\mbox  {V-A}}{3}{}{subsection.5.1}{}}
+\citation{ye2021fast}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}B. Metrics and Setup}{4}{}\protected@file@percent }
+\newlabel{sec:eval-metrics}{{\mbox  {V-B}}{4}{}{subsection.5.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Two-region {FB} cost (USD without request), SkyStore Fig.~5 policy set.}}{4}{}\protected@file@percent }
+\newlabel{tab:2reg-abs}{{I}{4}{}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Two-region {FB} cost / ChunkTevict (SkyStore Fig.~5 baselines).}}{4}{}\protected@file@percent }
+\newlabel{tab:2reg-ratio}{{II}{4}{}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}C. Numerical Results and Discussion}{4}{}\protected@file@percent }
+\newlabel{sec:eval-2reg}{{\mbox  {V-C}1}{4}{}{subsubsection.5.3.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}1}C1. Two-region cost (SkyStore Fig.~5)}{4}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Two-region {FB} versus object-level SkyStore and Optimal (SkyStore Table~3).}}{5}{}\protected@file@percent }
+\newlabel{tab:2reg-opt}{{III}{5}{}{table.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Two-region {FB} cost / ChunkTevict for SkyStore Fig.~5 baselines (Always Evict, Always Store, $T_{\mathrm  {even}}$, {TTL}-{CC}, {EWMA}, {AWS} Multi-Region).}}{5}{}\protected@file@percent }
+\newlabel{fig:2reg-ratios}{{3}{5}{}{figure.3}{}}
+\newlabel{sec:eval-why}{{\mbox  {V-C}2}{5}{}{subsubsection.5.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}2}C2. Why ChunkTevict saves (storage versus transfer)}{5}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Two-region {FB} storage versus transfer for SkyStore and ChunkTevict. Storage accounts for $88$--$97\%$ of the gap.}}{5}{}\protected@file@percent }
+\newlabel{fig:2reg-comp}{{4}{5}{}{figure.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces ChunkTevict local chunk-hit rate (references, not objects).}}{5}{}\protected@file@percent }
+\newlabel{tab:hits}{{IV}{5}{}{table.4}{}}
+\newlabel{sec:eval-lat}{{\mbox  {V-C}3}{5}{}{subsubsection.5.3.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}3}C3. Simulated {GET} {RTT}}{5}{}\protected@file@percent }
+\newlabel{sec:eval-3reg}{{\mbox  {V-C}4}{5}{}{subsubsection.5.3.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}4}C4. Three-region workload types (SkyStore Table~4)}{5}{}\protected@file@percent }
+\citation{ye2021fast}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Two-region simulated {GET} {RTT} (ms) from the transfer-graph edge. {PUT} is $1$\,ms for every policy.}}{6}{}\protected@file@percent }
+\newlabel{tab:lat}{{V}{6}{}{table.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Three-region {FB}: mean over five traces of cost / ChunkTevict, SkyStore Table~4 workload types.}}{6}{}\protected@file@percent }
+\newlabel{tab:3reg-t4}{{VI}{6}{}{table.6}{}}
+\newlabel{sec:eval-scale}{{\mbox  {V-C}5}{6}{}{subsubsection.5.3.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}5}C5. Scaling the number of regions (SkyStore Fig.~6)}{6}{}\protected@file@percent }
+\newlabel{sec:eval-fp}{{\mbox  {V-C}6}{6}{}{subsubsection.5.3.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}6}C6. Free placement (SkyStore Table~5)}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Three-region {FB} mean cost / ChunkTevict by SkyStore Table~4 workload type (five traces).}}{6}{}\protected@file@percent }
+\newlabel{fig:3reg-t4}{{5}{6}{}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {VII}{\ignorespaces Three-region {FP}: mean over five traces of cost / ChunkTevict (SkyStore Table~5 policy set).}}{6}{}\protected@file@percent }
+\newlabel{tab:fp3}{{VII}{6}{}{table.7}{}}
+\newlabel{sec:eval-perf}{{\mbox  {V-C}7}{6}{}{subsubsection.5.3.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-C}7}C7. Overall time}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}D. Threats to Validity}{6}{}\protected@file@percent }
+\newlabel{sec:eval-threats}{{\mbox  {V-D}}{6}{}{subsection.5.4}{}}
+\bibstyle{IEEEtran}
+\bibdata{refs}
+\bibcite{skystore2025}{1}
+\bibcite{snia_ibm2019}{2}
+\bibcite{lbfs2001}{3}
+\bibcite{rabin1981}{4}
+\bibcite{spanstore2013}{5}
+\bibcite{volley2010}{6}
+\bibcite{uluyol2020}{7}
+\bibcite{ttl_cc2019}{8}
+\bibcite{zhang2019finesse}{9}
+\bibcite{xia2016dare}{10}
+\bibcite{ye2021fast}{11}
+\@writefile{lot}{\contentsline {table}{\numberline {VIII}{\ignorespaces Type~A {FB} cost / own 3-region cost (SkyStore Fig.~6). Five traces.}}{7}{}\protected@file@percent }
+\newlabel{tab:scale}{{VIII}{7}{}{table.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IX}{\ignorespaces ChunkTevict replay wall time on the 8-v{CPU} host.}}{7}{}\protected@file@percent }
+\newlabel{tab:wall}{{IX}{7}{}{table.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{7}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{7}{}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{References}{7}{}\protected@file@percent }
+\gdef \@abspage@last{7}

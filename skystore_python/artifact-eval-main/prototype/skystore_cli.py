@@ -34,7 +34,6 @@ class PutPolicy(str, Enum):
     t_even = "t_even"
     t_evict = "t_evict"
     skystore = "skystore"
-    dedup_aware_tevict = "dedup_aware_tevict"
 
     push = "push"
     replicate_all = "replicate_all"

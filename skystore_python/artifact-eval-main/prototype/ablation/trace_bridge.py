@@ -7,8 +7,6 @@ SkyStore (author) reads:
 AlwaysStore (author) reads:
   ../experiment/trace/test.csv
 
-DedupAwareTevict (extension) already honors TRACE_FILE_PATH.
-
 Call from store-server cwd (or pass --store-server-dir) before starting
 the server so author code keeps working unchanged (OCP).
 """
@@ -49,7 +47,6 @@ def prepare_trace_bridge(store_server_dir: Path, real_trace: Path) -> dict:
             mode = "copy"
         print(f"[trace_bridge] {label}: {dest} <- {real_trace} ({mode})")
 
-    # Also export for DedupAwareTevict
     os.environ["TRACE_FILE_PATH"] = str(real_trace)
     print(f"[trace_bridge] TRACE_FILE_PATH={real_trace}")
     return {"TRACE_FILE_PATH": str(real_trace), **{k: str(v) for k, v in targets.items()}}

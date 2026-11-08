@@ -1,0 +1,31 @@
+\section{Related Work}
+\label{sec:related}
+
+Geo-distributed object stores minimize a mix of latency, availability, and price.
+We group related work by whether the system bills \emph{objects} or \emph{content chunks}.
+
+\subsection{Geo-Distributed Object Placement}
+
+SPANStore~\cite{spanstore2013} and Volley~\cite{volley2010} place data across cloud regions to trade latency, availability, and price.
+Uluyol \emph{et al.}~\cite{uluyol2020} study near-optimal latency--cost trade-offs for geo-storage.
+SkyStore~\cite{skystore2025} specializes the problem to object {GET}/{PUT} traces with public-cloud list prices.
+Its two-region Fig.~5 compares Always Evict, Always Store, $T_{\mathrm{even}}$, {TTL}-{CC}, {EWMA}, and {AWS} Multi-Region against TevictRanges; Table~3 reports cost versus an offline object-level Optimal; Table~4 (three-region) uses JuiceFS instead of {AWS} Multi-Region.
+Our evaluation uses that same baseline set and changes only the billing unit to unique chunks.
+
+SkyStore's traces expose timestamp, operation, region, key, and size---not content---so any policy driven by those fields treats an object as one billing unit.
+ChunkTevict is an adaptation of TevictRanges to a precomputed chunk index, not a new multi-cloud overlay.
+
+\subsection{{TTL} Caches}
+
+{TTL}-based caches~\cite{ttl_cc2019} set a lifetime from an estimate of the next request, then let the object expire without a capacity {LRU}.
+TevictRanges is a geo-storage {TTL}: the lifetime of a replica at destination $d$ is chosen so that storing until the predicted next access at $d$ is cheaper than paying some network edge on the next miss.
+ChunkTevict reuses that estimator unchanged.
+The only change is the entity that carries the {TTL}: a unique chunk in a region instead of an object.
+
+\subsection{Chunking and Deduplication}
+
+Low-bandwidth file systems~\cite{lbfs2001} and Rabin fingerprints~\cite{rabin1981} made content-defined chunking standard, and backup and primary-storage deduplication store each unique chunk once.
+Resemblance detection and delta compression~\cite{zhang2019finesse,xia2016dare,ye2021fast} additionally remove redundancy between similar but non-identical chunks, at the cost of feature metadata.
+These systems decide \emph{what} to store; they do not decide \emph{where} and \emph{for how long} a copy should live across priced regions.
+ChunkTevict uses exact chunk identity from an offline {CDC} index, does not encode deltas, and does not tune chunk size at runtime.
+Its contribution is to drive a geo-{TTL} with that index.

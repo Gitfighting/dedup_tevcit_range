@@ -1,0 +1,31 @@
+[
+    {
+        "Trace Duration (s)": "6 days, 4:31:12.472000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 13019220,
+        "avg request size (GB)": 2.5001803413033487e-06,
+        "aggregate size (GB)": 32.55039844568819,
+        "avg read latency (ms)": 1.0,
+        "avg write latency (ms)": 1.0,
+        "p50 read latency (ms)": 1.0,
+        "p90 read latency (ms)": 1.0,
+        "p99 read latency (ms)": 1.0,
+        "p50 write latency (ms)": 1.0,
+        "p90 write latency (ms)": 1.0,
+        "p99 write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 0.0,
+        "avg write tput runtime (ms)": 0.0,
+        "avg read throughput (Gbps)": 10.0,
+        "avg write throughput (Gbps)": 5.5486,
+        "total transfer cost ($)": 4.109470861,
+        "total storage cost ($)": 22.779405725,
+        "total storage cost without base ($)": 18.982898714,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 26.888876586,
+        "total cost ($)": 26.888876586,
+        "trace": "traces/fig5_work/fig5_6reg_typeC_replicate_all_T29.mc-aug",
+        "config": "config/fig5_jobs/fig5_6reg_typeC_replicate_all_T29.yaml",
+        "timestamp": "2026-09-09T21:22:32.629569",
+        "tag": "fig5_6reg_typeC_replicate_all_T29"
+    }
+]

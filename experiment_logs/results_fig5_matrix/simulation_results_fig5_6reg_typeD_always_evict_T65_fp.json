@@ -1,0 +1,31 @@
+[
+    {
+        "Trace Duration (s)": "7 days, 0:39:32.500000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 283086,
+        "avg request size (GB)": 0.009358540006633848,
+        "aggregate size (GB)": 2649.271656330675,
+        "avg read latency (ms)": 61.8176,
+        "avg write latency (ms)": 1.0,
+        "p50 read latency (ms)": 66.355,
+        "p90 read latency (ms)": 147.447,
+        "p99 read latency (ms)": 159.981,
+        "p50 write latency (ms)": 1.0,
+        "p90 write latency (ms)": 1.0,
+        "p99 write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 1.3,
+        "avg write tput runtime (ms)": 0.1,
+        "avg read throughput (Gbps)": 9.126,
+        "avg write throughput (Gbps)": 13.9719,
+        "total transfer cost ($)": 196.383056643,
+        "total storage cost ($)": 1.963398628,
+        "total storage cost without base ($)": 1.963398628,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 198.346455271,
+        "total cost ($)": 198.346455271,
+        "trace": "traces/fig5_work/fig5_6reg_typeD_always_evict_T65_fp.mc-aug",
+        "config": "config/fig5_jobs/fig5_6reg_typeD_always_evict_T65_fp.yaml",
+        "timestamp": "2026-08-23T02:56:00.580848",
+        "tag": "fig5_6reg_typeD_always_evict_T65_fp"
+    }
+]

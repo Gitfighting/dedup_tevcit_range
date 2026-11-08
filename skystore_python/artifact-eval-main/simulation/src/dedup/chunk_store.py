@@ -52,7 +52,7 @@ class ChunkStore:
         return self.objs[key][1]
 
     def unique_bytes(self, key: str) -> int:
-        u = self.uids(key)
+        u = np.unique(self.uids(key))
         if len(u) == 0:
             return 0
         return int(self.lens_u[u].sum())

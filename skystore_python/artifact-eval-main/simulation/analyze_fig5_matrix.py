@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze matrix + Fig.5-style plots with dedup_aware as denominator."""
+"""Analyze matrix + Fig.5-style plots with SkyStore as denominator."""
 from __future__ import annotations
 
 import json
@@ -13,7 +13,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "results_fig5_matrix"
-DENOM = "dedup_aware_tevict_ranges"
+DENOM = "tevict_ranges"
 
 # display order (paper-like + ours)
 POLICY_ORDER = [
@@ -22,9 +22,9 @@ POLICY_ORDER = [
     "teven",
     "tevict_ranges",
     "optimal",
-    "dedup_aware_tevict_ranges",
+    "chunk_tevict",
 ]
-# Paper Fig.5 puts baselines on X (denominator omitted). Ours is denominator.
+# Paper Fig.5 puts baselines on X (denominator omitted). Ours is extra series.
 BASELINE_ORDER = [
     "always_evict",
     "always_store",
@@ -38,7 +38,7 @@ LABELS = {
     "teven": "Teven",
     "tevict_ranges": "SkyStore",
     "optimal": "Optimal",
-    "dedup_aware_tevict_ranges": "DedupAware\n(ours)",
+    "chunk_tevict": "ChunkTevict\n(ours)",
 }
 # Paper legend order
 TRACE_ORDER = ["T15", "T29", "T65", "T78", "T79"]
@@ -56,7 +56,7 @@ COLORS = {
     "teven": "#54A24B",
     "tevict_ranges": "#E45756",
     "optimal": "#B279A2",
-    "dedup_aware_tevict_ranges": "#72B7B2",
+    "chunk_tevict": "#72B7B2",
 }
 
 
@@ -120,7 +120,7 @@ def plot_fig5(setup: str, ratios: dict, out_png: Path):
     Paper Fig.5 style:
       - X = baselines (denominator policy omitted)
       - grouped bars = IBM traces (blue gradient)
-      - Y = cost / DedupAware, log2 scale
+      - Y = cost / SkyStore, log2 scale
       - red ratio labels on bars
     """
     plt.rcParams.update(
@@ -177,7 +177,7 @@ def plot_fig5(setup: str, ratios: dict, out_png: Path):
     ax.axhline(1.0, color="black", linestyle="-", linewidth=0.8, alpha=0.7, zorder=2)
     ax.set_xticks(x)
     ax.set_xticklabels([LABELS[p] for p in policies])
-    ax.set_ylabel("Costs v.s. DedupAware")
+    ax.set_ylabel("Costs v.s. SkyStore")
     ax.set_xlabel("")
     # paper-like y ticks
     ax.yaxis.set_major_formatter(
@@ -203,7 +203,7 @@ def plot_fig5(setup: str, ratios: dict, out_png: Path):
     )
     setup_name = "2-Region" if setup == "2reg" else "9-Region"
     fig.suptitle(
-        f"Figure 5-style: {setup_name}, Fixed Base (FB): Ratio between baseline cost vs. DedupAware (ours).",
+        f"Figure 5-style: {setup_name}, Fixed Base (FB): Ratio between baseline cost vs. SkyStore.",
         y=1.02,
         fontsize=11,
     )
@@ -250,11 +250,11 @@ def plot_components(cells, setup: str, out_png: Path):
 
 def write_analysis(cells: dict):
     lines = []
-    lines.append("# Fig.5-style Matrix Analysis (DedupAware as denominator)\n\n")
+    lines.append("# Fig.5-style Matrix Analysis (SkyStore as denominator)\n\n")
     lines.append(
-        "- Denominator: **dedup_aware_tevict_ranges** (ours)\n"
-        "- Paper Fig.5 used SkyStore(tevict_ranges) as denominator; here ratios are "
-        "`cost(policy) / cost(DedupAware)`.\n"
+        "- Denominator: **tevict_ranges** (SkyStore)\n"
+        "- Paper Fig.5 used SkyStore(tevict_ranges) as denominator; ratios are "
+        "`cost(policy) / cost(SkyStore)`.\n"
         "- Costs use **total without request** (paper ignores PUT/GET op fees).\n"
         "- 2reg: typeE Fixed-Base; 9reg: typeA Fixed-Base multi-cloud.\n\n"
     )
@@ -274,7 +274,7 @@ def write_analysis(cells: dict):
             lines.append("| " + " | ".join(row) + " |\n")
         lines.append("\n")
 
-        lines.append("### Ratio vs DedupAware (ours=1.0)\n\n")
+        lines.append("### Ratio vs SkyStore (SkyStore=1.0)\n\n")
         lines.append(header)
         lines.append("|" + "---|" * (len(POLICY_ORDER) + 1) + "\n")
         ratios, _ = build_ratios(cells, setup)
@@ -309,7 +309,7 @@ def write_analysis(cells: dict):
                 )
         lines.append("\n")
 
-        lines.append("### Delta vs DedupAware (where the $ goes)\n\n")
+        lines.append("### Delta vs SkyStore (where the $ goes)\n\n")
         lines.append(
             "| Trace | Policy | ΔTotal$ | ΔStorage$ | ΔTransfer$ | Driver |\n"
         )
@@ -351,10 +351,9 @@ def write_analysis(cells: dict):
             "4. **SkyStore (tevict_ranges)**: adaptive TTL from inter-arrival histogram; "
             "usually best among author baselines; still stores full objects on cache hits.\n"
             "5. **Optimal**: clairvoyant T_next vs T_even; lower bound / oracle (not deployable).\n"
-            "6. **DedupAware (ours)**: same adaptive TTL family, but HOT vs DEDUP using "
-            "`τ=(1-L)×T_even`; DEDUP pays missing-chunk transfer and stores unique chunks + "
-            "manifest → lower storage and often lower transfer when locality exists. "
-            "Savings vs SkyStore ≈ reduction in full-object replicas / full egress.\n"
+            "6. **ChunkTevict (ours)**: same TevictRanges histogram, but the lease is a unique "
+            "chunk in a region; GET miss TTL is that chunk's src→dst; hit refreshes with "
+            "min_i get_tevict over holders of that uid.\n"
             "7. **Read the Δ table**: if ΔTransfer dominates, the gap is cross-region GET "
             "volume; if ΔStorage dominates, the gap is replica/chunk footprint over time.\n\n"
         )
@@ -364,7 +363,7 @@ def write_analysis(cells: dict):
     lines.append("- `fig5_2reg_components.png`, `fig5_9reg_components.png` — stor/xfer\n")
     (OUT / "ANALYSIS.md").write_text("".join(lines), encoding="utf-8")
     # also copy to experiment_logs
-    dest = Path(r"D:\JavaProjects\Skystore1212\experiment_logs\fig5_dedup_aware_analysis_20260812.md")
+    dest = Path(r"D:\JavaProjects\Skystore1212\experiment_logs\fig5_chunk_tevict_analysis.md")
     try:
         dest.write_text("".join(lines), encoding="utf-8")
     except Exception:

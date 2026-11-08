@@ -3,7 +3,7 @@
 Full ONLINE 2reg (typeE) matrix runner — executes ON ECS.
 
 Tags (small → large): T079, T065, T015, T078, T029
-Policies: always_evict, always_store, t_even, skystore, dedup_aware_tevict
+Policies: always_evict, always_store, t_even, skystore
 
 Usage on server:
   nohup /data/venv/bin/python ablation/run_full_2reg_matrix.py \
@@ -29,7 +29,6 @@ POLICIES = [
     "always_store",
     "t_even",
     "skystore",
-    "dedup_aware_tevict",
 ]
 
 BASE = Path("/data/ablation_exp")

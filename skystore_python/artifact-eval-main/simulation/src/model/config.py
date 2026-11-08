@@ -42,5 +42,5 @@ class Config(BaseModel):
         str
     ] = ""  # Regex filter for object stores considered by SpanStore
 
-    # OCP extension: offline zero-error chunk store for dedup-aware policy
+    # Offline chunk store for chunk_tevict
     chunk_store_dir: Optional[str] = None

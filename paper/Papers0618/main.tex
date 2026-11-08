@@ -1,0 +1,290 @@
+% !TEX program = xelatex
+% 编译见 README.txt
+\documentclass[conference]{IEEEtran}
+\usepackage[UTF8]{ctex}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{array}
+
+\title{在 SkyStore 成本放置之上引入相似数据差分编码\\与副本--纠删混合冗余：增量式仿真评估\\[0.4em]
+{\normalsize\itshape Incremental Evaluation of Delta Encoding and Replica--EC Hybrid Redundancy atop SkyStore-Style Cost Placement}}
+
+\author{
+\IEEEauthorblockN{作者姓名}
+\IEEEauthorblockA{\textit{单位院系}\\
+城市，国家\\
+\texttt{email@example.edu}}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+SkyStore 面向云存储的多区域场景，在 write-local、replicate-on-read 与自适应 TTL 直方图之下，以货币成本优化副本的放置与驱逐~\cite{skystore2025}。
+从\textbf{数据语义}看，SkyStore 将 trace 中的每次 PUT/版本更新 largely 视为\textbf{彼此独立的一次性对象}：以对象 key 与版本为粒度计费、复制与驱逐，\textbf{不显式建模}用户在上传序列中反复出现的\textbf{内容级冗余}——即多次上传之间大量存在、但哈希并不相同的\textbf{相似数据（resemblance）}。
+
+真实云工作负载中，版本迭代、增量备份与相似文件并发上传会产生可观的 upload-time redundancy；若仍按整对象 $V$ 计存储与传输，将系统性\textbf{高估}账单。
+为此，本文在 SkyStore 类仿真栈（TevictRanges 基线）之上\textbf{首先}引入 Finesse 式\textbf{相似检测}与\textbf{差分编码（$\delta$）}：离线 manifest 标注 base/member 与差分率 $r$，在线按缩减体积计费与搬运；并\textbf{进一步}保留写路径 MILP，在 TTL 已定的快照上比较整副本与 $(2{+}1)$ RS 纠删码（EC）分支（\texttt{PolicyMilpECnewV4}）。
+
+在与 SkyStore \textbf{相同请求行与价目表}的 IBM SNIA 轨迹上，我们完成 $\delta{\times}\mathrm{EC}$ 的 $2{\times}2$ 因子分解、差分覆盖率 $p\in[0.05,0.5]$ 扫描及跨 trace 评估。
+结果表明：\textbf{相似检测 + 差分编码}带来独立、可测的 incremental 收益（T79 上 $p{=}0.1$ 约 $-$1.1\%，$p{=}0.5$ 约 $-$4.1\%，主要节省传输）；默认 MILP 从不选择 EC；$\delta$ 与 EC 无正向交互。
+本文从``上传相似冗余被 SkyStore 语义忽略''这一缺口出发，给出可分解、可复现的增量评估。
+\end{abstract}
+
+\begin{IEEEkeywords}
+云存储；SkyStore；相似检测；差分编码；上传冗余；纠删码；多区域放置；增量评估
+\end{IEEEkeywords}
+
+%==============================================================================
+\section{引言}
+\label{sec:intro}
+
+现代应用日益跨多个可用区、地域乃至多云部署对象存储~\cite{skystore2025}。
+用户在远端保留数据以缩短读延迟或满足合规时，必须在\textbf{存储账单}与\textbf{跨区域 egress} 之间做持续权衡。
+SkyStore 将问题形式化为\textbf{成本管理}：写路径 local-write，读 miss 时 replicate-on-read，并通过访问间隔直方图估计 $\mathrm{ExpectedCost}(\mathrm{TTL})$，在``为副本付存储费''与``读 miss 再付传输费''之间自适应选择驱逐时长~\cite{skystore2025}。
+仿真表明，相对固定 TTL 与工业基线，SkyStore 可在 IBM 类轨迹上取得显著节省~\cite{skystore2025,snia_ibm2019}。
+
+然而，从\textbf{对象语义}分析，SkyStore 的优化对象主要是\textbf{按 key/版本区分的独立对象流}：每次上传或版本更新在模型中接近\textbf{一次性整对象}，放置与驱逐决策\textbf{不感知}上传内容之间的 resemblance。
+这在云存储中系统性忽略了\textbf{用户每次上传时的冗余}——版本间小改、相似文件批量入库等场景下，大量字节重复出现，却仍以整对象体积 $V$ 计入存储与跨区传输。
+
+\textbf{（i）相似性维度（本文主线）}——Finesse~\cite{finesse} 等方案可在块级做相似检测并以 delta 仅保留差异；Ye 等~\cite{ye2021fast} 进一步讨论可变粒度下的 resemblance 效率。
+本文在 TevictRanges 之上\textbf{先}接入相似检测 manifest 与差分编码计费，回答``SkyStore 若看见上传相似冗余，能省多少''。
+\textbf{（ii）冗余形态维度（增量扩展）}——远端缓存另可按整副本或 EC 分片计价~\cite{azure_ec2012,plank2013}；写路径 MILP 在 TTL 快照上比较两分支，与 $\delta$ 正交，用于 $2{\times}2$ 分解。
+
+受 Fast Variable-Grained~\cite{ye2021fast} 的扫描思路启发，本文将 Finesse manifest 的覆盖率 $p$ 作为 resemblance 强度旋钮，在\textbf{不改变 SkyStore trace 行与价目表}的前提下，分解 $\delta$ 与 EC 的边际贡献。
+
+\subsection{问题陈述}
+
+给定：SkyStore 类价目表（$S_r$ 存储单价、$N_{ij}$ egress 单价）、IBM 访问轨迹、Finesse 合并 manifest（差分率 $r$、成员 key 集合）。
+本文回答：
+（1）仅启用 $\delta$、仅启用 EC、二者同时启用，相对 tevict 各节省多少？
+（2）当 $p$ 从 0.05 增至 0.5，总成本如何变化？
+（3）在不同 SNIA trace 与访问模式 slice（typeA--D）上，结论是否稳健？
+
+\subsection{主要贡献}
+
+\begin{itemize}
+  \item \textbf{语义与系统：}指出 SkyStore 将版本化对象视为独立一次性实体、忽略 upload-time resemblance 冗余；在 TevictRanges 之上接入 Finesse 相似检测与 $\delta$ 计费，并实现 replica--EC MILP 扩展（\texttt{PolicyMilpECnewV4}）。
+  \item \textbf{方法：}提出与 SkyStore 对齐的 $\delta{\times}\mathrm{EC}$ $2{\times}2$ ablation 及因子归因（内基线 \texttt{nodelta\_rep}），以覆盖率 $p$ 扫描 resemblance 强度。
+  \item \textbf{实验：}IBM SNIA 轨迹上量化``相似检测+差分''的 incremental 收益，并报告 EC 未选中、跨 trace 差异等边界情形。
+\end{itemize}
+
+\subsection{论文结构}
+
+第~\ref{sec:related}~节综述相关工作；第~\ref{sec:problem}~节形式化模型；第~\ref{sec:design}~节描述 V4 设计；第~\ref{sec:eval}~节给出实验；第~\ref{sec:conclusion}~节总结。
+
+%==============================================================================
+\section{相关工作}
+\label{sec:related}
+
+\subsection{成本导向的多区域放置}
+
+SkyStore~\cite{skystore2025} 以货币成本为目标，用 TTL 直方图学习访问间隔，在多区域有向图上决策副本保留时长。
+SPANStore~\cite{spanstore2013} 同样优化成本，但采用写时复制且不含 TTL 驱逐。
+Volley~\cite{volley2010} 侧重延迟而非账单。
+TevictRanges（\texttt{PolicyTevictRangesNew}）复现 SkyStore 配对边直方图与 FP/FB 语义，是本文直接基线。
+本文不重新设计 TTL 学习，而在其输出的 $T$ 快照上增加体积形态（$V$ vs.\ $V/k$）与 $\delta$ 缩减体积 $rV$ 的比较。
+
+\subsection{相似数据去重}
+
+传统去重仅识别完全相同的块；Finesse~\cite{finesse} 通过分组秩特征加速 resemblance 检测，再对相似块做 delta 压缩。
+Ye 等~\cite{ye2021fast} 进一步指出元数据与块粒度的权衡，采用可变粒度减少不必要的细粒度检测。
+本文离线使用 Finesse manifest 标注 trace 中的 base/member 与差分率 $r$（均值约 0.007），在线仿真仅改变计费体积与传输量，与 SkyStore``同一 trace 行、同一定价''的公平对比原则一致。
+
+\subsection{纠删码与存储计价}
+
+$(k,m)$ EC 将持久占用从 $r$ 倍整对象降为约 $(k{+}m)/k$ 倍~\cite{plank2013}；Azure 等系统将 EC 作为默认冗余形态~\cite{azure_ec2012}。
+Uluyol 等~\cite{uluyol2020} 从延迟--成本前沿论证 EC 相对纯复制的潜力。
+SkyStore 系策略优化保留多久；本文 MILP 在保留窗口已定时比较 replica 与 EC 的存储与放置 egress（不含编解码 CPU 费）。
+
+%==============================================================================
+\section{问题陈述}
+\label{sec:problem}
+
+\subsection{计价模型}
+
+沿用 SkyStore 仿真栈：对象体积 $V$；区域 $r$ 存储费率 $S_r$；边 $(i,j)$ egress 费率 $N_{ij}$。
+7 天仿真窗口内，总成本 $C = C_{\mathrm{storage}} + C_{\mathrm{transfer}}$。
+整副本在区域 $r$ 驻留 $T$ 的存储费 $\approx V\cdot S_r\cdot T$；EC 数据片（$k{=}2$）单片 $\approx (V/k)\cdot S_r\cdot T$。
+$\delta$ member 有效体积 $\approx r\cdot V$，base 仍按 $V$；读 member 可能拉取 base+delta。
+
+\subsection{决策边界}
+
+TevictRanges 决定 TTL $T$ 与驱逐；MILP 不将驱逐时刻作为变量。
+MILP 仅在写路径直方图 warm 且跨 12\,h 桶时触发，为每个 \texttt{issueRegion} 选择 replica 或 EC 落区。
+$\delta$ 由 trace 列与 manifest 决定；\texttt{allow\_ec} / \texttt{force\_ec\_only} 为消融开关。
+
+\subsection{因子分解（$2{\times}2$）}
+
+表~\ref{tab:22design} 给出四个实验角；归因公式为
+$\Delta_\delta = C(\delta\_rep)-C(nodelta\_rep)$，
+$\Delta_{EC}=C(nodelta\_ec)-C(nodelta\_rep)$，
+交互 $= C(\delta\_ec)-C(nodelta\_rep)-\Delta_\delta-\Delta_{EC}$。
+
+\begin{table}[t]
+\centering
+\caption{$\delta{\times}\mathrm{EC}$ $2{\times}2$ 实验设计}
+\label{tab:22design}
+\begin{tabular}{lcc}
+\toprule
+corner & $\delta$ & EC \\
+\midrule
+\texttt{nodelta\_rep} & $\times$ & 禁止 \\
+\texttt{nodelta\_ec}  & $\times$ & 强制 \\
+\texttt{delta\_rep}   & $\checkmark$ & 禁止 \\
+\texttt{delta\_ec}    & $\checkmark$ & 允许 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\section{系统设计}
+\label{sec:design}
+
+\subsection{工作流程}
+
+参照 Ye 等~\cite{ye2021fast} 的上传/下载两阶段叙事，本文流程为：
+\textbf{（1）离线：}IBM trace + Finesse manifest $\rightarrow$ 合成 trace（\texttt{.delta.mc.aug}），控制 $p$ = member key 占比；
+\textbf{（2）在线写：}write-local；直方图滚动 $\rightarrow$ 若触发 MILP，比较 replica/EC 分支成本 $\rightarrow$ 缓存布局决策；
+\textbf{（3）在线读：}miss 时按策略拉取（整副本 / base+delta / EC 恢复为整副本语义）；
+\textbf{（4）驱逐：}TTL 到期删除物理副本；与 tevict 语义对齐。
+
+\subsection{MILP 分支}
+
+\textbf{Replica 分支：}基地外至多一整副本，存储 $\propto V$，放置 egress $\propto V$。
+\textbf{EC 分支：}两条外传 data shard，存储 $\propto 2V/k$，放置 egress $\propto 2V/k$；读 miss 升级整对象恢复。
+当 $T$ 较长且 $V$ 较大时 EC 存储项理论上占优；实验显示在 IBM T79 + 3-reg FP 价目表下，传输与读恢复使 MILP 仍选 replica。
+
+\subsection{实现要点}
+
+策略 \texttt{PolicyMilpECnewV4}（SimulatorV3, FP）；基线 \texttt{PolicyTevictRangesNew}（SimulatorV1）；求解器 \texttt{GurobiEc21MilpBuilder}；日志 \texttt{milp\_solve\_log\_*.jsonl} 记录 $\mathrm{ec\_rate}$。
+
+%==============================================================================
+\section{实验评估}
+\label{sec:eval}
+
+\subsection{数据集与设置}
+
+主轨迹为 SNIA IBM ObjectStoreTrace T79 typeA（114{,}227 请求，3 区域 FP，7 天窗口）。
+覆盖率扫描在同一 T79 上取 $p\in\{0.05,0.1,0.2,0.3,0.5\}$（464--4548 个 member key）。
+跨 trace 实验在 T15/T65/T78/T79 上重复（$p{=}0.1$）；T29（13M 请求）因 JVM 堆内存不足跳过。
+访问模式 slice typeA--D 共享同一 member 集，仅地理访问结构不同。
+Manifest 为 \texttt{finesse\_merged\_manifest.csv}，$r$ 中位数 $\approx 0.005$。
+V4 配置 \texttt{milp\_ec\_new\_v4\_3reg.yaml}；基线 \texttt{tevictranges\_3reg.yaml}。
+tevict 不读 $\delta$ 列，保证与 SkyStore 公平对比。
+
+\subsection{评价指标}
+
+\textbf{沿用 SkyStore：}total / storage / transfer cost（USD），requests，aggregate GB。
+\textbf{增量指标：}$\mathrm{vs\_tevict\_\%}$、$\mathrm{vs\_nodelta\_rep\_\%}$、transfer/aggregate GB、cost/request、$\mathrm{ec\_rate}$、$\Delta_\delta$、$\Delta_{EC}$。
+参照 Ye 等以 DCR 考虑元数据~\cite{ye2021fast}，本文以覆盖率 $p$ 作为 resemblance 强度旋钮，避免与云账单口径混用。
+
+\subsection{差分覆盖率扫描（E13）}
+
+表~\ref{tab:saturation} 给出 T79 上随 $p$ 增加的节省；tevict 五档 total 恒为 275.19。
+V4 相对 tevict 从 $-$0.77\%（$p{=}0.05$）增至 $-$4.11\%（$p{=}0.5$）；全档 $\mathrm{ec\_rate}{=}0$。
+随 $p$ 增加，节省近似单调上升；即使 $p{=}0.5$ 仍约 4\%，属于小幅 incremental 改进。
+
+\begin{table}[t]
+\centering
+\caption{T79 typeA：差分覆盖率 $p$ 扫描（USD，7 天窗口）}
+\label{tab:saturation}
+\begin{tabular}{rrrrrr}
+\toprule
+$p$ & members & V4 & tevict & vs.\ tevict & $\Delta$ transfer \\
+\midrule
+0.05 & 464   & 273.08 & 275.19 & $-$0.77\% & $-$1.01 \\
+0.10 & 912   & 272.08 & 275.19 & $-$1.13\% & $-$1.93 \\
+0.20 & 1808  & 270.17 & 275.19 & $-$1.83\% & $-$3.63 \\
+0.30 & 2727  & 268.17 & 275.19 & $-$2.55\% & $-$5.44 \\
+0.50 & 4548  & 263.88 & 275.19 & $-$4.11\% & $-$9.27 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{$\delta{\times}\mathrm{EC}$ 因子分解（E12）}
+
+表~\ref{tab:22results} 给出 $p{=}0.1$ 下的 $2{\times}2$ 结果。
+\texttt{delta\_ec} 与 \texttt{delta\_rep} 均为 272.08（$-$1.13\% vs.\ tevict）；$\mathrm{ec\_rate}{=}0$。
+$\Delta_\delta{=}{-}\$2.14$（transfer $-$1.93）；$\Delta_{EC}{=}{+}\$0.43$；交互 $\approx 0$。
+当前收益 $\approx$ 纯 $\delta$；V4 相对 tevict 的额外 0.35\% 来自 TTL/MILP 修复（\texttt{nodelta\_rep}），与 $\delta$ 无关。
+
+\begin{table}[t]
+\centering
+\caption{T79 typeA $p{=}0.1$：$2{\times}2$ 分解（USD）}
+\label{tab:22results}
+\begin{tabular}{lrrr}
+\toprule
+corner & total & vs.\ tevict & ec\_rate \\
+\midrule
+tevict & 275.19 & --- & --- \\
+\texttt{delta\_ec} / \texttt{delta\_rep} & \textbf{272.08} & \textbf{$-$1.13\%} & 0\% \\
+\texttt{nodelta\_rep} & 274.22 & $-$0.35\% & 0\% \\
+\texttt{nodelta\_ec} & 274.64 & $-$0.20\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{跨 trace 与访问模式}
+
+表~\ref{tab:cross}：T78 节省 8.45\%（storage 13.56 vs.\ 15.68）；T15 略负（$+$0.65\%），说明 $\delta$ 收益依赖 trace 结构。
+表~\ref{tab:types}：typeA--D 上 V4 相对 tevict 约 $-$0.7\% 至 $-$1.1\%；读集中的 typeC transfer 占比仅 $\approx$19\%，绝对节省更小。
+
+\begin{table}[t]
+\centering
+\caption{跨 trace 对比（$p{=}0.1$，USD）}
+\label{tab:cross}
+\begin{tabular}{lrrr}
+\toprule
+Trace & V4 & tevict & vs.\ tevict \\
+\midrule
+T65 & 6.56  & 6.59  & $-$0.42\% \\
+T78 & 24.18 & 26.41 & \textbf{$-$8.45\%} \\
+T79 & 272.08 & 275.19 & $-$1.13\% \\
+T15 & 77.06 & 76.56 & $+$0.65\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{访问模式 slice（$p{=}0.1$，t9fix，USD）}
+\label{tab:types}
+\begin{tabular}{lrrrl}
+\toprule
+type & V4 & tevict & vs.\ tevict & 特点 \\
+\midrule
+A & 272.08 & 275.19 & $-$1.13\% & 写密集 \\
+B & 208.21 & 209.74 & $-$0.73\% & 区域感知 \\
+C & 217.27 & 218.91 & $-$0.75\% & 读集中 \\
+D & 270.88 & 273.94 & $-$1.12\% & 多读 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{讨论}
+
+本文定位为 SkyStore 之上的\textbf{增量}扩展：$\delta$ 带来可测但有限的成本下降；EC 在默认 MILP 下未被选中。
+参照 Ye 等~\cite{ye2021fast} 对粒度参数的扫描讨论，我们以 $p$ 为旋钮展示 resemblance 强度与账单之间的单调关系。
+9-reg 与 force EC 实验表明：force EC 仅 $+\$0.1$ 量级；高 $r$ manifest（$\times 10$）在 p100 覆盖下仅 $+\$0.16$，说明\textbf{覆盖范围}比单点放大 $r$ 更关键。
+
+%==============================================================================
+\section{结论}
+\label{sec:conclusion}
+
+本文在 SkyStore 类仿真栈上，从\textbf{上传相似冗余被对象/version 语义遮蔽}这一缺口出发，评估相似检测与差分编码相对 TevictRanges 的 incremental 收益，并分解 EC 的边际作用。
+核心发现：（1）相似检测 + $\delta$ 有效但幅度有限——T79 上 $p$ 从 0.05 到 0.5，相对 tevict 从约 0.8\% 增至 4.1\%，主要节省传输；（2）EC 在当前配置下不被选用，与 $\delta$ 无协同；（3）实验与 SkyStore 同一 trace、同一三账，支持可复现的语义—账单对照。
+
+未来工作包括：更大 $p$ 与更高 $r$ manifest 联合扫描；6/9 区域价目表下是否出现 $\mathrm{ec\_rate}{>}0$；T29 分段仿真；读路径 EC 增量恢复以降低读放大。
+
+\section*{致谢}
+（待填）
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

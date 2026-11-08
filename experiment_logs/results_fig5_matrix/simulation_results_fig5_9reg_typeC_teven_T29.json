@@ -1,0 +1,31 @@
+[
+    {
+        "Trace Duration (s)": "6 days, 4:31:12.472000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 13019220,
+        "avg request size (GB)": 2.5001803413033487e-06,
+        "aggregate size (GB)": 32.55039844568819,
+        "avg read latency (ms)": 59.0009,
+        "avg write latency (ms)": 1.0,
+        "p50 read latency (ms)": 59.56,
+        "p90 read latency (ms)": 145.932,
+        "p99 read latency (ms)": 147.338,
+        "p50 write latency (ms)": 1.0,
+        "p90 write latency (ms)": 1.0,
+        "p99 write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 0.0,
+        "avg write tput runtime (ms)": 0.0,
+        "avg read throughput (Gbps)": 6.5924,
+        "avg write throughput (Gbps)": 14.0022,
+        "total transfer cost ($)": 1.377941871,
+        "total storage cost ($)": 5.306892396,
+        "total storage cost without base ($)": 1.438281198,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 6.684834267,
+        "total cost ($)": 6.684834267,
+        "trace": "traces/fig5_work/fig5_9reg_typeC_teven_T29.mc-aug",
+        "config": "config/fig5_jobs/fig5_9reg_typeC_teven_T29.yaml",
+        "timestamp": "2026-09-10T12:37:09.570144",
+        "tag": "fig5_9reg_typeC_teven_T29"
+    }
+]

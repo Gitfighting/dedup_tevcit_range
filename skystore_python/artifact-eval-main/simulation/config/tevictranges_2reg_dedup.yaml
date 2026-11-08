@@ -1,5 +1,0 @@
-placement_policy: "dedup_aware_tevict_ranges"
-transfer_policy: "cheapest"
-regions: ['aws:us-west-2', 'aws:us-east-1']
-window_size: -1
-chunk_store_dir: "/data/dedup_exp/T065"

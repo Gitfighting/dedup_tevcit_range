@@ -1,0 +1,10 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+With the prevalence of public-cloud object storage, geo-distributed clients pay for bytes stored over time and bytes moved across regions.
+This paper reviews object-granularity TevictRanges and analyzes its limitation: when objects share content, SkyStore and even its object-level Optimal store and move the same chunks under independent object leases.
+Thus, we propose ChunkTevict, which keeps the TevictRanges histogram, $T_{\mathrm{evict}}$ estimator, and {TTL} rule, and moves placement, eviction, transfer, and {GB}$\cdot$h accounting to unique chunks per region.
+Finally, we implement an offline chunk index and a trace replay, and evaluate the five {IBM} traces of SkyStore Fig.~5 bound to versioned public content.
+The results show that two-region SkyStore costs $2.18$--$11.80\times$ ChunkTevict and object-level Optimal $2.27$--$11.73\times$, with $88$--$97\%$ of the gap in storage.
+In three regions, SkyStore averages $6.40\times$ ChunkTevict with a fixed base and $5.00\times$ under free placement, so the gap is not an artifact of pinning the origin copy.
+How much of this carries over to production depends on how much content real workloads share and on request charges for chunk-level access; measuring both on payload-bearing traces is our next step.

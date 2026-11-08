@@ -1,0 +1,48 @@
+{
+  "pool": "/data/file_pool",
+  "files": 733016,
+  "bytes": 10737419170,
+  "chunks": 797167,
+  "avg_chunk_B": 13469.5,
+  "wall_s": 57686.68,
+  "MBps": 0.186,
+  "max_file_cap_B": 16777216,
+  "index_40B_x_chunks": 31886680,
+  "existing_indexes": {
+    "T015": {
+      "lens_u_bytes": 69032712,
+      "uids_data_bytes": 195482904,
+      "n_unique": 8629073,
+      "n_refs": 48870694,
+      "manifest_40B": 1954827760
+    },
+    "T029": {
+      "lens_u_bytes": 1020080,
+      "uids_data_bytes": 17171312,
+      "n_unique": 127494,
+      "n_refs": 4292796,
+      "manifest_40B": 171711840
+    },
+    "T065": {
+      "lens_u_bytes": 2001384,
+      "uids_data_bytes": 1659912,
+      "n_unique": 250157,
+      "n_refs": 414946,
+      "manifest_40B": 16597840
+    },
+    "T078": {
+      "lens_u_bytes": 5390048,
+      "uids_data_bytes": 16465180,
+      "n_unique": 673740,
+      "n_refs": 4116263,
+      "manifest_40B": 164650520
+    },
+    "T079": {
+      "lens_u_bytes": 69532128,
+      "uids_data_bytes": 186044700,
+      "n_unique": 8691500,
+      "n_refs": 46511143,
+      "manifest_40B": 1860445720
+    }
+  }
+}

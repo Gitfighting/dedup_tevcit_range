@@ -1,0 +1,12 @@
+placement_policy: "chunk_tevict"
+transfer_policy: "cheapest"
+regions:
+  - aws:us-west-2
+  - azure:eastus
+  - azure:westeurope
+  - aws:us-east-1
+  - gcp:us-west1-a
+  - gcp:us-east1-b
+window_size: -1
+fixed_base_region: true
+chunk_store_dir: "/data/dedup_exp/T065"

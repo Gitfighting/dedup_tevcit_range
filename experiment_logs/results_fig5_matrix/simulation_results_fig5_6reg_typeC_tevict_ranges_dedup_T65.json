@@ -1,0 +1,42 @@
+[
+  {
+    "ok": true,
+    "policy": "tevict_ranges_dedup",
+    "trace": "/data/sim_exp/python_simulation/traces6/typeC/IBMObjectStoreTrace065Part0.typeC.mc.aug",
+    "chunk_dir": "/data/dedup_exp/T065",
+    "max_ops": 283086,
+    "ops": 283086,
+    "regions": [
+      "aws:us-east-1",
+      "aws:us-west-2",
+      "azure:eastus",
+      "azure:westeurope",
+      "gcp:us-east1-b",
+      "gcp:us-west1-a"
+    ],
+    "total cost without request ($)": 2.739795276,
+    "total storage cost ($)": 2.604754283,
+    "total transfer cost ($)": 0.135040992,
+    "bytes_transferred_gb": 2.023032,
+    "stats": {
+      "put": 3065,
+      "base_logical_bytes": 4821982195,
+      "get": 280021,
+      "cache_dedup": 2253,
+      "hit": 277768,
+      "evictions": 828
+    },
+    "policy_keep_decisions": 231844,
+    "policy_skip_decisions": 0,
+    "region_L": {
+      "aws:us-east-1": 0.4881,
+      "aws:us-west-2": 0.0,
+      "azure:eastus": 0.0,
+      "azure:westeurope": 0.0,
+      "gcp:us-east1-b": 0.0,
+      "gcp:us-west1-a": 0.0
+    },
+    "wall_s": 113.8,
+    "zero_error_manifest_note": "chunk store built by chunk_objects.py from /data/manifests/*.mc-aug.manifest.csv.gz (remap_zero exact/trim/pad/extent)"
+  }
+]

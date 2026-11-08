@@ -1,0 +1,229 @@
+% !TEX program = xelatex
+% 面向云存储的副本–纠删混合冗余（中文稿 + 英文并列题名）— IEEEtran + ctex
+% 编译：xelatex -output-directory=paper paper/zh_ec_milp_outline.tex
+\documentclass[conference]{IEEEtran}
+\usepackage[UTF8]{ctex}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+
+% Algorithm 环境（若编译报缺包，可改用普通 enumerate 列表）
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\title{面向云存储的副本--纠删混合冗余：基于混合整数线性规划的多区域成本最优放置与迁出决策\\[0.35em]
+{\normalsize\itshape Replica--Erasure-Coded Hybrid Redundancy for Cloud Storage: Cost-Optimal Multi-Region Placement and Eviction via MILP}}
+
+\author{
+\IEEEauthorblockN{作者姓名}
+\IEEEauthorblockA{\textit{单位院系}\\
+城市，国家，电子邮箱}
+}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+云存储在多地域部署已成常态。副本冗余能够缩短读取路径并提升可用性，但存储占用与广域链路流量成本较高；纠删码可降低存储因子，却伴随分片布局、跨区修复或重构流量、以及编码与管理开销。实践中，纯副本方案与纯纠删方案往往难以在同一计价模型下同时达到成本、时延与可靠性目标的最优组合。
+现有研究多分别讨论副本策略或纠删参数，缺少在统一成本模型下、面向多区域访问轨迹的联合决策：哪些对象保持多副本、哪些转为纠删编码、分片如何跨区放置、以及何时迁出或留存。
+
+本文提出一种\textbf{副本--纠删混合冗余}框架，将阶段性策略决策建模为\textbf{混合整数线性规划}（Mixed Integer Linear Programming, MILP），在容量、可解码性、\textbf{分片（shard）布局一致性}及迁出/保留规则等约束下，最小化存储及跨区域传输项构成的综合成本。
+其将轨迹统计得到的TTL、对象体量及拓扑上的存储与边费单价并入 MILP 系数构造，由商业求解器在区域时间窗内重算布局；放置与迁出语义与请求级仿真器对齐，以便可追溯地比较总成本。
+在云厂商的访问轨迹上，相对纯副本及启发式基线，实验给出总成本改进，并展示在存储与流量之间的折中关系。
+\end{abstract}
+
+\begin{IEEEkeywords}
+云存储；纠删码；多副本；混合冗余；混合整数线性规划；跨区域带宽；存储成本；放置策略；仿真评估
+\end{IEEEkeywords}
+
+%==============================================================================
+\section{引言}
+云存储规模的持续增长与多地域容灾需求，推动服务商在副本、纠删码与跨区复制之间进行工程权衡~\cite{ref_placeholder}。
+\textbf{副本}将完整对象复制到多个可用区或区域，有利于读就近与故障隔离，但存储放大与跨区域同步带来显性费用。
+\textbf{纠删码}以 $k$ 个数据分片与 $m$ 个校验分片（记为 $(k,m)$）换取低于 $k$ 倍的对象存储开销；其代价体现为分片跨区分布、读重构或修复时的带宽聚集，以及实现与元数据管理的复杂性。
+
+纯副本与纯纠删通常在\textbf{成本--时延--可用性}上不可同时达到最优：提高副本因子改善读与时延却增加存储；提高纠删率降低存储却可能放大跨区修复与长尾读。
+另一方面，工程文献常孤立设计``副本放置启发式''或``纠删码宽度（$k{+}m$ 分片数）''，较少在\textbf{统一成本模型}下，面向真实或合成\textbf{访问轨迹}联合优化``谁副本化、谁纠删化、各 \textbf{shard（分片）}如何落区、何时因访问衰减而迁出''。
+
+\textbf{研究缺口}概括如下：
+\begin{itemize}
+\item 缺少将\textbf{拓扑节点存储单价}与\textbf{边上跨区域 egress（placement transfer）计价}在同一线性目标中与\textbf{离散冗余形态}显式联立的可复现实例；
+\item 缺少在同一 MILP 中\textbf{联合择优副本放置与外传单条纹 EC（原型固定两片数据条纹）}、同时又与\textbf{仿真侧 TTL/驱逐语义}对齐的完整刻画——需注意\textbf{驱逐时机并非 MILP 的 0--1 决策向量}，而主要由仿真依据 TTL 执行；
+\item 缺少从\textbf{轨迹直方图}到\textbf{系数快照}再到\textbf{写路径触发求解}的实现级描述，以便审稿者核对对象函数项与代码路径一致。
+\end{itemize}
+
+\textbf{本文思路}：构建\textbf{副本--纠删混合冗余框架}；在每个\textbf{MILP  epoch}内固定\textbf{当前请求的 TTL 快照与计价拓扑}，求解\textbf{是否启用 EC（$z$）}以及\textbf{整副本 / 分片的放置（$x,y$）}，最小化\textbf{线性化的存储占用项与一次性放置边费项}。\textbf{迁出与 TTL 刷新}仍在\textbf{仿真器}侧执行；轨迹更新\textbf{TevictRanges 配对 TTL 直方图}后反向\textbf{刷新 MILP 系数}。
+
+本文主要贡献如下：
+\begin{itemize}
+\item \textbf{Firstly}，形式化原型中与代码一致的\textbf{联合成本项与可操作线性约束}：FB（可选）下\textbf{强制基地（base）整副本进目标常数项且 $x_{\mathrm{base}}{=}0$}；\textbf{基地外至多一整副本}；EC 分支\textbf{恰好两条外传数据条纹}（parity \textbf{不单独建模为第三条 MILP 变量}）；条纹\textbf{不得共处一区}（$\sum_k y_{r,k}{\leq}1$）。
+\item \textbf{Secondly}，给出\textbf{可交由 Gurobi 求解的标准 MILP}结构：系数快照来自\textbf{配对 TTL（向量索引含义：$\mathrm{pair}(\mathrm{regions}[r],\texttt{issueRegion})$）}与\textbf{对象体量 / $\mathrm{shard}=size/K_{\mathrm{data}}$}；仿真仅在\textbf{写路径、直方图桶滚动且 histogram ``warm''}后触发求解；输出\textbf{按发起区域缓存}的布局决策。
+\item \textbf{Finally}，在真实或公开轨迹及多种区域规模下完成评估：相对\textbf{纯副本}、\textbf{纯纠删}（在实现允许时）与\textbf{启发式基线}报告\textbf{总成本}，并展示在不同权重或约束松紧下存储与流量之间的\textbf{帕累托式折中曲线}；原型实现与 \texttt{PolicyMilpECnewV3} 及汇总结果（如 \texttt{All\_Results.csv}）对齐，便于复核。
+\end{itemize}
+
+本文其余部分结构如下：第~\ref{sec:related}~节综述相关工作；第~\ref{sec:problem}~节给出系统模型与问题陈述；第~\ref{sec:design}~节描述系统设计与 MILP 核心；第~\ref{sec:eval}~节为实验评估；第~\ref{sec:conclusion}~节总结并讨论未来工作。
+
+%==============================================================================
+\section{相关工作}
+\label{sec:related}
+
+\subsection{云存储冗余与纠删码}
+多副本策略广泛用于提升读取性能与跨故障域可用性；纠删码从 Reed--Solomon 到局部可修复码（LRC）等在降低存储开销与修复域开销之间折中~\cite{ref_placeholder}。
+混合系统常见做法包括对热数据保留副本、对冷数据采用纠删，以降低平均存储成本。
+
+跨可用区或区域的放置须考虑修复与读重构带宽，以及地理分散带来的时延。
+现有方案多数以固定策略或分层启发式为主，\textbf{缺少与细粒度访问轨迹及云计费模型对齐的联合成本最优控制}，尤其在同时考虑副本因子与\textbf{纠删分片（shard）}跨区域布局时。
+
+\subsection{数据放置、缓存与生命周期策略}
+多区域放置、缓存复制与基于流行度的副本扩缩已有大量研究；部分在线算法在保证竞争比的前提下调配副本~\cite{ref_placeholder}。
+生命周期与迁出（eviction）常与 TTL、成本阈值或 LRU 变体结合。
+
+上述工作较少在\textbf{同一优化问题}中显式纳入纠删码\textbf{分片粒度}与\textbf{跨区域 placement egress}的联合决策；本文中\textbf{TTL/驱逐由仿真执行}，\textbf{MILP 仅在快照系数层面择优 $z,x,y$}，以实现与 \texttt{PUT}/\texttt{GET} 记账路径对齐。
+
+\subsection{优化、MILP 与近似在存储中的应用}
+存储与网络中的资源分配常可归结为整数或混合整数规划。
+\textbf{静态放置}指在规划周期内假定对象集合与需求相对稳定，一次求解布局并在周期内沿用；实践中常采用\textbf{时间分窗}与对象聚合以降低规模。
+\textbf{装箱}意象指在有限容量单位（节点、区域配额）内分配不同体积对象，与容量约束天然相关；\textbf{流量工程}意象指在满足链路或预算约束下调配流量，在多区域存储中可类比为跨区带宽预算下的读修复路径选择。
+
+MILP 适合\textbf{阶段性重规划}：在窗内解一次离散布局，窗外由系统执行。
+其\textbf{可扩展性}受区域数、对象聚类粒度与变量数限制；常用缓解手段包括时间窗化、对象分桶聚合、热启动（warm-start）或启发式初始解。
+本文诚实报告所采用的窗长、限频重算与冷启动默认策略（见第~\ref{sec:design}~节），并讨论求解超时情形。
+
+\subsection{与本文的差别}
+与分节文献相比，本文将\textbf{副本布局与外传单条纹 EC（两片）落区}统一写入\textbf{同一 MILP 目标与线性约束}，并以\textbf{轨迹驱动的 TTL 快照}近似\textbf{非基地副本/条纹的驻留时长}；\textbf{迁出事件本身不在 MILP 内枚举为布尔变量}，而是由仿真依据 TTL 与既有驱逐语义记账。\textbf{MILP 仅刻画建模范围内的存储与边上 egress placement cost（图上 cost）线性近似，不包含单独的 API 费线性项。}
+
+%==============================================================================
+\section{问题陈述}
+\label{sec:problem}
+
+\subsection{系统模型}
+考虑集合 $\mathcal{R}$ 个区域（Region），对象集合 $\mathcal{O}$（或由轨迹即时给出）。
+每一对象 $o\in\mathcal{O}$ 有逻辑大小 $S_o$；在纠删模式 $(k,m)$ 下，对象被分为 $k$ 个数据分片与 $m$ 个校验分片（统称 $n{=}k{+}m$ 个分片），每一分片有确定大小（如 $S_o/k$ 或由编码率确定），并须落在指定区域以保障可解码。
+
+每一区域 $r\in\mathcal{R}$ 具\textbf{存储单价}（仿真拓扑节点属性）；有序区域对 $\mathrm{cost}(s,r)$ 给出\textbf{放置传输 egress 线性费率（字节加权近似下的每条边上单价属性）}。
+\textbf{与 MILP 直接相连的计价分量}为\textbf{StorageCostHelper}给出的\textbf{区域存储费}与\textbf{边 $\mathrm{cost}(\texttt{issueRegion}, r)$ $\times$ 传输字节体积（整副本或 shard）}。
+\textbf{读命中跨区传输、修复重构带宽及 GET API 费}仍可由\textbf{RegionManager 等在仿真侧记账}，但不并入本节\textbf{决策 MILP 的目标向量系数构造（原型）}。
+\textbf{分片（shard）}在此\textbf{MILP}中指\textbf{两条\textbf{数据}条纹的外传单载荷块，载荷体积\textbf{$S_{\mathrm{shard}}=S_o/K_{\mathrm{data}}$}}（原型\textbf{$K_{\mathrm{data}}=2$}）；\textbf{parity 条纹不显式出现在 MILP 决策向量中}。
+
+\subsection{冗余与决策变量}
+\textbf{MILP 内}离散变量仅为冗余\textbf{形态与摆放}：全局\textbf{$z\in\{0,1\}$}表示\textbf{是否采纳 EC 布局}（$z{=}1$ 时求解两条\textbf{数据条纹}的外传放置）；对每个区域 $r$ 有\textbf{$x_r\in\{0,1\}$}表示\textbf{是否存放一整副本（可选冗余副本）}；对每个\textbf{条纹槽位} $k\in\{1,2\}$（原型对应常量 \texttt{NUM\_EC\_SHARD\_SLOTS}$=$\textbf{$2$}）及区域 $r$ 有\textbf{$y_{r,k}\in\{0,1\}$}。\textbf{迁出不建模为 MILP 决策变量}，而是由仿真在执行 TTL 时\textbf{删除过期物理副本/条纹}。
+
+本文\textbf{原型实现}对应\textbf{RS $2{+}1$ 叙事}：parity\textbf{成本语义并入基地整副本（可选 FB）}；\textbf{MILP 中不对 parity 条纹单列二元变量}——与一般任意 $(k,m)$ 纠删模型\textbf{刻意收窄以便对齐仓库代码}；扩展更大 $(k,m)$ 可作为展望在第~\ref{sec:conclusion}~节讨论。
+
+\subsection{工作负载与决策时点}
+工作负载由\textbf{请求轨迹}给出：写、读、对象键、发起区域、时间戳及对象大小分布。
+可基于此提取热度、地域亲和与时间局部性（指访问在时间与空间上的聚集，而非去重领域的近似块局部性）。
+
+\textbf{MILP 触发时点（原型）}：仅\textbf{写路径}在\textbf{TevictRanges 配对 TTL 直方图跨越固定时长桶}（代码常量\textbf{$12$\,h}）且\textbf{直方图已积累足够样本（warm gate）}后\textbf{附带求解一次}；读路径 TTL 刷新\textbf{不再触发 MILP}。\textbf{决策缓存按 \texttt{issueRegion}（当前请求的\texttt{issue\_region}列）键控}。
+
+\subsection{优化目标、约束与问题边界}
+\textbf{目标函数（原型 MILP）}为\textbf{纯线性项之和}：若启用 FB，则\textbf{强制基地整副本存储费}与\textbf{$\texttt{issueRegion}{\rightarrow}\mathrm{base}$ 边费}（同城自环边上可为 $0$）并入\textbf{常数项 $f_b$}；其余项为\textbf{$\sum_r s^{\mathrm{rep}}_r x_r+\sum_{r,k}s^{\mathrm{ec}}_{r,k}y_{r,k}$}。
+系数 $s^{\mathrm{rep}}$、$s^{\mathrm{ec}}$ 由 \texttt{StorageCostHelper} 根据节点 \texttt{priceStorage} 计算：\textbf{基地外副本/条纹}使用配对 TTL 快照时长；\textbf{$f_b$ 中的基地存储}使用 PUT 至记账 horizon 的时长（不经配对 TTL）。
+每项另加 \texttt{edgeCost}(\texttt{issueRegion}$\rightarrow r)$ 乘以对应体积（整对象 GB 或 shard GB）。
+\textbf{原型 MILP 不显式包含容量约束或 SLA 惩罚项}。
+
+难点在于\textbf{整数性}、轨迹\textbf{非平稳}导致的\textbf{TTL 快照漂移}、以及\textbf{触发 MILP 仅在少量时间点}带来的\textbf{开环分段最优}。
+``最优性''指\textbf{该次求解在固定快照系数下的 MILP 最优（受时间限额允许近似）}，而非\textbf{含驱逐动力学闭环的全局最优控制}。
+
+%==============================================================================
+\section{系统设计}
+\label{sec:design}
+
+\subsection{总体流程}
+图~\ref{fig:overview}（占位）给出\textbf{总览}：轨迹摄入 $\rightarrow$ TevictRanges 配对 TTL 直方图 $\rightarrow$（写路径且桶滚动/warm）\textbf{构造系数快照并求解 MILP} $\rightarrow$ \textbf{按 \texttt{issueRegion} 缓存}布局 $\rightarrow$ \texttt{SimulatorV2/V3} 执行 \texttt{PUT}/\texttt{GET}，并由仿真侧 TTL/eviction 更新物理状态与\textbf{RegionManager}账单。
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2.2em}
+\textbf{【Fig.~1 占位】} Trace $\rightarrow$ pair-TTL histogram $\rightarrow$（write path）MILP coefficients $\rightarrow$ per-\texttt{issueRegion} cache $\rightarrow$ simulator I/O \& billing
+\vspace{2.2em}}}
+\caption{副本--纠删混合冗余决策与仿真闭环总览（成稿时替换为正式插图）。}
+\label{fig:overview}
+\end{figure}
+
+读路径须区分：本地命中读、跨区拉取整副本、以及在 EC 模式下由\textbf{两条数据条纹载荷}参与的读取计费语义（详见仿真实现）；写路径须区分：整副本扇出、$z{=}1$ 时\textbf{两枚 shard 体积 $|o|/K_{\mathrm{data}}$}的外传放置，以及固定基准区语义。
+
+\textbf{成本感知的副本--纠删联合 MILP（与 \texttt{GurobiEc21MilpBuilder} / \texttt{PolicyMilpECnewV3} 对齐）}
+
+\textbf{变量}：$z\in\{0,1\}$；$\{x_r\}_{r\in\mathcal{R}}$；$\{y_{r,k}\}_{r\in\mathcal{R},\,k\in\{1,2\}}$。
+
+\textbf{目标（最小化）}
+\begin{equation}
+    f_b+\sum_{r\in\mathcal{R}} s^{\mathrm{rep}}_r\,x_r+\sum_{r\in\mathcal{R}}\sum_{k=1}^{2} s^{\mathrm{ec}}_{r,k}\,y_{r,k}.
+\end{equation}
+其中 $f_b,s^{\mathrm{rep}},s^{\mathrm{ec}}$ 由 \texttt{buildCoefficients} 写入 \texttt{MilpCoefficientBundle}：若启用\textbf{FB fixed base}，则\textbf{$s^{\mathrm{rep}}_{\mathrm{base}}{=}0$ 且 $x_{\mathrm{base}}$ 固定为 $0$}，基地整对象存储与 $\texttt{issueRegion}{\rightarrow}\mathrm{base}$ 边费进入\textbf{$f_b$}（时长自\textbf{\texttt{putInstant}}至\textbf{\texttt{milpDatasetEndEpochSec}}或配置 horizon）。
+
+\textbf{线性约束（摘录）}——（i）若 FB：\textbf{$x_{\mathrm{base}}{=}0$}；（ii）对每个区域 $r$：若\textbf{非（FB 且 $r$ 为 base）}，则 \textbf{$x_r+z\leq 1$}；若\textbf{非 FB 且 $r$ 为 base}，则 \textbf{$x_{\mathrm{base}}+z\leq 2$}；\textbf{FB 且 $r$ 为 base}时不加 $x{+}z$ 绑定（强制基地副本由 $f_b$ 吸收）；（iii）\textbf{$y_{r,k}\leq z$}；（iv）对每个条纹槽 $k$：\textbf{$\sum_{r} y_{r,k}=z$}；（v）对每个区域 $r$：\textbf{$\sum_{k} y_{r,k}\leq z$ 且 $\leq 1$}（\textbf{两槽不可同区}）；（vi）\textbf{$\sum_{r\neq \mathrm{base}} x_r\leq 1$}。非 FB 时还另有\textbf{覆盖率约束}（$\sum_r x_r+z\geq 1$ 等），详见代码分支。
+
+\textbf{消融开关}：\texttt{milpEcV3AllowEc=false} 时\textbf{强制 $z{=}0$}；\texttt{milpEcV3ForceEcOnly=true} 时\textbf{强制 $z{=}1$}。
+
+\textbf{Algorithm~\ref{alg:milp}} 给出\textbf{单次求解}逻辑（不含 histogram 维护细节）。
+
+\begin{algorithm}[t]
+\caption{单次 MILP 求解流程（与原型代码对齐）}
+\label{alg:milp}
+\begin{algorithmic}[1]
+\REQUIRE 区域列表 $\mathcal{R}$；拓扑存储价与边 $\mathrm{cost}$；对象模板（\texttt{LogicalObject}：\texttt{size}、\texttt{baseRegion}、\texttt{putInstant}）；当前请求的 \texttt{issueRegion}；TTL 向量快照 $\{\mathrm{TTL}_{r}\}$（由配对 $(r,\texttt{issueRegion})$ 直方图最后一桶导出）；FB 与 horizon 配置；\texttt{allowEc}/\texttt{forceEcOnly}
+\ENSURE \texttt{LayoutDecisionV3}（$z$、$\{x_r\}$、$\{y_{r,k}\}$、目标值），并按 \texttt{issueRegion} 写入缓存
+\STATE \textbf{// 系数（\texttt{buildCoefficients}）}
+\STATE 计算 $\forall r$：$s^{\mathrm{rep}}_r{=}\mathrm{Stor}^{\mathrm{full}}_{r}+\mathrm{cost}(\texttt{issueRegion},r)\cdot\lvert o\rvert_{\mathrm{GB}}$；若 FB 且 $r{=}\mathrm{base}$ 则 $s^{\mathrm{rep}}_r{\leftarrow}0$
+\STATE 计算 $\forall r,k$：$s^{\mathrm{ec}}_{r,k}{=}\mathrm{Stor}^{\mathrm{shard}}_{r}+\mathrm{cost}(\texttt{issueRegion},r)\cdot\lvert \mathrm{shard}\rvert_{\mathrm{GB}}$（$\lvert \mathrm{shard}\rvert{=}\lvert o\rvert/K_{\mathrm{data}}$）
+\STATE $f_b \leftarrow$ 若 FB 则 $\mathrm{Stor}^{\mathrm{full}}_{\mathrm{base}}(\mathrm{horizon})+\mathrm{cost}(\texttt{issueRegion},\mathrm{base})\cdot\lvert o\rvert_{\mathrm{GB}}$，否则 $0$
+\STATE \textbf{// 建模求解（\texttt{GurobiEc21MilpBuilder.solve}）}
+\STATE 创建二进制变量 $z,\{x_r\},\{y_{r,k}\}$；按上文\textbf{（i）--（vi）}与非 FB 覆盖率分支施加线性约束
+\STATE 若 $\neg$\texttt{allowEc}：附加 $z{=}0$；若 \texttt{forceEcOnly}：附加 $z{=}1$
+\STATE 最小化 $f_b+\sum_r s^{\mathrm{rep}}_r x_r+\sum_{r,k}s^{\mathrm{ec}}_{r,k}y_{r,k}$；调用 Gurobi（时限/MIPGap 可配置）
+\STATE \textbf{return} 舍入后的布尔布局并写入 \texttt{decisionCache}[\texttt{issueRegion}]
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{实现要点}
+\textbf{求解器}：原型采用 \textbf{Gurobi}（\texttt{GRBEnv} 常驻复用，默认时限/Gap 可由配置覆盖）。
+
+\textbf{触发与 histogram}：\texttt{syncMilpIfHistogramTtlAdvanced}仅在\textbf{写路径}（如 \texttt{SimulatorV2.calculateTtl}）调用；当配对 TTL 直方图按\textbf{$12$\,h}桶滚动且\textbf{histogramWarmEnoughForMilp}（与 \texttt{findMin} 同源样本阈值）为真时\textbf{调用 \texttt{runMilpForIssueRegion}}。\textbf{读路径 TTL 刷新不触发 MILP}。
+
+\textbf{冷启动 / 未 warm}：不进入 MILP 求解分支时布局逻辑\textbf{退化为与原 TevictRanges 策略一致的副本/TTL 路径}（论文叙述口径：``不改变 histogram 冷相位的既有行为''）。
+
+\textbf{仿真对齐}：\texttt{SimulatorV3.beforeWritePlacement}刷新 MILP 缓存；\texttt{place}/\texttt{getPlacementWithSizes}在 $z{=}1$ 时返回\textbf{恰好两个 shard 目标区}且条纹体积为\textbf{$|o|/K_{\mathrm{data}}$}；\texttt{milpStrictFail=true} 时求解失败\textbf{抛异常}以利实验复现。
+
+\textbf{可选扩展说明}：\texttt{milpDatasetEndEpochSec}可由仿真根据 trace 末端\textbf{预填}（含尾部秒数），以匹配记账 horizon。
+
+%==============================================================================
+\section{实验评估}
+\label{sec:eval}
+
+\subsection{数据集}
+报告实际采用的访问轨迹（如类 Facebook 区域配置下的 2/3/6/9 区域实验）、预处理步骤（head 抽样、时长截断）及对比的\textbf{公平性}说明（相同轨迹、相同价格图、相同仿真语义）。
+
+\subsection{评价指标}
+\textbf{总成本}为主指标，并尽可能分解为\textbf{存储、跨区域带宽、API}（若日志支持）。
+记录\textbf{MILP 求解时间、成功率、重算次数}以评估可规模化程度。
+可选定义\textbf{有效成本比}类指标（类比模板中的 DCR 思想）：在无惩罚项时，可比作``归一化前的费用与基线费用之比''，用于一眼比较多种窗长与区域数。
+
+\subsection{数值结果与讨论}
+与基线对比：\textbf{Always replica}、\textbf{Always EC}（在系统可实现时）、\textbf{启发式}及本文方法\textbf{V2/V3}（若适用）消融。
+参数敏感性：区域数、对象大小分布、$(k,m)$ 或产品线、MILP 窗长与限频。
+
+\textbf{失败案例与局限}：histogram 非平稳导致 TTL 快照偏差；\textbf{MILP 不含容量/API 线性项}与真实账单分项不完全一致；求解超时或数值病态；\textbf{$z,x,y$ 最优仅在快照instantaneous意义下成立}。
+
+%==============================================================================
+\section{结论}
+\label{sec:conclusion}
+本文面向多区域云存储，提出\textbf{副本--纠删混合冗余}框架：以\textbf{混合整数线性规划}在给定\textbf{TTL 与拓扑快照}下\textbf{择优冗余形态与放置（$z,x,y$）}，并与\textbf{SkyStore 类轨迹仿真器}对接；\textbf{驱逐与 TTL 演化仍由仿真执行，不作为 MILP 布尔决策向量的一部分}。
+实验部分给出相对基线的总成本与折中行为；具体量化数值在成稿时与日志或汇总 CSV 对齐。
+
+未来工作包括：扩展\textbf{一般 $(k,m)$ 条纹维度}；将\textbf{读路径重构带宽或容量约束}纳入 MILP 或其外层迭代；更大规模上的\textbf{对象聚合降维}与\textbf{暖启动}；以及在更多轨迹与厂商折扣模型下验证。
+
+\section*{致谢}
+% 资助与感谢。
+
+\begin{thebibliography}{99}
+\bibitem{ref_placeholder}
+\textbf{【待补】} 请替换为正式参考文献（云存储、纠删码、放置、MILP 应用等）。
+
+\bibitem{ref_template_fgv}
+Ye~X., Tang~J., Tian~W., et~al., ``Fast variable-grained resemblance data deduplication for cloud storage,'' in \textit{Proc. IEEE Conf.}, 2021, pp.~1--8. （版式与叙事结构参考，课题不同。）
+\end{thebibliography}
+
+\end{document}

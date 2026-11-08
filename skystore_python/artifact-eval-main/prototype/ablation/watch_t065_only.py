@@ -60,7 +60,6 @@ def main() -> None:
         "always_store",
         "t_even",
         "skystore",
-        "dedup_aware_tevict",
     ]
     while True:
         st = status().get("cells", {})

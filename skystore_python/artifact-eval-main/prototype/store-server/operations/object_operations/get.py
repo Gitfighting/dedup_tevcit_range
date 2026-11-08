@@ -47,7 +47,6 @@ async def locate_object(
     put_policy = get_placement_policy(policy_ultra_dict["put_policy"], init_region_tags)
     get_policy = get_transfer_policy(policy_ultra_dict["get_policy"])
     is_skystore_policy = put_policy.name() == "skystore"
-    is_dedup_policy = put_policy.name() == "dedup_aware_tevict"
     is_always_store_policy = put_policy.name() == "always_store"
     is_always_evict_policy = put_policy.name() == "always_evict"
 
@@ -72,7 +71,7 @@ async def locate_object(
     idx = TraceIdx.get_instance().get()
     timestamp = datetime.now()
 
-    if is_skystore_policy or is_dedup_policy:
+    if is_skystore_policy:
         if idx >= len(put_policy.timestamps):
             timestamp = datetime.fromtimestamp(
                 put_policy.timestamps[-1] / 1000 + idx - len(put_policy.timestamps),
@@ -143,13 +142,13 @@ async def locate_object(
 
     # https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeletingObjectV ersions.html
     if locators is None or (locators.delete_marker and not version_id):
-        if is_skystore_policy or is_always_store_policy or is_dedup_policy:
+        if is_skystore_policy or is_always_store_policy:
             TraceIdx.get_instance().increment()
         return Response(status_code=404, content="Object Not Found")
 
     # https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeleteMarker.html
     if locators and locators.delete_marker and version_id:
-        if is_skystore_policy or is_always_store_policy or is_dedup_policy:
+        if is_skystore_policy or is_always_store_policy:
             TraceIdx.get_instance().increment()
         return Response(status_code=405, content="Not allowed to get a delete marker")
 
@@ -158,7 +157,7 @@ async def locate_object(
     chosen_locator = get_policy.get(request, ready_locators, timestamp)
 
     if chosen_locator.status != Status.ready:
-        if is_skystore_policy or is_always_store_policy or is_dedup_policy:
+        if is_skystore_policy or is_always_store_policy:
             TraceIdx.get_instance().increment()
         return Response(status_code=404, content="Object locator not ready")
 
@@ -167,7 +166,7 @@ async def locate_object(
     set_ttl = None
 
     if len(ready_locators) > 0:
-        if is_skystore_policy or is_dedup_policy:
+        if is_skystore_policy:
             if request.client_from_region == base_region:
                 set_ttl = -1
             else:
@@ -182,11 +181,6 @@ async def locate_object(
                     now_timestamp = datetime.fromtimestamp(
                         put_policy.timestamps[idx] / 1000, tz=timezone.utc
                     ).replace(tzinfo=None)
-
-                # === Dedup: 在 get_ttl 前注入 key 上下文 ===
-                if is_dedup_policy:
-                    time_to_next = getattr(request, "time_to_next_access", None)
-                    put_policy.set_key_context(request.key, time_to_next)
 
                 for physical_object_locator in ready_locators:
                     if (
@@ -215,7 +209,7 @@ async def locate_object(
                             src = physical_object_locator.location_tag
                             set_ttl = ttl
     if set_ttl is None:
-        if is_always_store_policy or is_skystore_policy or is_dedup_policy:
+        if is_always_store_policy or is_skystore_policy:
             set_ttl = -1
         elif is_always_evict_policy:
             set_ttl = 0
@@ -238,53 +232,14 @@ async def locate_object(
         ttl=dst_object_ttl,
     )
 
-    # --- DEDUP-aware: 注入 storage_format 和 chunk_manifest ---
-    if is_dedup_policy:
-        obj_state = put_policy.get_obj_state(request.key)
-        response.storage_format = obj_state
-
-        # 计算本次 GET 的传输成本
-        transfer_size = locators.size if locators.size else 0
-        if obj_state == "dedup":
-            chunk_refs = put_policy.get_obj_chunk_refs(request.key)
-            response.chunk_manifest = chunk_refs if chunk_refs else None
-            # OCP (P4): sky-s3 ignores manifests — materialize into s3s-fs cache
-            # so author object GET path still works without editing skyproxy.rs.
-            if chunk_refs:
-                try:
-                    from operations.dedup import ensure_assembled_in_cache
-
-                    ensure_assembled_in_cache(
-                        bucket=chosen_locator.bucket,
-                        key=chosen_locator.key,
-                        chunk_refs=chunk_refs,
-                        region=chosen_locator.location_tag,
-                    )
-                except Exception as _assemble_err:
-                    print(f"[dedup] assemble-to-cache failed: {_assemble_err}")
-            # DEDUP: 仅 (1-L) 比例的 chunk 需从远端拉取
-            L = put_policy.get_chunk_L(chosen_locator.location_tag)
-            transfer_size = transfer_size * (1.0 - L) if transfer_size else 0
-        else:
-            response.storage_format = "hot"
-            response.chunk_manifest = None
-
-        # 记录网络传输成本 (跨区域则有成本, 同区域为 0)
-        if chosen_locator.location_tag != request.client_from_region and transfer_size:
-            put_policy.add_to_network_cost(
-                chosen_locator.location_tag,
-                request.client_from_region,
-                transfer_size,
-            )
-
-    if is_skystore_policy or is_dedup_policy:
+    if is_skystore_policy:
         background_tasks.add_task(
             put_policy.update_past_requests, idx, response, request.client_from_region
         )
 
     if chosen_locator.location_tag == request.client_from_region:
         if request.client_from_region != base_region:
-            if is_skystore_policy or is_dedup_policy:
+            if is_skystore_policy:
                 chosen_locator.ttl = (
                     timestamp - chosen_locator.storage_start_time
                 ).total_seconds() + dst_object_ttl
@@ -295,7 +250,7 @@ async def locate_object(
     else:
         put_policy.miss += 1
 
-    if is_skystore_policy or is_always_store_policy or is_dedup_policy:
+    if is_skystore_policy or is_always_store_policy:
         TraceIdx.get_instance().increment()
 
     return response

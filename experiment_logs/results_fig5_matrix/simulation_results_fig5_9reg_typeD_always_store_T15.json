@@ -1,0 +1,25 @@
+[
+    {
+        "Trace Duration (s)": "7 days, 0:45:58.833000",
+        "Cost Calculated Since Day": 0,
+        "total requests": 1575627,
+        "avg request size (GB)": 0.0004822756049223244,
+        "aggregate size (GB)": 759.8864645883441,
+        "avg read latency (ms)": 62.8542,
+        "avg write latency (ms)": 1.0,
+        "avg read tput runtime (ms)": 0.1,
+        "avg write tput runtime (ms)": 0.0,
+        "avg read throughput (Gbps)": 10.0934,
+        "avg write throughput (Gbps)": 14.0041,
+        "total transfer cost ($)": 24.096005057,
+        "total storage cost ($)": 137.364719949,
+        "total storage cost without base ($)": 57.345182021,
+        "total request cost ($)": 0,
+        "total cost without request ($)": 161.460725006,
+        "total cost ($)": 161.460725006,
+        "trace": "traces/fig5_work/fig5_9reg_typeD_always_store_T15.mc-aug",
+        "config": "config/fig5_jobs/fig5_9reg_typeD_always_store_T15.yaml",
+        "timestamp": "2026-08-13T19:30:57.820216",
+        "tag": "fig5_9reg_typeD_always_store_T15"
+    }
+]

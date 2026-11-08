@@ -46,7 +46,6 @@ async def clean_object(
             policy_ultra_dict["put_policy"], init_region_tags
         )
         is_skystore = put_policy.name() == "skystore"
-        is_dedup = put_policy.name() == "dedup_aware_tevict"
 
         subquery = (
             select(
@@ -84,21 +83,10 @@ async def clean_object(
             return CleanObjectResponse(locators=[])
 
         global c
-        if is_skystore or is_dedup:
+        if is_skystore:
             for object in objects_to_delete:
                 c += 1
-                # DEDUP 对象: 仅存 chunk manifest（~KB 级），不是完整逻辑大小
-                if is_dedup:
-                    obj_key = object.logical_object.key
-                    obj_state = put_policy.get_obj_state(obj_key)
-                    if obj_state == "dedup":
-                        size_to_charge = put_policy.get_obj_manifest_size(obj_key)
-                        if size_to_charge <= 0:
-                            size_to_charge = 1024  # 最小 1KB 兜底
-                    else:
-                        size_to_charge = object.logical_object.size
-                else:
-                    size_to_charge = object.logical_object.size
+                size_to_charge = object.logical_object.size
 
                 put_policy.add_to_cost(
                     (
@@ -183,7 +171,7 @@ async def clean_object(
             for obj in objects_to_delete
         ]
 
-        if is_skystore or is_dedup:
+        if is_skystore:
             net = getattr(put_policy, "network_cost", None)
             return CleanObjectResponse(
                 locators=locators_response,
@@ -293,10 +281,9 @@ async def clean_out_remaining(
         or put_policy.name() == "always_store"
         or put_policy.name() == "always_evict"
         or put_policy.name() == "t_even"
-        or put_policy.name() == "dedup_aware_tevict"
     ):
         storage_cost = sum(cost_copy.values())
-        stats = put_policy.stats() if put_policy.name() == "dedup_aware_tevict" else None
+        stats = None
         # OCP: some author policies lack network_cost (e.g. AlwaysEvict)
         net = getattr(put_policy, "network_cost", None)
         network_cost = float(sum(net)) if net is not None else 0.0

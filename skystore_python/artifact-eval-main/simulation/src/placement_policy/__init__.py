@@ -23,6 +23,5 @@ from .policy_dynamic_ttl import DynamicTTL
 from .policy_hystore_ec import PolicyHyStoreEC
 from .policy_hystore_ec_v2 import PolicyHyStoreECV2
 from .policy_hystore_ec_v3 import PolicyHyStoreECV3
-from .policy_dedup_aware_tevict_ranges import PolicyDedupAwareTevictRanges
-from .policy_tevict_ranges_dedup import PolicyTevictRangesDedup
+from .policy_chunk_tevict import PolicyChunkTevict
 # from .policy_skypie import SkyPIE

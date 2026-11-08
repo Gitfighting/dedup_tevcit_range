@@ -1,0 +1,8 @@
+Public-cloud object stores bill bytes stored over time and bytes moved across regions, so a geo-distributed application must repeatedly choose between keeping a remote replica and fetching it again.
+SkyStore answers this question with TevictRanges, an adaptive time-to-live ({TTL}) that learns when a region will next read an object.
+TevictRanges, however, treats every object as an opaque byte range: a {GET} miss copies the whole object, and a cached replica is billed at full size until it expires, even when most of its content already lives in that region.
+We present \emph{ChunkTevict}, which keeps SkyStore's interval histogram and $T_{\mathrm{evict}}$ estimator unchanged but moves placement, eviction, transfer, and {GB}$\cdot$h accounting from objects to unique content-defined chunks in each region.
+We bind the keys of five {IBM} Object Store traces to real versioned content, chunk it once offline, and replay SkyStore's two-, three-, six-, and nine-region settings, recording storage, transfer, and simulated {GET} {RTT} in one run.
+In two regions, object-level SkyStore costs $2.18$--$11.80\times$ more than ChunkTevict, and storage accounts for $88$--$97\%$ of the gap.
+Across SkyStore's four three-region workload types, SkyStore averages $6.40\times$ ChunkTevict with a fixed base region and $5.00\times$ under free placement, so removing the immortal origin replica does not close the gap.
+The savings depend on how much content repeats across objects; we discuss this and other threats to validity.

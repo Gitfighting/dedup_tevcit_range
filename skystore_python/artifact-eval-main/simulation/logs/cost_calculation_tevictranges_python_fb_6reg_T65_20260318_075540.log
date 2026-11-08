@@ -1,0 +1,13 @@
+====================================================================================================
+Cost Calculation Log - Started at: 2026-03-18 07:55:40.093
+====================================================================================================
+
+CONFIGURATION:
+  Tag:            tevictranges_python_fb_6reg_T65
+  Config File:    config/tevictranges_6reg.yaml
+  Trace Dataset:  D:\JavaProjects\Skystore1212\Data\6reg\6reg\typeA\IBMObjectStoreTrace065Part0.typeA.mc.aug
+  Mode:           Fixed-Base (FB)
+  Number of VMs:  5
+
+====================================================================================================
+

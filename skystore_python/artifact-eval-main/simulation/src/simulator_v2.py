@@ -23,7 +23,6 @@ from src.placement_policy import (
     PolicyHyStoreEC,
     PolicyHyStoreECV2,
     PolicyHyStoreECV3,
-    PolicyDedupAwareTevictRanges,
 )
 from src.transfer_policy import (
     DirectTransfer,
@@ -208,7 +207,6 @@ class SimulatorV2:
             or self.config.placement_policy == "hystore_ec"
             or self.config.placement_policy == "hystore_ec_v2"
             or self.config.placement_policy == "hystore_ec_v3"
-            or self.config.placement_policy == "dedup_aware_tevict_ranges"
         ) and op == "read":
             self.placement_policy.update_past_requests(request, request.issue_region)
 
@@ -430,7 +428,6 @@ class SimulatorV2:
                             "hystore_ec",
                             "hystore_ec_v2",
                             "hystore_ec_v3",
-                            "dedup_aware_tevict_ranges",
                         ]:
                             region_list = [
                                 obj.location_tag
@@ -475,7 +472,6 @@ class SimulatorV2:
                                 or self.config.placement_policy == "hystore_ec"
                                 or self.config.placement_policy == "hystore_ec_v2"
                                 or self.config.placement_policy == "hystore_ec_v3"
-                                or self.config.placement_policy == "dedup_aware_tevict_ranges"
                             ):
                                 if len(region_list) > 0:
                                     read_region = None
@@ -649,7 +645,6 @@ class SimulatorV2:
                 or self.config.placement_policy == "hystore_ec"
                 or self.config.placement_policy == "hystore_ec_v2"
                 or self.config.placement_policy == "hystore_ec_v3"
-                or self.config.placement_policy == "dedup_aware_tevict_ranges"
             ):
                 region_list = [
                     obj.location_tag
@@ -1423,21 +1418,6 @@ class SimulatorV2:
                 total_graph=self.total_graph,
                 objects=self.logical_objects,
                 regionManager=self.region_manager,
-            )
-
-        elif policy_type == "dedup_aware_tevict_ranges":
-            from src.dedup.chunk_store import ChunkStore
-            import os
-            cdir = getattr(self.config, "chunk_store_dir", None) or os.environ.get(
-                "CHUNK_STORE_DIR"
-            )
-            store = ChunkStore.load(cdir) if cdir else None
-            return PolicyDedupAwareTevictRanges(
-                config=self.config,
-                total_graph=self.total_graph,
-                objects=self.logical_objects,
-                regionManager=self.region_manager,
-                chunk_store=store,
             )
 
         else:

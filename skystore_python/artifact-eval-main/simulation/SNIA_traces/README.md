@@ -3,6 +3,7 @@
 Download from SNIA: [link](http://iotta.snia.org/traces/key-value)
 
 This experiment's **dataset preparation** (which 5 IBM traces, real content files, download URLs, and how combinations are built): [Documentation/DATASET_PREP.md](Documentation/DATASET_PREP.md)<br>
+**Real content pool, step-by-step:** [Documentation/CONTENT_POOL_STEPS.md](Documentation/CONTENT_POOL_STEPS.md)<br>
 
 Paper:It's time to revisit LRU vs. FIFO [link](https://research.ibm.com/publications/its-time-to-revisit-lru-vs-fifo))<br>
 Blog: Object Storage Traces: A Treasure Trove of Information for Optimizing Cloud Workloads [link](https://www.ibm.com/blog/object-storage-traces/)<br>

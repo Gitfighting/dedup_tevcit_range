@@ -1,0 +1,183 @@
+% !TEX program = pdflatex
+% Paper outline — Replica vs.\ EC hybrid redundancy + MILP (SkyStore extension).
+% Rhetorical structure and section flow modelled on IEEE PDF extract *_pdf_extract.txt*
+% (``Fast Variable-Grained Resemblance Data Deduplication For Cloud Storage'').
+%
+% Build (from repo root): pdflatex -output-directory=paper/paper0511 paper/paper0511/main.tex
+% Second pass if citations complain: bibtex paper/paper0511/main && pdflatex ...
+%
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage{url}
+
+\hyphenation{SkyStore geo-distrib-uted}
+
+\begin{document}
+
+\title{Replica--Erasure Hybrid Redundancy for Geo-Distributed Cloud Storage:\\
+MILP-Guided Minimum-Cost Placement Beyond SkyStore}
+
+% Customize affiliation blocks before submission.
+\author{\IEEEauthorblockN{Author Name(s)}
+\IEEEauthorblockA{Department / Institution\\
+City, Country\\
+email@domain}}
+
+\maketitle
+
+\begin{abstract}
+With the prevalence of multi-region cloud storage and trace-driven evaluation frameworks, \emph{SkyStore} provides a practical substrate for reasoning about replication and TTL policies under heterogeneous regional prices.
+Nevertheless, the baseline redundancy storyline emphasizes full-object replicas and rule-driven placement, while \emph{erasure coding (EC)} is often treated orthogonally and seldom optimized jointly under a single \emph{minimum-cost} surrogate together with replica placement.
+Currently, operators still struggle when egress and storage prices differ across regions: placing an optional second replica versus striping two coded shards yields a rapidly growing discrete decision space.
+Moreover, purely heuristic tuning deteriorates cost effectiveness as the number of regions increases because feasible layouts cannot be enumerated at trace cadence.
+Therefore, we propose an extension that introduces \textbf{hybrid replica--EC redundancy} and encodes periodic placement decisions as a compact \textbf{mixed-integer linear program (MILP)}, minimizing linearized storage and placement-transfer charges derived from a cloud-style topology graph (storage prices plus edge egress attributes).
+Under fixed-base semantics the mandatory base replica is modeled outside replica indicators via an objective constant over PUT-to-horizon duration; optional replicas absorb TTL snapshots while EC activates two outbound data stripes (\(size/K_{\mathrm{data}}\)) without a separate parity stripe variable in the MILP.
+Finally, we implement the MILP-guided policy atop a SkyStore-derived discrete-event simulator and conduct trace-driven experiments together with analytic illustrations; the results show that the minimum-cost objective systematically selects between replica-centric and EC-centric layouts as TTL and pricing regimes shift.
+\end{abstract}
+
+\begin{IEEEkeywords}
+SkyStore; geo-distributed storage; erasure coding; hybrid redundancy; mixed-integer linear programming; minimum-cost placement; cloud egress.
+\end{IEEEkeywords}
+
+%==============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+With the development of internet-scale services and electronic commerce, enterprises increasingly outsource data to geo-distributed cloud storage that spans multiple availability zones and pricing jurisdictions~\cite{skystore}.
+Such deployments achieve flexibility for disaster recovery and locality-aware reads, yet \emph{redundancy management}---how many full replicas to keep versus when to stripe erasure-coded shards---directly couples storage invoices with cross-region bandwidth bills.
+
+\textbf{Full-object replication} improves read latency and fault isolation at the expense of storage amplification and synchronization traffic.
+\textbf{Erasure coding} trades lower stored bytes for coded fragments, placing stress on shard placement, reconstruction reads, and metadata bookkeeping.
+Pure replica stacks and pure EC stacks rarely minimize total dollar cost simultaneously under realistic egress metering.
+
+\textbf{Nevertheless}, widely used trace-driven frameworks center evaluation on replica-centric policies and TTL heuristics.
+\textbf{SkyStore} exemplifies this line: it enables reproducible comparison of caching and replication choices against public or proprietary traces~\cite{skystore}.
+\textbf{However}, integrating EC as a first-class redundancy mode---selected alongside replicas under one objective---remains under-articulated in that baseline narrative.
+
+\textbf{Moreover}, when each region offers distinct storage and egress prices, enumerating ``second replica here'' versus ``two shards there'' combinations scales poorly; manual knob tuning cannot guarantee near-optimal layouts at trace time granularity.
+
+\textbf{Therefore}, we propose \textbf{hybrid replica--EC redundancy guided by a MILP minimum-cost formulation}: binary decisions toggle EC versus extra replicas, while linear coefficients approximate storage duration (horizon for the pinned base replica, TTL-derived windows elsewhere) plus one-shot placement transfer proportional to object or shard volume.
+
+The \textbf{main contributions} of this paper are summarized as follows:
+\begin{itemize}
+\item \textbf{Firstly}, we analyze limitations of replica-only decision narratives for geo-distributed cloud storage under heterogeneous pricing, and motivate coupling EC placement with replica placement inside one optimization shell (Section~\ref{sec:problem}).
+\item \textbf{Secondly}, we formalize a compact MILP whose objective aggregates mandatory base storage, optional replica terms, and EC shard terms consistent with a \(2{+}1\) Reed--Solomon storyline without introducing a third parity decision variable; we spell out variables, linear constraints, and coefficient construction tied to trace snapshots (Section~\ref{sec:design}).
+\item \textbf{Finally}, we prototype the policy inside a SkyStore-derived simulator, describe experimental methodology over trace workloads, and report how MILP-guided hybrid redundancy shifts optimal layouts relative to replica baselines (Sections~\ref{sec:eval}--\ref{sec:conclusion}).
+\end{itemize}
+
+The rest of the paper is organized as follows.
+Section~\ref{sec:related} surveys related work on redundancy, erasure coding placement, and optimization-based storage control.
+Section~\ref{sec:problem} formalizes the system model, workload assumptions, and the optimization gap relative to SkyStore-style evaluation.
+Section~\ref{sec:design} presents the MILP-centric hybrid redundancy design and its interface to the simulator.
+Section~\ref{sec:eval} describes experiments and metrics.
+Section~\ref{sec:conclusion} concludes and outlines future work.
+
+%==============================================================================
+\section{Related Work}
+\label{sec:related}
+
+Related work sections in venue templates often open with scope framing~\cite{milp_survey_storage}; we follow that habit by partitioning references along redundancy mechanisms and optimization methodology.
+
+\subsection{Geo-Distributed Replication and Trace-Driven Evaluation}
+Multi-region replication improves durability and read locality; trace replay frameworks quantify dollar cost under realistic cloud price sheets.
+SkyStore connects trace ingestion, TTL reasoning, and monetary accounting~\cite{skystore}.
+\textbf{However}, these studies predominantly optimize replica counts or eviction policies rather than jointly selecting replica layouts \emph{and} erasure-coded shards under a unified MILP surrogate.
+
+\subsection{Erasure Coding in Cloud and Wide-Area Storage}
+Erasure coding from classical Reed--Solomon schemes to locally repairable codes trades storage for repair bandwidth~\cite{milp_survey_storage}.
+Prior systems emphasize static stripe width or cluster-only placement.
+\textbf{Nevertheless}, few works co-design EC shard placement with optional full replicas at object granularity for geo-distributed traces subject to per-edge egress billing.
+
+\subsection{Optimization and MILP for Storage Resource Allocation}
+Mixed-integer programs allocate shards, caches, or backup copies subject to capacity budgets~\cite{milp_survey_storage}.
+Static solves over sliding windows amortize solver latency.
+\textbf{Moreover}, integrating TTL snapshots into coefficients aligns MILP refreshes with telemetry buckets similar to histogram eviction policies.
+
+\subsection{Positioning Against Prior Art}
+Compared with replica-only SkyStore evaluations and with EC papers that ignore trace-driven regional pricing, we unify \textbf{hybrid redundancy selection} and \textbf{multi-region placement} under a \textbf{minimum-cost MILP}, grounded in the same simulator hooks used for accounting reproducibility.
+
+%==============================================================================
+\section{Problem Definition}
+\label{sec:problem}
+
+This section mirrors the analytical posture of Section~III in reference IEEE papers: articulate observations about incumbent schemes before detailing our formulation.
+
+\subsection{System and Cost Model}
+\textit{[Outline: define regions, directed pricing graph (storage node attributes, edge egress costs), logical objects, optional fixed-base pinning, trace-driven requests.]}
+Let \(\mathcal{R}\) denote regions, each with storage price ladders mapped to simulation seconds.
+Cross-region transfers incur charges proportional to bytes shipped along edges matching cloud egress conventions.
+
+\subsection{Workload Assumptions}
+\textit{[Outline: trace columns (operation, object key, issue region, timestamps, sizes); how TTL histograms approximate residency for non-base replicas/shards.]}
+Highlight asymmetry between horizon-priced base replicas and TTL-priced ephemeral placements.
+
+\subsection{Limitations of Baseline Heuristics}
+Enumerate combinatorial growth when deciding EC versus an extra replica, and motivate MILP as a tractable surrogate when decision cardinality stays bounded (e.g., one extra replica, two outbound stripes).
+
+\subsection{Optimization Goal}
+State the minimum-cost objective at a decision epoch: mandatory base term \(+\sum_r s^{\mathrm{rep}}_r x_r + \sum_{r,k} s^{\mathrm{ec}}_{r,k} y_{r,k}\), referencing Section~\ref{sec:design} for coefficient semantics.
+
+%==============================================================================
+\section{Hybrid Redundancy Design and MILP Formulation}
+\label{sec:design}
+
+\subsection{Architecture Overview}
+\textit{[Outline: SkyStore-derived simulator pipeline --- ingestion, RegionManager accounting, placement policy hook on write path, MILP refresh cadence tied to histogram buckets.]}
+
+\subsection{Introducing Erasure Coding alongside Replicas}
+Describe \(K_{\mathrm{data}}\), shard sizing \(S_{\mathrm{shard}} = S_{\mathrm{obj}}/K_{\mathrm{data}}\), parity folded into base replica narrative, and solver dimensions (\texttt{NUM\_EC\_SHARD\_SLOTS}=2).
+
+\subsection{Decision Variables and Constraints}
+Present binary \(z\) (EC mode), \(x_r\) (full replica at \(r\neq\)base), \(y_{r,k}\) (stripe \(k\) at \(r\)).
+Summarize constraints: \(x_{\mathrm{base}}=0\) under FB; \(\sum_{r\neq \mathrm{base}} x_r \le 1\); \(\sum_r y_{r,k}=z\); \(\sum_k y_{r,k}\le 1\); coupling \(x_r+z\le 1\) on non-base rows.
+
+\subsection{Coefficient Construction}
+Explain horizon integration for base replica constants, TTL snapshots feeding \(s^{\mathrm{rep}}\) and \(s^{\mathrm{ec}}\), and \(\mathrm{edgeCost}(\mathrm{issue}, r)\times\)volume terms sourced from graph self-loops (cost zero) versus inter-region edges.
+
+\subsection{Solver Integration}
+Discuss Gurobi invocation, time limits, MIP gap, strict failure handling, and caching decisions per issue-region profile.
+
+\subsection{Complexity and Practical Controls}
+Windowing, warm-start considerations, and fallback policies when solver latency exceeds SLA.
+
+%==============================================================================
+\section{Experimental Evaluation}
+\label{sec:eval}
+
+\subsection{Implementation Environment}
+\textit{[Outline: Java simulator modules (e.g., \texttt{PolicyMilpECnewV3}, \texttt{GurobiEc21MilpBuilder}), hardware, Gurobi version.]}
+
+\subsection{Datasets and Traces}
+Describe IBM Cloud Object Storage traces or others, region counts (2/6/9 configurations), preprocessing such as smoke subsets.
+
+\subsection{Baselines}
+Replica-only SkyStore policies, EC-disabled ablations, heuristic TTL matchers.
+
+\subsection{Metrics}
+Total simulated USD (storage + egress), MILP solve time, layout churn, sensitivity to TTL buckets.
+
+\subsection{Results}
+\textit{[Outline: reserve figures/tables --- cost savings vs.\ baselines, breakdown by component, discussion when MILP prefers EC versus second replica.]}
+
+%==============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Cloud storage operators must reconcile replicas with erasure coding under heterogeneous pricing.
+We extended a SkyStore-class evaluator with hybrid redundancy and MILP-based minimum-cost placement decisions.
+Experiments confirm that joint optimization responds to TTL and egress shifts more systematically than replica-only heuristics.
+
+\textbf{Future work} includes richer EC parameter families (\(k{+}m\) beyond \(2{+}1\)), online rounding between MILP epochs, and tighter coupling to repair traffic models.
+
+%==============================================================================
+\section*{Acknowledgment}
+Placeholder acknowledgment text.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

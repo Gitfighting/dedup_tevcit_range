@@ -1,0 +1,198 @@
+% !TEX program = xelatex
+% 副本--纠删混合 MILP 策略论文（分节撰写版）
+% 编译：xelatex -output-directory=paper/zh_ec_milp_draft paper/zh_ec_milp_draft/main.tex
+%       bibtex main && xelatex x2
+\documentclass[conference]{IEEEtran}
+\usepackage[UTF8]{ctex}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\title{在 SkyStore 类成本放置之上引入副本--纠删混合冗余：\\基于混合整数线性规划的多区域布局决策\\[0.35em]
+{\normalsize\itshape Hybrid Replica--Erasure Redundancy atop SkyStore-Style Cost Placement: Multi-Region Layout via MILP}}
+
+\author{
+\IEEEauthorblockN{作者姓名}
+\IEEEauthorblockA{\textit{单位院系}\\
+城市，国家\\
+\texttt{email@example.edu}}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+SkyStore~\cite{skystore2025} 以\textbf{货币成本}为核心优化目标：在云厂商价目表（区域存储单价 $S$、跨区域 egress 单价 $N$）下，通过 write-local、replicate-on-read 与\textbf{自适应 TTL} 直方图，在``为副本付存储费''与``读 miss 时再付传输费''之间做驱逐决策；盈亏平衡时间 $T_{\mathrm{even}}{=}N/S$ 刻画了该权衡的结构。
+然而 SkyStore 在冗余形态上\textbf{始终按整对象体积 $V$ 计费}——远端每多一份缓存，存储项均为 $V{\cdot}S{\cdot}T$，未利用纠删码（Erasure Coding, EC）在\textbf{存储账单}上「按 $V/k$ 而非 $V$ 计占用」的价格优势。
+
+EC 在工业界被大规模采用的首要动机正是\textbf{降低存储放大因子}：以 $(k,m)$ 编码在保持可恢复性的同时，将持久占用从 $r$ 倍整对象降为约 $(k{+}m)/k$ 倍~\cite{azure_ec2012,plank2013}；Uluyol 等亦从\textbf{延迟--成本}角度论证跨数据中心场景下 EC 相对纯复制可逼近更低成本前沿~\cite{uluyol2020}。
+SkyStore 系策略优化了\textbf{保留多久}（TTL），却未在同一价目表下优化\textbf{保留多大体积}（整副本 vs.\ 分片）。
+
+本文在 SkyStore 类仿真栈上，以 TevictRanges（\texttt{PolicyTevictRangesNew}）为 replica-only 基线，提出 \texttt{PolicyMilpECnewV3}：TTL 与驱逐语义不变，仅在写路径直方图桶滚动时用 MILP 比较两种\textbf{计价分支}——基地外再存一整副本（存储 $\propto V$）与放置两条外传 EC 数据分片（存储 $\propto 2V/k$）——并计入\textbf{放置阶段}的跨区域 egress；\textbf{RS 编解码仅消耗计算资源，不产生存储费或运费，实验中与 SkyStore 略去操作费类似，不予计价}。
+IBM 类轨迹仿真表明，相对 TevictRanges 可在\textbf{存储分项}上取得可解释节省，总成本随对象大小、TTL 窗口与区域单价差异而变化。
+\end{abstract}
+
+\begin{IEEEkeywords}
+云存储；SkyStore；纠删码；多副本；混合冗余；混合整数线性规划；TTL；多区域放置
+\end{IEEEkeywords}
+
+%==============================================================================
+\section{引言}
+\label{sec:intro}
+
+现代应用日益跨多个可用区、地域乃至多云部署对象存储，以降低成本、规避厂商锁定并提升容灾能力~\cite{skystore2025}。
+然而，主流商用对象存储（如 Amazon S3、Google Cloud Storage、Azure Blob）通常按\textbf{单云内区域}运营；用户若要在远端保留数据以缩短读延迟或满足合规，必须在\textbf{存储占用费}与\textbf{跨区域网络出站（egress）费}之间做持续权衡~\cite{skystore2025,spanstore2013}。
+存储一份完整副本可避免重复跨区拉取，但随区域数与对象体量放大存储账单；不在访问热点区域保留数据则每次读 miss 都需支付可观的传输费用。
+因此，多区域对象存储本质上是一个随访问模式\textbf{动态变化}的\textbf{成本管理}问题，而非传统意义上受容量约束的性能型缓存问题~\cite{skystore2025}。
+
+\subsection{SkyStore 基线：成本最优的 TTL 驱逐与整副本复制}
+
+SkyStore~\cite{skystore2025} 是近期针对上述问题的一条代表性学术路线。
+它在现有各云 S3 兼容 API 之上提供统一虚拟桶/对象抽象，核心放置策略可概括为两点：
+\textbf{（i）何时复制}——写请求 write-local；读 miss 时按 replicate-on-read 从费用最低的已有副本拉取并在本地建立\textbf{整对象副本}；
+\textbf{（ii）何时驱逐}——为每个副本赋予 TTL，通过访问间隔直方图估计 $\mathrm{ExpectedCost}(\mathrm{TTL})$，在存储与潜在再传输之间选择成本更低的驻留时长。
+在两区域 base--cache 模型中，盈亏平衡时间 $T_{\mathrm{even}}=N/S$（$N$ 为跨区 egress 单价，$S$ 为存储单价）给出无先验信息时的保守 TTL；SkyStore 在此基础上用\textbf{加权直方图}（hist/last）自适应学习工作负载，并在多区域情形将问题分解为\textbf{有向区域图上的配对边 TTL}~\cite{skystore2025}。
+
+仿真与真实多云原型评估表明，SkyStore 相对 Always Store/Evict、固定 $T_{\mathrm{even}}$、TTL-CC~\cite{ttl_cc2019}、EWMA、SPANStore~\cite{spanstore2013} 及 AWS Multi-Region 等工业基线，在 SNIA IBM 对象存储轨迹（T15/T29/T65/T78/T79）上可取得最高约 $6\times$ 量级的成本节省~\cite{skystore2025,snia_ibm2019}。
+需要强调的是：SkyStore 的``复制''在实现与模型中均为\textbf{完整对象拷贝}；Fixed Base（FB）模式下基地副本永不驱逐，非基地区域上的额外冗余同样以整副本形式存在。
+论文在 Related Work 中讨论了 SPANStore 等\textbf{成本感知}的地理复制~\cite{spanstore2013}，以及 Volley 等侧重延迟的放置系统~\cite{volley2010}，但\textbf{并未}在 SkyStore 的 TTL--直方图框架内引入纠删码作为可切换的冗余形态。
+
+本仓库仿真器中的 \texttt{PolicyTevictRangesNew}（TevictRanges）实现了与 SkyStore 一致的\textbf{配对边直方图、可变粒度时间桶与 TTL 刷新语义}，是本文实验的\textbf{直接基线}与 MILP 系数的来源；下文若无特别说明，``TevictRanges 基线''即指该策略下的 replica-only 行为。
+
+\subsection{纠删码在价格上的优势与 SkyStore 的空白}
+
+与 SkyStore 一样，本文讨论 EC 时\textbf{只从云厂商账单中的两类费用出发}：\textbf{存储占用}（$S_r$）与\textbf{跨区域数据搬运的 egress}（$N_{ij}$）~\cite{skystore2025}。
+\textbf{纠删码的编码与解码属于计算开销}（CPU/内存），\textbf{既不按 GB$\cdot$时间计存储费，也不按 GB 计 egress}；本文仿真与 MILP 目标\textbf{均不包含}编解码费用，与 SkyStore 将 PUT/GET 操作费视为相对可忽略项的处理方式一致。
+整副本在区域 $r$ 驻留 $T$ 时间的存储费约为 $V{\cdot}S_r{\cdot}T$；若改为 $(k,m)$ EC 并在 $r$ 仅保留一片数据分片，则同窗口存储费约为 $(V/k){\cdot}S_r{\cdot}T$。
+当 $k{=}2$ 时，\textbf{同等驻留窗口下存储分项可近似减半}——这正是 Azure 等系统将 EC 作为默认冗余形态的经济动因~\cite{azure_ec2012}。
+Plank 等对 EC 的综述亦将\textbf{存储效率}（storage efficiency / 放大因子）列为相对多副本的首要收益~\cite{plank2013}；Uluyol 等在地理分布式存储中进一步表明，允许 EC 而不仅是复制，可在\textbf{延迟约束下逼近更低的货币成本前沿}~\cite{uluyol2020}。
+
+SkyStore 已在\textbf{时间维度}上做了精细的成本优化：通过直方图估计 $\mathrm{ExpectedCost}(\mathrm{TTL})$，决定副本\textbf{保留多久}；$T_{\mathrm{even}}$ 则给出``存满 $T_{\mathrm{even}}$ 的存储费是否值得再付一次 $N$ 拉取''的盈亏点。
+但在\textbf{体积维度}上，SkyStore 隐含假设远端冗余\textbf{永远是体积 $V$ 的整对象}：读 miss 后 replicate-on-read 创建的缓存，存储项始终按 $V$ 计入账单。
+对于\textbf{对象较大、TevictRanges 给出较长 TTL 窗口}的情形，整副本的存储项 $V{\cdot}S{\cdot}T$ 往往主导额外冗余的\textbf{可计价成本}；此时 EC 数据分片（本文 FB 下 $2{+}1$ RS 的两条外传数据片，每片存储按 $V/k$ 计）在\textbf{同一 TTL 与价目表}下可显著压低存储分项。
+MILP 在布局快照阶段比较的分支成本因此仅含\textbf{存储占用 + 放置时的 outbound egress}（将整对象或各 data shard 从 \texttt{issueRegion} 传到落区），\textbf{不含}编解码计算费。
+
+SPANStore~\cite{spanstore2013} 同样以货币成本为目标，但采用写时主动复制且\textbf{不建模 TTL 驱逐}，冗余形态也仅为整副本。
+\textbf{尚未有工作}在 SkyStore/TevictRanges 已确定的 TTL 与 $\mathrm{ExpectedCost}$ 框架内，对基地外额外冗余比较两条\textbf{计价曲线}：
+整副本分支 $\text{Cost}_{\mathrm{rep}}\approx V{\cdot}S_r{\cdot}T + N_{ij}{\cdot}V$；
+EC 分支 $\text{Cost}_{\mathrm{ec}}\approx 2{\cdot}(V/k){\cdot}S_r{\cdot}T + \sum_k N_{ij_k}{\cdot}(V/k)$（本文 FB 叙事下基地整对象常数项对两分支相同）。
+这正是本文 MILP 所要填补的\textbf{成本维度空白}。
+
+\subsection{研究动机与问题陈述}
+
+TevictRanges 基线下，跨区读 miss 后在本地创建\textbf{体积为 $V$ 的整副本}，驻留窗口 $T$ 来自配对边直方图。
+从\textbf{价目表}看，该决策的边际存储成本约为 $V{\cdot}S_{\mathrm{dst}}{\cdot}T$；若改为在 $\mathrm{dst}$ 侧放置 EC 数据片，边际存储可降为 $(V/k){\cdot}S_{\mathrm{dst}}{\cdot}T$（两片则约 $2V/k$）。
+\textbf{EC 在存储价格上占优}的典型情形是：$T$ 较长、$V$ 较大、且 $S_r$ 相对 $N_{ij}$ 较高——即在 SkyStore 的 $T_{\mathrm{even}}=N/S$ 逻辑下，``存储贵''时不仅应缩短 TTL，还可在\textbf{体积维度}用 $V/k$ 替代 $V$ 以降低存储分项。
+\textbf{整副本分支}仍可能在 MILP 中胜出，例如：放置 egress 与区域单价组合下两分支总成本接近、需满足 FB 落区约束、或消融实验强制 replica-only；这与编解码无关——编解码\textbf{未进入}本文价目表。
+
+该比较依赖\textbf{离散形态}、各区域 $S_r$、边 $N_{ij}$ 以及 TevictRanges 给出的 $T$ 快照，且不同 \texttt{issueRegion} 对应不同系数，难以用手工规则在所有轨迹上稳定选出最低账单，故引入 MILP 在快照时刻求最小线性成本。
+
+本文\textbf{不}重新设计 SkyStore 系统，也\textbf{不}将驱逐时刻纳入 MILP 的 0--1 变量（否则规模与执行语义将与 \texttt{SimulatorV2} 中``TTL 到期删除物理副本''的路径脱节）。
+研究问题精确表述为：
+\textbf{在 TevictRanges 已提供的 TTL/直方图系数与 SkyStore 类计价拓扑下，于离散规划时刻为每个 issueRegion 选择冗余形态 $z$ 与落区 $(x_r,y_{r,k})$，使\textbf{存储费与放置 egress} 的线性化之和最小（不含编解码计算费），且驱逐与 TTL 刷新仍由仿真器执行。}
+
+\subsection{本文方案与主要贡献}
+
+我们在 \texttt{SimulatorV2/V3} 上实现 \texttt{PolicyMilpECnewV3}，在 \texttt{PolicyTevictRangesNew} 之上增加 MILP 层：
+\begin{itemize}
+  \item \textbf{系数来源}：非基地副本与 EC 数据分片的存储时长来自配对边 TevictRanges 直方图最后一桶 TTL；FB 模式下基地整副本进入目标常数项 $f_b$（parity 不单独作为 MILP 二元变量）。
+  \item \textbf{决策变量}：$z\in\{0,1\}$ 选择 replica 分支（基地外至多一整副本）或 EC 分支（恰好两条外传数据分片且两槽不同区）；由 \texttt{GurobiEc21MilpBuilder} 求解。
+  \item \textbf{触发协议}：仅在\textbf{写路径}、配对 TTL 直方图跨越 12\,h 桶且通过 warm 门控时调用 \texttt{syncMilpIfHistogramTtlAdvanced} $\rightarrow$ \texttt{runMilpForIssueRegion}；布局按 \texttt{issueRegion} 缓存；读路径 TTL 刷新\textbf{不}触发 MILP。histogram 未 warm 时退化为 TevictRanges 行为。
+\end{itemize}
+
+主要贡献如下：
+\begin{itemize}
+  \item \textbf{第一，}在 SkyStore 类仿真与 TevictRanges TTL 语义之上，形式化\textbf{副本--EC 混合冗余}的 MILP：与 \texttt{buildCoefficients}/\texttt{GurobiEc21MilpBuilder} 一致的 FB/FP 约束分支、$2{+}1$ 存储叙事及 replica-only/EC-only 消融开关。
+  \item \textbf{第二，}给出\textbf{写路径触发}与 \texttt{decisionCache} 协议，明确 MILP 仅优化布局快照、驱逐由仿真器负责的分责设计，便于复现与代码--公式对照。
+  \item \textbf{第三，}在 SNIA IBM 类轨迹（typeA）及 3/6/9 区域配置下，以 TevictRanges 为基线报告总成本及\textbf{存储、传输}分项，并明确实验\textbf{不计价} RS 编解码的计算开销。
+\end{itemize}
+
+\subsection{论文结构}
+
+第~\ref{sec:related}~节综述 SkyStore/SPANStore 等\textbf{成本导向}放置、EC 的\textbf{存储计价优势}及 TTL 缓存相关工作，并定位本文差异。
+第~\ref{sec:problem}~节给出系统模型、决策变量与问题边界。
+第~\ref{sec:design}~节描述 MILP 构建、Gurobi 求解与实现要点。
+第~\ref{sec:eval}~节介绍数据集、指标与相对 TevictRanges 的仿真结果。
+第~\ref{sec:conclusion}~节总结并讨论未来工作。
+
+%==============================================================================
+\section{相关工作}
+\label{sec:related}
+\noindent\textit{（待撰写：成本导向放置 SkyStore/SPANStore；EC 存储放大因子与价目表~\cite{azure_ec2012,plank2013,uluyol2020}；TTL 缓存~\cite{ttl_cc2019,adaptive_ttl2018}；与本文差别。）}
+
+\section{问题陈述}
+\label{sec:problem}
+\noindent\textit{（待撰写：FB/FP 模式、SkyStore 计价模型、变量 $z,x,y$、目标、边界。）}
+
+\section{系统设计}
+\label{sec:design}
+\noindent\textit{（待撰写：Fig.~1 流程、MILP 公式、算法、实现。）}
+
+\section{实验评估}
+\label{sec:eval}
+
+\subsection{数据集与设置}
+
+主实验采用 SNIA IBM ObjectStoreTrace T79 typeA（114{,}227 请求，3 区域 FP，7 天窗口），与 TevictRanges 使用\textbf{相同 trace 行与价目表}。
+差分成员由 Finesse 合并 manifest 注入；覆盖率 $p\in\{0.05,0.1,0.2,0.3,0.5\}$ 控制 member key 占比（464--4548 个）。
+跨 trace 实验在 T15/T65/T78/T79 上重复（$p{=}0.1$）。
+V4 配置 \texttt{milp\_ec\_new\_v4\_3reg.yaml}；基线 \texttt{tevictranges\_3reg.yaml}。
+
+\subsection{评价指标}
+
+沿用 SkyStore 的 total/storage/transfer 成本（USD）；补充 \texttt{vs\_tevict\_\%}、\texttt{ec\_rate}（MILP 日志）、以及 2$\times$2 归因
+$\Delta_\delta,\Delta_{EC}$（内基线 \texttt{nodelta\_rep}）。
+
+\subsection{差分覆盖率扫描（E13）}
+
+表~\ref{tab:saturation} 给出 T79 上随 $p$ 增加的节省；tevict 不读 $\delta$ 列，五档 total 恒为 275.19。
+V4 相对 tevict 从 $-$0.77\%（$p{=}0.05$）增至 $-$4.11\%（$p{=}0.5$）；全档 \texttt{ec\_rate}${=}0$。
+
+\begin{table}[t]
+\centering
+\caption{T79 typeA：差分覆盖率 $p$ 扫描（USD）}
+\label{tab:saturation}
+\begin{tabular}{rrrrr}
+\toprule
+$p$ & members & V4 & tevict & vs.\ tevict \\
+\midrule
+0.05 & 464   & 273.08 & 275.19 & $-$0.77\% \\
+0.10 & 912   & 272.08 & 275.19 & $-$1.13\% \\
+0.20 & 1808  & 270.17 & 275.19 & $-$1.83\% \\
+0.30 & 2727  & 268.17 & 275.19 & $-$2.55\% \\
+0.50 & 4548  & 263.88 & 275.19 & $-$4.11\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{$\delta\times$EC 因子分解（E12）}
+
+在 $p{=}0.1$ 下，\texttt{delta\_ec} 与 \texttt{delta\_rep} 均为 272.08（$-$1.13\% vs.\ tevict）；
+\texttt{nodelta\_ec} 为 274.64（$+$0.43 vs.\ \texttt{nodelta\_rep}）。
+$\Delta_\delta{=}{-}\$2.14$，$\Delta_{EC}{=}{+}\$0.43$，交互 $\approx 0$：当前收益来自 $\delta$ 而非 EC。
+
+\subsection{跨 trace 与访问模式}
+
+T78（$p{=}0.1$）节省 8.45\%（24.18 vs.\ 26.41）；T15 略负（$+$0.65\%）。
+typeA--D slice 上 V4 相对 tevict 约 $-$0.7\% 至 $-$1.1\%，读集中的 typeC 绝对节省更小。
+
+\subsection{讨论}
+
+本文定位为 SkyStore 之上的\textbf{增量}扩展：$\delta$ 带来可测但有限的成本下降；EC 在默认 MILP 下未被选中。
+参照 Fast'21 对粒度/元数据的扫描方式，我们以覆盖率 $p$ 为旋钮展示 resemblance 强度与账单之间的单调关系，而非宣称数量级突破。
+
+\section{结论}
+\label{sec:conclusion}
+
+在 TevictRanges TTL 语义之上，V4 将 Finesse 差分编码与 replica--EC MILP 布局结合。
+IBM 轨迹表明：差分编码是主要有效杠杆（T79 上最高约 4\% vs.\ tevict）；纠删码与差分无正向协同。
+未来可在更高 $p$、更多区域价目表及读路径 EC 恢复上继续 incremental 改进。
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
