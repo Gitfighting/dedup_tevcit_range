@@ -1,0 +1,14 @@
+deleted 936 unused tars, 409.0 GB
+deleted debian-dev-ops-1 (0.70 GB)
+total freed 409.7 GB
+
+verifying manifests...
+  IBMObjectStoreTrace015Part0.typeE.mc-aug.manifest.csv.gz: missing=0
+  IBMObjectStoreTrace029Part0.typeE.mc-aug.manifest.csv.gz: missing=0
+  IBMObjectStoreTrace065Part0.typeE.mc-aug.manifest.csv.gz: missing=0
+  IBMObjectStoreTrace078Part0.typeE.mc-aug.manifest.csv.gz: missing=0
+  IBMObjectStoreTrace079Part0.typeE.mc-aug.manifest.csv.gz: missing=0
+
+verify: 4,456,726 unique files referenced, missing=0
+/dev/vdb        1.6T 1000G  544G  65% /data
+DONE

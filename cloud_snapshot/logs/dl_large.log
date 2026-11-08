@@ -1,0 +1,13 @@
+=== STEP 1: Extract ISOs ===
+  ubuntu-20.04.6-desktop-amd64.iso: 955 files, 4.3GB
+  ubuntu-20.04.6-live-server-amd64.iso: 654 files, 1.5GB
+  ubuntu-22.04.5-live-server-amd64.iso: 718 files, 2.1GB
+  ubuntu-24.04.2-live-server-amd64.iso: 870 files, 3.2GB
+  ubuntu-24.04.4-live-server-amd64.iso: 865 files, 3.4GB
+
+=== STEP 2: Download large packages ===
+  OK postgresql-16.2.tar.bz2 (25MB)
+  OK postgresql-15.6.tar.bz2 (23MB)
+  OK postgresql-14.11.tar.bz2 (22MB)
+  OK postgresql-13.14.tar.bz2 (22MB)
+  OK llvm-17.0.6.src.tar.xz (59MB)

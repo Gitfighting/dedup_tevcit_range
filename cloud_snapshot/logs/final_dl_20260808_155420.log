@@ -1,0 +1,34 @@
+==============================================
+FINAL DOWNLOAD - 2026-08-08 15:54:20
+Using USTC mirrors
+==============================================
+
+>>> [1/2] Ubuntu 22.04.5 ISO (~2.0GB)
+--2026-08-08 15:54:20--  https://mirrors.ustc.edu.cn/ubuntu-releases/22.04.5/ubuntu-22.04.5-live-server-amd64.iso
+Resolving mirrors.ustc.edu.cn (mirrors.ustc.edu.cn)... 202.38.95.110, 2001:da8:d800:95::110
+Connecting to mirrors.ustc.edu.cn (mirrors.ustc.edu.cn)|202.38.95.110|:443... connected.
+HTTP request sent, awaiting response... 403 Forbidden
+2026-08-08 15:54:21 ERROR 403: Forbidden.
+
+  SIZE: 0
+
+>>> [2/2] Ubuntu 24.04.2 ISO (~2.6GB)
+--2026-08-08 15:54:21--  https://mirrors.ustc.edu.cn/ubuntu-releases/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+Resolving mirrors.ustc.edu.cn (mirrors.ustc.edu.cn)... 202.38.95.110, 2001:da8:d800:95::110
+Connecting to mirrors.ustc.edu.cn (mirrors.ustc.edu.cn)|202.38.95.110|:443... connected.
+HTTP request sent, awaiting response... 403 Forbidden
+2026-08-08 15:54:22 ERROR 403: Forbidden.
+
+  SIZE: 0
+
+==============================================
+ALL DONE - 2026-08-08 15:54:22
+==============================================
+
+1012K	/data/datasets/iso/
+647M	/data/datasets/linux/
+1.3G	/data/datasets/linux_big/
+37M	/data/datasets/php/
+4.0K	/data/datasets/sqldump/
+56M	/data/datasets/ubuntu/
+/dev/vdb        295G   15G  265G   6% /data

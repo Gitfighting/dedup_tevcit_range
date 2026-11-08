@@ -1,0 +1,70 @@
+== find all trace csvs under /data ==
+  /data/manifests/IBMObjectStoreTrace015Part0.typeE.mc-aug.manifest.csv.gz  14.1MB
+  /data/manifests/IBMObjectStoreTrace029Part0.typeE.mc-aug.manifest.csv.gz  56.7MB
+  /data/manifests/IBMObjectStoreTrace065Part0.typeE.mc-aug.manifest.csv.gz  0.1MB
+  /data/manifests/IBMObjectStoreTrace078Part0.typeE.mc-aug.manifest.csv.gz  2.1MB
+  /data/manifests/IBMObjectStoreTrace079Part0.typeE.mc-aug.manifest.csv.gz  0.3MB
+  /data/skystore/traces/IBMObjectStoreTrace015Part0.typeE.mc-aug.csv  99.9MB
+  /data/skystore/traces/IBMObjectStoreTrace029Part0.typeE.mc-aug.csv  798.8MB
+  /data/skystore/traces/IBMObjectStoreTrace065Part0.typeE.mc-aug.csv  20.6MB
+  /data/skystore/traces/IBMObjectStoreTrace078Part0.typeE.mc-aug.csv  172.9MB
+  /data/skystore/traces/IBMObjectStoreTrace079Part0.typeE.mc-aug.csv  8.0MB
+  /data/traces/typeA/IBMObjectStoreTrace015Part0.typeA.mc.aug  99.8MB
+  /data/traces/typeA/IBMObjectStoreTrace029Part0.typeA.mc.aug  786.4MB
+  /data/traces/typeA/IBMObjectStoreTrace065Part0.typeA.mc.aug  20.8MB
+  /data/traces/typeA/IBMObjectStoreTrace078Part0.typeA.mc.aug  172.9MB
+  /data/traces/typeA/IBMObjectStoreTrace079Part0.typeA.mc.aug  7.9MB
+  /data/traces/typeB/IBMObjectStoreTrace015Part0.typeB.mc.aug  101.7MB
+  /data/traces/typeB/IBMObjectStoreTrace029Part0.typeB.mc.aug  813.3MB
+  /data/traces/typeB/IBMObjectStoreTrace065Part0.typeB.mc.aug  20.9MB
+  /data/traces/typeB/IBMObjectStoreTrace078Part0.typeB.mc.aug  175.0MB
+  /data/traces/typeB/IBMObjectStoreTrace079Part0.typeB.mc.aug  8.1MB
+  /data/traces/typeC/IBMObjectStoreTrace015Part0.typeC.mc.aug  100.9MB
+  /data/traces/typeC/IBMObjectStoreTrace029Part0.typeC.mc.aug  805.2MB
+  /data/traces/typeC/IBMObjectStoreTrace065Part0.typeC.mc.aug  20.6MB
+  /data/traces/typeC/IBMObjectStoreTrace078Part0.typeC.mc.aug  172.8MB
+  /data/traces/typeC/IBMObjectStoreTrace079Part0.typeC.mc.aug  8.1MB
+  /data/traces/typeD/IBMObjectStoreTrace015Part0.typeD.mc.aug  99.8MB
+  /data/traces/typeD/IBMObjectStoreTrace029Part0.typeD.mc.aug  786.4MB
+  /data/traces/typeD/IBMObjectStoreTrace065Part0.typeD.mc.aug  20.8MB
+  /data/traces/typeD/IBMObjectStoreTrace078Part0.typeD.mc.aug  173.2MB
+  /data/traces/typeD/IBMObjectStoreTrace079Part0.typeD.mc.aug  7.9MB
+
+== /data/traces layout ==
+total 24
+drwxr-xr-x  6 root root 4096 Aug  8 12:54 .
+drwxr-xr-x 19 root root 4096 Aug 10 13:22 ..
+drwxr-xr-x  2 root root 4096 Aug  8 12:39 typeA
+drwxr-xr-x  2 root root 4096 Aug  8 12:47 typeB
+drwxr-xr-x  2 root root 4096 Aug  8 12:54 typeC
+drwxr-xr-x  2 root root 4096 Aug  8 13:02 typeD
+
+== T015 ref=typeE (671,582 objs) ==
+  IBMObjectStoreTrace015Part0.typeA.mc.aug: objs=671,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace015Part0.typeB.mc.aug: objs=671,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace015Part0.typeC.mc.aug: objs=671,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace015Part0.typeD.mc.aug: objs=671,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+
+== T029 ref=typeE (3,966,994 objs) ==
+  IBMObjectStoreTrace029Part0.typeA.mc.aug: objs=3,966,994 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace029Part0.typeB.mc.aug: objs=3,966,994 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace029Part0.typeC.mc.aug: objs=3,966,994 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace029Part0.typeD.mc.aug: objs=3,966,994 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+
+== T065 ref=typeE (3,065 objs) ==
+  IBMObjectStoreTrace065Part0.typeA.mc.aug: objs=3,065 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace065Part0.typeB.mc.aug: objs=3,065 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace065Part0.typeC.mc.aug: objs=3,065 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace065Part0.typeD.mc.aug: objs=3,065 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+
+== T078 ref=typeE (91,176 objs) ==
+  IBMObjectStoreTrace078Part0.typeA.mc.aug: objs=91,176 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace078Part0.typeB.mc.aug: objs=91,176 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace078Part0.typeC.mc.aug: objs=91,176 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace078Part0.typeD.mc.aug: objs=91,176 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+
+== T079 ref=typeE (12,582 objs) ==
+  IBMObjectStoreTrace079Part0.typeA.mc.aug: objs=12,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace079Part0.typeB.mc.aug: objs=12,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace079Part0.typeC.mc.aug: objs=12,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0
+  IBMObjectStoreTrace079Part0.typeD.mc.aug: objs=12,582 keys_match=True sizes_match=True extra=0 missing=0 size_diffs=0

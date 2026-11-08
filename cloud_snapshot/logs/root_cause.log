@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/tmp/root_cause.py", line 21, in <module>
+    print(f"Pool: {len(pool):,} files, {sum(pool)/1e9:.2f} GB")
+TypeError: unsupported operand type(s) for +: 'int' and 'tuple'

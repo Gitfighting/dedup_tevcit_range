@@ -1,0 +1,67 @@
+============================================================
+PARALLEL SMART EXTRACT: 1-50MB files from all tar archives
+Start: 2026-08-09 10:27:42
+Workers: 3 listing, 2 extracting
+============================================================
+[DISCOVERY] Finding tar archives with find...
+
+[DISCOVERY] Found 63 archives
+
+  Category breakdown (14 categories):
+    python                        :   38 archives
+    postgres                      :    9 archives
+    linux                         :    3 archives
+    llvm                          :    2 archives
+    mariadb                       :    2 archives
+    go                            :    1 archives
+    mysql                         :    1 archives
+    bionic-base                   :    1 archives
+    focal-base                    :    1 archives
+    jammy-base                    :    1 archives
+    noble-base                    :    1 archives
+    precise-base                  :    1 archives
+    trusty-base                   :    1 archives
+    xenial-base                   :    1 archives
+
+[SAMPLING] 3 priority archives (linux/ubuntu/php/...)
+           60 other archives
+
+[PHASE 1] Listing 3 archives with 3 workers...
+  [1] linux-5.15.158.tar.xz: 54 medium files (total: 54 found, 13s)
+  [2] linux-5.15.159.tar.xz: 54 medium files (total: 108 found, 13s)
+  [3] linux-6.1.83.tar.xz: 84 medium files (total: 192 found, 14s)
+
+[SAMPLE] Priority archives yield: 192 files, 0.7 GB
+  1-10MB:  173
+  10-50MB: 19
+
+[ESTIMATE] ~4,032 total 1-50MB files projected (5% sampled)
+
+[PHASE 1] Listing 60 archives with 3 workers...
+  [4] go1.19.13.src.tar.gz: 8 medium files (total: 200 found, 15s)
+  [5] mariadb-10.11.6.tar.gz: 63 medium files (total: 263 found, 18s)
+  [10] postgresql-13.14.tar.bz2: 6 medium files (total: 426 found, 27s)
+  [20] Python-3.8.20.tar.xz: 5 medium files (total: 505 found, 34s)
+  [30] Python-3.10.14.tgz: 8 medium files (total: 588 found, 37s)
+  [40] Python-3.12.4.tgz: 8 medium files (total: 668 found, 39s)
+  [50] Python-3.8.19.tgz: 5 medium files (total: 730 found, 42s)
+  [60] jammy-base-amd64.tar.gz: 12 medium files (total: 803 found, 44s)
+
+[PHASE 1 DONE] 63/63 archives scanned
+  Files found:  859 (2.0 GB)
+  1-10MB:       839
+  10-50MB:      20
+  Errors:       0
+  Time:         45s
+
+[DECISION] Only 859 files found (<10,000 threshold).
+  This is too few files to justify extraction.
+  Possible reasons:
+    1. Archives may contain mostly source code (small files <1MB)
+    2. Archives may be binary packages (DEB/RPM) with no 1-50MB range files
+    3. Dataset may not have been fully downloaded
+
+  SUGGESTIONS:
+    - Download ISO images (ubuntu-*.iso, debian-*.iso) which have many 1-50MB files
+    - Download large tarballs (linux kernel, LLVM source, GCC source)
+    - Use /data/datasets/ dirs with .deb packages which can be extracted directly

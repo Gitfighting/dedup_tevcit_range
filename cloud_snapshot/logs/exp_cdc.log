@@ -1,0 +1,4 @@
+  File "/tmp/exp_cdc_v3.py", line 58
+    try: sz=int(row[4]); except: continue
+                         ^^^^^^
+SyntaxError: invalid syntax

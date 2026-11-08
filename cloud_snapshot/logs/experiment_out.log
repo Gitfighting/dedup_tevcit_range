@@ -1,0 +1,41 @@
+======================================================================
+  REAL FILE POOL CDC DEDUP EXPERIMENT
+  Trace: /data/traces/typeA/IBMObjectStoreTrace015Part0.typeA.mc.aug
+  Pool:  /data/filepool/file_list.json
+======================================================================
+
+============================================================
+  BASELINE (no dedup)
+============================================================
+Loading file pool...
+  Pool: 463,529 files from 3 datasets
+  Pool total size: 9.66 GB
+  Avg file size: 20850 bytes
+
+Replaying trace...
+  [100,000 ops] PUT=100,000 GET=0 elapsed=1s
+  [200,000 ops] PUT=136,551 GET=63,449 elapsed=1s
+  [300,000 ops] PUT=176,375 GET=123,625 elapsed=1s
+  [400,000 ops] PUT=213,735 GET=186,265 elapsed=2s
+  [500,000 ops] PUT=256,825 GET=243,175 elapsed=2s
+  Stopping at 500,000 ops (limit)
+
+  BASELINE (no dedup) complete:
+    Ops: 500,000 (PUT=256,825, GET=243,175)
+    Raw bytes: 5.38 GB
+    Stored bytes: 4.07 GB
+    Transferred: 5.10 GB
+    Unique files: 196974
+    Dedup ratio: 0.7577
+    Storage savings: 24.2%
+    Elapsed: 2.3s
+
+============================================================
+  EXPERIMENT (CDC dedup)
+============================================================
+Loading file pool...
+  Pool: 463,529 files from 3 datasets
+  Pool total size: 9.66 GB
+  Avg file size: 20850 bytes
+
+Replaying trace...

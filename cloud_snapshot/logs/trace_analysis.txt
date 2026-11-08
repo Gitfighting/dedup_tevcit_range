@@ -1,0 +1,195 @@
+
+======================================================================
+  T015Part0.typeA.mc  |  IBMObjectStoreTrace015Part0.typeA.mc.aug
+  Total: 1,575,627 ops (PUT=671,586, GET=904,041)
+  Unique objects: 671,582
+  Size range: 345 B - 107,883,940 B
+            : 0.3 KB - 107.9 MB
+  Avg PUT size: 643,496 B (628 KB)
+
+  PUT Size Percentiles:
+    P01:     1.5 KB
+    P05:     5.8 KB
+    P10:     9.9 KB
+    P25:    22.7 KB
+    P50:    92.3 KB
+    P75:   678.6 KB
+    P90:     1.3 MB
+    P95:     2.5 MB
+    P99:     7.9 MB
+
+  PUT Size Bins:
+          < 1 KB:    1,718 (  0.3%) 
+         1-10 KB:   65,910 (  9.8%) ████
+       10-100 KB:  275,905 ( 41.1%) ████████████████████
+       100KB-1MB:  207,344 ( 30.9%) ███████████████
+         1-10 MB:  119,714 ( 17.8%) ████████
+       10-100 MB:      993 (  0.1%) 
+       100MB-1GB:        2 (  0.0%) 
+
+  Unique Object Size Percentiles:
+    P50: 92 KB
+    P75: 679 KB
+    P90: 1.3 MB
+    P95: 2.5 MB
+    P99: 7.9 MB
+
+======================================================================
+  T029Part0.typeA.mc  |  IBMObjectStoreTrace029Part0.typeA.mc.aug
+  Total: 13,019,220 ops (PUT=3,966,994, GET=9,052,226)
+  Unique objects: 3,966,994
+  Size range: 0 B - 2,622,314 B
+            : 0.0 KB - 2.6 MB
+  Avg PUT size: 2,627 B (3 KB)
+
+  PUT Size Percentiles:
+    P01:      532 B
+    P05:      532 B
+    P10:      532 B
+    P25:      536 B
+    P50:     2.2 KB
+    P75:     3.9 KB
+    P90:     6.0 KB
+    P95:     6.3 KB
+    P99:     7.1 KB
+
+  PUT Size Bins:
+          < 1 KB: 1,743,636 ( 44.0%) █████████████████████
+         1-10 KB: 2,213,234 ( 55.8%) ███████████████████████████
+       10-100 KB:   10,123 (  0.3%) 
+         1-10 MB:        1 (  0.0%) 
+
+  Unique Object Size Percentiles:
+    P50: 2 KB
+    P75: 4 KB
+    P90: 6 KB
+    P95: 6 KB
+    P99: 7 KB
+
+======================================================================
+  T065Part0.typeA.mc  |  IBMObjectStoreTrace065Part0.typeA.mc.aug
+  Total: 283,086 ops (PUT=3,065, GET=280,021)
+  Unique objects: 3,065
+  Size range: 0 B - 968,987,478 B
+            : 0.0 KB - 969.0 MB
+  Avg PUT size: 1,573,241 B (1536 KB)
+
+  PUT Size Percentiles:
+    P01:        0 B
+    P05:        0 B
+    P10:      258 B
+    P25:      822 B
+    P50:   347.6 KB
+    P75:  1023.4 KB
+    P90:     1.4 MB
+    P95:     2.0 MB
+    P99:     5.9 MB
+
+  PUT Size Bins:
+          < 1 KB:      951 ( 31.0%) ███████████████
+         1-10 KB:      165 (  5.4%) ██
+       10-100 KB:      211 (  6.9%) ███
+       100KB-1MB:      973 ( 31.7%) ███████████████
+         1-10 MB:      753 ( 24.6%) ████████████
+       10-100 MB:        7 (  0.2%) 
+       100MB-1GB:        5 (  0.2%) 
+
+  Unique Object Size Percentiles:
+    P50: 348 KB
+    P75: 1023 KB
+    P90: 1.4 MB
+    P95: 2.0 MB
+    P99: 5.9 MB
+
+======================================================================
+  T078Part0.typeA.mc  |  IBMObjectStoreTrace078Part0.typeA.mc.aug
+  Total: 2,409,805 ops (PUT=132,360, GET=2,277,445)
+  Unique objects: 91,176
+  Size range: 28,452 B - 14,159,093 B
+            : 28.5 KB - 14.2 MB
+  Avg PUT size: 407,979 B (398 KB)
+
+  PUT Size Percentiles:
+    P01:    36.1 KB
+    P05:    79.5 KB
+    P10:   106.9 KB
+    P25:   142.4 KB
+    P50:   260.2 KB
+    P75:   400.8 KB
+    P90:   545.9 KB
+    P95:   727.1 KB
+    P99:     4.9 MB
+
+  PUT Size Bins:
+       10-100 KB:    9,675 (  7.3%) ███
+       100KB-1MB:  119,873 ( 90.6%) █████████████████████████████████████████████
+         1-10 MB:    2,807 (  2.1%) █
+       10-100 MB:        5 (  0.0%) 
+
+  Unique Object Size Percentiles:
+    P50: 273 KB
+    P75: 420 KB
+    P90: 594 KB
+    P95: 760 KB
+    P99: 6.2 MB
+
+======================================================================
+  T079Part0.typeA.mc  |  IBMObjectStoreTrace079Part0.typeA.mc.aug
+  Total: 114,227 ops (PUT=12,582, GET=101,645)
+  Unique objects: 12,582
+  Size range: 836 B - 16,138,817,965 B
+            : 0.8 KB - 16138.8 MB
+  Avg PUT size: 49,546,810 B (48386 KB)
+
+  PUT Size Percentiles:
+    P01:     8.4 KB
+    P05:   105.8 KB
+    P10:   205.8 KB
+    P25:   293.2 KB
+    P50:     4.8 MB
+    P75:    16.1 MB
+    P90:    34.9 MB
+    P95:    42.5 MB
+    P99:   211.5 MB
+
+  PUT Size Bins:
+          < 1 KB:        1 (  0.0%) 
+         1-10 KB:      152 (  1.2%) 
+       10-100 KB:      445 (  3.5%) █
+       100KB-1MB:    4,444 ( 35.3%) █████████████████
+         1-10 MB:    2,745 ( 21.8%) ██████████
+       10-100 MB:    4,374 ( 34.8%) █████████████████
+       100MB-1GB:      377 (  3.0%) █
+          > 1 GB:       44 (  0.3%) 
+
+  Unique Object Size Percentiles:
+    P50: 4.8 MB
+    P75: 16.1 MB
+    P90: 34.9 MB
+    P95: 42.5 MB
+    P99: 211.5 MB
+
+
+=== FILE POOL ANALYSIS ===
+Total files: 471,726
+Size range: 1 B - 48,227,568 B (48.2 MB)
+Mean: 20,489 B (20 KB)
+
+Pool Size Distribution:
+        < 1 KB:  127,733 ( 27.1%) █████████████
+       1-10 KB:  228,787 ( 48.5%) ████████████████████████
+     10-100 KB:  108,579 ( 23.0%) ███████████
+     100KB-1MB:    5,908 (  1.3%) 
+       1-10 MB:      447 (  0.1%) 
+     10-100 MB:      272 (  0.1%) 
+  P01: 67 B (0 KB)
+  P05: 222 B (0 KB)
+  P10: 352 B (0 KB)
+  P25: 896 B (1 KB)
+  P50: 2,917 B (3 KB)
+  P75: 9,699 B (9 KB)
+  P90: 25,931 B (25 KB)
+  P95: 44,691 B (44 KB)
+  P99: 123,757 B (121 KB)
+
+Done!

@@ -1,0 +1,338 @@
+[main] 12582 objects, 623.4GB logical
+[main] worker 0: 1567 objs 77.9GB
+[main] worker 1: 1574 objs 77.9GB
+[main] worker 2: 1574 objs 77.9GB
+[main] worker 3: 1574 objs 77.9GB
+[main] worker 4: 1573 objs 77.9GB
+[main] worker 5: 1574 objs 77.9GB
+[main] worker 6: 1573 objs 77.9GB
+[main] worker 7: 1573 objs 77.9GB
+[w6] 50/1573 objs 62.2GB 24MB/s
+[w2] 50/1574 objs 62.0GB 24MB/s
+[w3] 50/1574 objs 62.2GB 24MB/s
+[w1] 50/1574 objs 62.2GB 24MB/s
+[w4] 50/1573 objs 62.3GB 24MB/s
+[w7] 50/1573 objs 62.3GB 24MB/s
+[w5] 50/1574 objs 62.2GB 23MB/s
+[w0] 50/1567 objs 62.8GB 24MB/s
+[w6] 100/1573 objs 64.8GB 24MB/s
+[w3] 100/1574 objs 64.8GB 24MB/s
+[w2] 100/1574 objs 64.8GB 24MB/s
+[w4] 100/1573 objs 64.9GB 24MB/s
+[w0] 100/1567 objs 65.1GB 24MB/s
+[w1] 100/1574 objs 64.8GB 23MB/s
+[w7] 100/1573 objs 64.9GB 23MB/s
+[w5] 100/1574 objs 64.8GB 23MB/s
+[w6] 150/1573 objs 66.8GB 24MB/s
+[w2] 150/1574 objs 66.7GB 23MB/s
+[w3] 150/1574 objs 66.8GB 23MB/s
+[w4] 150/1573 objs 66.8GB 23MB/s
+[w1] 150/1574 objs 66.8GB 23MB/s
+[w5] 150/1574 objs 66.8GB 23MB/s
+[w7] 150/1573 objs 66.8GB 23MB/s
+[w0] 150/1567 objs 67.0GB 24MB/s
+[w2] 200/1574 objs 68.5GB 23MB/s
+[w6] 200/1573 objs 68.5GB 24MB/s
+[w3] 200/1574 objs 68.5GB 23MB/s
+[w1] 200/1574 objs 68.5GB 23MB/s
+[w5] 200/1574 objs 68.5GB 23MB/s
+[w7] 200/1573 objs 68.6GB 23MB/s
+[w4] 200/1573 objs 68.6GB 23MB/s
+[w0] 200/1567 objs 68.7GB 23MB/s
+[w2] 250/1574 objs 70.0GB 23MB/s
+[w6] 250/1573 objs 70.1GB 23MB/s
+[w3] 250/1574 objs 70.1GB 23MB/s
+[w5] 250/1574 objs 70.1GB 23MB/s
+[w1] 250/1574 objs 70.1GB 23MB/s
+[w4] 250/1573 objs 70.1GB 23MB/s
+[w7] 250/1573 objs 70.1GB 23MB/s
+[w0] 250/1567 objs 70.2GB 23MB/s
+[w2] 300/1574 objs 71.4GB 23MB/s
+[w6] 300/1573 objs 71.4GB 23MB/s
+[w3] 300/1574 objs 71.4GB 23MB/s
+[w4] 300/1573 objs 71.5GB 23MB/s
+[w5] 300/1574 objs 71.4GB 23MB/s
+[w1] 300/1574 objs 71.4GB 23MB/s
+[w7] 300/1573 objs 71.5GB 23MB/s
+[w0] 300/1567 objs 71.6GB 23MB/s
+[w6] 350/1573 objs 72.5GB 23MB/s
+[w3] 350/1574 objs 72.5GB 23MB/s
+[w2] 350/1574 objs 72.5GB 23MB/s
+[w5] 350/1574 objs 72.5GB 23MB/s
+[w4] 350/1573 objs 72.5GB 23MB/s
+[w1] 350/1574 objs 72.5GB 23MB/s
+[w7] 350/1573 objs 72.5GB 23MB/s
+[w0] 350/1567 objs 72.6GB 23MB/s
+[w3] 400/1574 objs 73.4GB 23MB/s
+[w6] 400/1573 objs 73.4GB 23MB/s
+[w2] 400/1574 objs 73.4GB 23MB/s
+[w5] 400/1574 objs 73.4GB 23MB/s
+[w4] 400/1573 objs 73.4GB 23MB/s
+[w1] 400/1574 objs 73.4GB 23MB/s
+[w7] 400/1573 objs 73.4GB 23MB/s
+[w0] 400/1567 objs 73.5GB 23MB/s
+[w2] 450/1574 objs 74.2GB 23MB/s
+[w3] 450/1574 objs 74.2GB 23MB/s
+[w4] 450/1573 objs 74.2GB 23MB/s
+[w5] 450/1574 objs 74.2GB 23MB/s
+[w6] 450/1573 objs 74.2GB 23MB/s
+[w1] 450/1574 objs 74.2GB 23MB/s
+[w7] 450/1573 objs 74.2GB 23MB/s
+[w0] 450/1567 objs 74.3GB 23MB/s
+[w2] 500/1574 objs 74.9GB 23MB/s
+[w3] 500/1574 objs 74.9GB 23MB/s
+[w6] 500/1573 objs 74.9GB 23MB/s
+[w5] 500/1574 objs 74.9GB 23MB/s
+[w4] 500/1573 objs 74.9GB 23MB/s
+[w1] 500/1574 objs 74.9GB 23MB/s
+[w7] 500/1573 objs 74.9GB 23MB/s
+[w0] 500/1567 objs 74.9GB 23MB/s
+[w2] 550/1574 objs 75.4GB 23MB/s
+[w3] 550/1574 objs 75.4GB 23MB/s
+[w4] 550/1573 objs 75.4GB 23MB/s
+[w6] 550/1573 objs 75.4GB 23MB/s
+[w5] 550/1574 objs 75.4GB 23MB/s
+[w1] 550/1574 objs 75.4GB 23MB/s
+[w7] 550/1573 objs 75.4GB 23MB/s
+[w0] 550/1567 objs 75.5GB 23MB/s
+[w2] 600/1574 objs 76.0GB 23MB/s
+[w3] 600/1574 objs 76.0GB 23MB/s[w4] 600/1573 objs 76.0GB 23MB/s
+[w5] 600/1574 objs 76.0GB 23MB/s
+
+[w6] 600/1573 objs 76.0GB 23MB/s
+[w7] 600/1573 objs 76.0GB 23MB/s
+[w1] 600/1574 objs 76.0GB 23MB/s
+[w0] 600/1567 objs 76.0GB 23MB/s
+[w2] 650/1574 objs 76.4GB 23MB/s
+[w5] 650/1574 objs 76.4GB 23MB/s
+[w3] 650/1574 objs 76.4GB 23MB/s
+[w7] 650/1573 objs 76.4GB 23MB/s
+[w4] 650/1573 objs 76.4GB 23MB/s
+[w6] 650/1573 objs 76.4GB 23MB/s
+[w1] 650/1574 objs 76.4GB 23MB/s
+[w0] 650/1567 objs 76.4GB 23MB/s
+[w2] 700/1574 objs 76.7GB 23MB/s
+[w5] 700/1574 objs 76.7GB 23MB/s
+[w3] 700/1574 objs 76.7GB 23MB/s
+[w7] 700/1573 objs 76.7GB 23MB/s
+[w4] 700/1573 objs 76.7GB 23MB/s
+[w1] 700/1574 objs 76.7GB 23MB/s
+[w6] 700/1573 objs 76.7GB 23MB/s
+[w0] 700/1567 objs 76.7GB 23MB/s
+[w2] 750/1574 objs 77.0GB 23MB/s
+[w5] 750/1574 objs 77.0GB 23MB/s
+[w3] 750/1574 objs 77.0GB 23MB/s
+[w1] 750/1574 objs 77.0GB 23MB/s
+[w7] 750/1573 objs 77.0GB 23MB/s
+[w0] 750/1567 objs 77.0GB 23MB/s
+[w4] 750/1573 objs 77.0GB 23MB/s
+[w6] 750/1573 objs 77.0GB 23MB/s
+[w2] 800/1574 objs 77.2GB 23MB/s
+[w1] 800/1574 objs 77.2GB 23MB/s
+[w3] 800/1574 objs 77.2GB 23MB/s
+[w5] 800/1574 objs 77.2GB 23MB/s
+[w7] 800/1573 objs 77.2GB 23MB/s
+[w0] 800/1567 objs 77.3GB 23MB/s
+[w4] 800/1573 objs 77.2GB 23MB/s
+[w6] 800/1573 objs 77.2GB 23MB/s
+[w2] 850/1574 objs 77.5GB 23MB/s
+[w1] 850/1574 objs 77.5GB 23MB/s
+[w7] 850/1573 objs 77.5GB 23MB/s
+[w0] 850/1567 objs 77.5GB 23MB/s
+[w3] 850/1574 objs 77.5GB 23MB/s
+[w5] 850/1574 objs 77.5GB 23MB/s
+[w4] 850/1573 objs 77.5GB 23MB/s
+[w6] 850/1573 objs 77.5GB 23MB/s
+[w2] 900/1574 objs 77.6GB 23MB/s
+[w1] 900/1574 objs 77.6GB 23MB/s
+[w3] 900/1574 objs 77.6GB 23MB/s
+[w7] 900/1573 objs 77.6GB 23MB/s
+[w0] 900/1567 objs 77.7GB 23MB/s
+[w5] 900/1574 objs 77.6GB 23MB/s
+[w4] 900/1573 objs 77.6GB 23MB/s
+[w6] 900/1573 objs 77.6GB 23MB/s
+[w2] 950/1574 objs 77.8GB 23MB/s
+[w1] 950/1574 objs 77.8GB 23MB/s
+[w0] 950/1567 objs 77.8GB 23MB/s
+[w7] 950/1573 objs 77.8GB 23MB/s
+[w3] 950/1574 objs 77.8GB 23MB/s
+[w5] 950/1574 objs 77.8GB 23MB/s
+[w4] 950/1573 objs 77.8GB 23MB/s
+[w6] 950/1573 objs 77.8GB 23MB/s
+[w1] 1000/1574 objs 77.8GB 23MB/s
+[w2] 1000/1574 objs 77.8GB 23MB/s
+[w7] 1000/1573 objs 77.8GB 23MB/s
+[w0] 1000/1567 objs 77.8GB 23MB/s
+[w5] 1000/1574 objs 77.8GB 23MB/s
+[w3] 1000/1574 objs 77.8GB 23MB/s
+[w4] 1000/1573 objs 77.8GB 23MB/s
+[w6] 1000/1573 objs 77.8GB 23MB/s
+[w2] 1050/1574 objs 77.8GB 23MB/s
+[w1] 1050/1574 objs 77.8GB 23MB/s
+[w0] 1050/1567 objs 77.8GB 23MB/s
+[w5] 1050/1574 objs 77.8GB 23MB/s
+[w3] 1050/1574 objs 77.8GB 23MB/s
+[w7] 1050/1573 objs 77.8GB 23MB/s
+[w6] 1050/1573 objs 77.8GB 23MB/s
+[w4] 1050/1573 objs 77.8GB 23MB/s
+[w2] 1100/1574 objs 77.8GB 23MB/s
+[w1] 1100/1574 objs 77.8GB 23MB/s
+[w0] 1100/1567 objs 77.8GB 23MB/s
+[w5] 1100/1574 objs 77.8GB 23MB/s
+[w3] 1100/1574 objs 77.8GB 23MB/s
+[w7] 1100/1573 objs 77.8GB 23MB/s
+[w6] 1100/1573 objs 77.8GB 23MB/s
+[w4] 1100/1573 objs 77.8GB 23MB/s
+[w2] 1150/1574 objs 77.8GB 23MB/s
+[w5] 1150/1574 objs 77.8GB 23MB/s
+[w1] 1150/1574 objs 77.8GB 23MB/s
+[w0] 1150/1567 objs 77.8GB 23MB/s
+[w7] 1150/1573 objs 77.8GB 23MB/s
+[w3] 1150/1574 objs 77.8GB 23MB/s
+[w6] 1150/1573 objs 77.8GB 23MB/s
+[w4] 1150/1573 objs 77.8GB 23MB/s
+[w5] 1200/1574 objs 77.8GB 23MB/s
+[w1] 1200/1574 objs 77.8GB 23MB/s
+[w2] 1200/1574 objs 77.8GB 23MB/s
+[w7] 1200/1573 objs 77.8GB 23MB/s
+[w0] 1200/1567 objs 77.9GB 23MB/s
+[w6] 1200/1573 objs 77.8GB 23MB/s
+[w3] 1200/1574 objs 77.8GB 23MB/s
+[w4] 1200/1573 objs 77.8GB 23MB/s
+[w1] 1250/1574 objs 77.9GB 23MB/s
+[w5] 1250/1574 objs 77.9GB 23MB/s
+[w6] 1250/1573 objs 77.9GB 23MB/s
+[w2] 1250/1574 objs 77.9GB 23MB/s
+[w0] 1250/1567 objs 77.9GB 23MB/s
+[w7] 1250/1573 objs 77.9GB 23MB/s
+[w3] 1250/1574 objs 77.9GB 23MB/s
+[w4] 1250/1573 objs 77.9GB 23MB/s
+[w1] 1300/1574 objs 77.9GB 23MB/s
+[w5] 1300/1574 objs 77.9GB 23MB/s
+[w2] 1300/1574 objs 77.9GB 23MB/s
+[w0] 1300/1567 objs 77.9GB 23MB/s
+[w6] 1300/1573 objs 77.9GB 23MB/s
+[w3] 1300/1574 objs 77.9GB 23MB/s
+[w7] 1300/1573 objs 77.9GB 23MB/s
+[w4] 1300/1573 objs 77.9GB 23MB/s
+[w2] 1350/1574 objs 77.9GB 23MB/s
+[w1] 1350/1574 objs 77.9GB 23MB/s
+[w0] 1350/1567 objs 77.9GB 23MB/s
+[w7] 1350/1573 objs 77.9GB 23MB/s
+[w3] 1350/1574 objs 77.9GB 23MB/s
+[w5] 1350/1574 objs 77.9GB 23MB/s
+[w6] 1350/1573 objs 77.9GB 23MB/s
+[w4] 1350/1573 objs 77.9GB 23MB/s
+[w0] 1400/1567 objs 77.9GB 23MB/s
+[w1] 1400/1574 objs 77.9GB 23MB/s
+[w2] 1400/1574 objs 77.9GB 23MB/s
+[w6] 1400/1573 objs 77.9GB 23MB/s
+[w3] 1400/1574 objs 77.9GB 23MB/s
+[w7] 1400/1573 objs 77.9GB 23MB/s
+[w5] 1400/1574 objs 77.9GB 23MB/s
+[w4] 1400/1573 objs 77.9GB 23MB/s
+[w1] 1450/1574 objs 77.9GB 23MB/s
+[w0] 1450/1567 objs 77.9GB 23MB/s
+[w2] 1450/1574 objs 77.9GB 23MB/s
+[w5] 1450/1574 objs 77.9GB 23MB/s
+[w6] 1450/1573 objs 77.9GB 23MB/s
+[w7] 1450/1573 objs 77.9GB 23MB/s
+[w3] 1450/1574 objs 77.9GB 23MB/s
+[w4] 1450/1573 objs 77.9GB 23MB/s
+[w0] 1500/1567 objs 77.9GB 23MB/s
+[w2] 1500/1574 objs 77.9GB 23MB/s
+[w1] 1500/1574 objs 77.9GB 23MB/s
+[w5] 1500/1574 objs 77.9GB 23MB/s
+[w7] 1500/1573 objs 77.9GB 23MB/s
+[w6] 1500/1573 objs 77.9GB 23MB/s
+[w3] 1500/1574 objs 77.9GB 23MB/s
+[w4] 1500/1573 objs 77.9GB 23MB/s
+[w0] 1550/1567 objs 77.9GB 23MB/s
+[w2] 1550/1574 objs 77.9GB 23MB/s
+[w5] 1550/1574 objs 77.9GB 23MB/s
+[w1] 1550/1574 objs 77.9GB 23MB/s
+[w7] 1550/1573 objs 77.9GB 23MB/s
+[w6] 1550/1573 objs 77.9GB 23MB/s
+[w3] 1550/1574 objs 77.9GB 23MB/s
+[w0] 1567/1567 objs 77.9GB 23MB/s
+[w1] 1574/1574 objs 77.9GB 23MB/s
+[w2] 1574/1574 objs 77.9GB 23MB/s
+[w4] 1550/1573 objs 77.9GB 23MB/s
+[w7] 1573/1573 objs 77.9GB 23MB/s
+[w5] 1574/1574 objs 77.9GB 23MB/s
+[w6] 1573/1573 objs 77.9GB 23MB/s
+[w3] 1574/1574 objs 77.9GB 23MB/s
+[w4] 1573/1573 objs 77.9GB 23MB/s
+Process Process-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-2:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-4:
+Process Process-8:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-7:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-6:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-3:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+Process Process-5:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/chunk_objects.py", line 121, in worker
+    np.array(fps, dtype=np.int64))
+OverflowError: Python int too large to convert to C long
+worker failed

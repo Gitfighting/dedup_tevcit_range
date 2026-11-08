@@ -1,0 +1,16 @@
+[21:00:20] Loading pool...
+  500,610 files, 71.45 GB (1.2s)
+  Trace dir: /data/traces/typeB
+
+[21:00:33] T015: 3,000 mapped
+  [1000/3000] 3s | R=462.2M D=278.7M | 1.66x | chunks=34,469
+  [2000/3000] 7s | R=1266.3M D=547.2M | 2.31x | chunks=67,616
+  [3000/3000] 16s | R=3108.4M D=2218.5M | 1.40x | chunks=272,033
+  DONE 16s | Raw=3108.4MB Dedup=2218.5MB | Ratio=1.40x (28.6%) | Chunks=380,887 unq=272,033
+
+[21:01:03] T029: 2,168 mapped
+  [1000/2168] 1s | R=2.4M D=1.1M | 2.13x | chunks=362
+  [2000/2168] 1s | R=6.6M D=3.1M | 2.16x | chunks=792
+  DONE 1s | Raw=7.4MB Dedup=3.5MB | Ratio=2.15x (53.5%) | Chunks=2,174 unq=869
+
+[21:01:05] T065: 1,219 mapped

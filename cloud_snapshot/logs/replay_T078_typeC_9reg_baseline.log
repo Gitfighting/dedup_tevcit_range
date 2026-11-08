@@ -1,0 +1,65 @@
+[load] 91176 objects, 0.7M unique chunks
+[load] 2409805 ops, 9 regions
+  [400000/2409805] 17s
+{
+  "trace": "IBMObjectStoreTrace078Part0.typeC.mc.aug",
+  "policy": "baseline",
+  "regions": [
+    "aws:eu-west-1",
+    "aws:us-east-1",
+    "aws:us-west-1",
+    "azure:eastus",
+    "azure:westeurope",
+    "azure:westus",
+    "gcp:europe-west1-b",
+    "gcp:us-east1-b",
+    "gcp:us-west1-a"
+  ],
+  "ops": 2409805,
+  "counters": {
+    "puts": 132360,
+    "gets": 2277445,
+    "remote_fetch": 140675,
+    "hit_base": 264385,
+    "hit_cached": 1872385,
+    "evictions": 116333
+  },
+  "hit_rate": 0.938231,
+  "remote_fetch_rate": 0.061769,
+  "cost_usd": {
+    "storage": 16.7248,
+    "transfer": 6.1469,
+    "req_put": 0.6825,
+    "req_get": 1.0596,
+    "total": 24.6137
+  },
+  "storage_gb_hours": {
+    "aws:eu-west-1": 537.4,
+    "aws:us-east-1": 533.2,
+    "aws:us-west-1": 1718.3,
+    "azure:eastus": 539.2,
+    "azure:westeurope": 542.8,
+    "azure:westus": 521.2,
+    "gcp:europe-west1-b": 521.1,
+    "gcp:us-east1-b": 539.2,
+    "gcp:us-west1-a": 529.8
+  },
+  "bytes_transferred_gb": 75.89,
+  "bytes_logical_get_gb": 2446.45,
+  "base_logical_bytes_gb": 48.13,
+  "base_stored_bytes_gb": 48.13,
+  "chunk_index_bytes_gb": 0.0,
+  "unique_chunks_m": 0.67,
+  "dedup_ratio_content": 0.85763,
+  "index_estimate_mb": {
+    "bloom_per_region": 0.807,
+    "lmdb_per_region": 43.119,
+    "manifest_control_plane": 0.0
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit": 5.0,
+    "note": "design estimates; replay uses array O(1)"
+  },
+  "wall_seconds": 28.5
+}

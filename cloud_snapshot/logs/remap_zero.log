@@ -1,0 +1,30 @@
+[stage1] reuse existing index: 18,133,894 files
+[load] sizes array
+[stage2/3] per-trace assignment
+[T015] 671,582 unique objects
+[T015] assigned=671,582 empty=0 miss=0 -> coverage 671582/671582 (100.000%)
+[T015] recipes: exact=281,528 trim=39,369 pad=184,679 extent=166,006 |d|max=10.36MB |d|mean=24.13KB pad_share=0.3157% extent_share=77.5918%
+[T029] 3,966,994 unique objects
+[T029] assigned=3,966,990 empty=4 miss=0 -> coverage 3966994/3966994 (100.000%)
+[T029] recipes: exact=51,462 trim=2,507,645 pad=1,407,883 extent=0 |d|max=0.00MB |d|mean=0.11KB pad_share=0.7669% extent_share=0.0000%
+[T065] 3,065 unique objects
+[T065] assigned=2,819 empty=246 miss=0 -> coverage 3065/3065 (100.000%)
+[T065] recipes: exact=1,053 trim=672 pad=1,093 extent=1 |d|max=7.15MB |d|mean=9.78KB pad_share=0.1168% extent_share=12.6850%
+[T078] 91,176 unique objects
+[T078] assigned=91,176 empty=0 miss=0 -> coverage 91176/91176 (100.000%)
+[T078] recipes: exact=7,691 trim=19,243 pad=55,398 extent=8,844 |d|max=7.73MB |d|mean=111.26KB pad_share=1.1562% extent_share=8.8622%
+[T079] 12,582 unique objects
+[T079] assigned=12,582 empty=0 miss=0 -> coverage 12582/12582 (100.000%)
+[T079] recipes: exact=583 trim=7,109 pad=4,182 extent=708 |d|max=10.48MB |d|mean=1166.85KB pad_share=0.0072% extent_share=29.6195%
+[stage4] usage aggregation
+  unused mapped_tars: 936 (409.0G)
+  zero-usage topdirs: 1 (0.7G)
+
+=== SUMMARY ===
+  IBMObjectStoreTrace015Part0: 671582/671582 miss=0 exact=281528 trim=39369 pad=184679 extent=166006 empty=0
+  IBMObjectStoreTrace029Part0: 3966994/3966994 miss=0 exact=51462 trim=2507645 pad=1407883 extent=0 empty=4
+  IBMObjectStoreTrace065Part0: 3065/3065 miss=0 exact=1053 trim=672 pad=1093 extent=1 empty=246
+  IBMObjectStoreTrace078Part0: 91176/91176 miss=0 exact=7691 trim=19243 pad=55398 extent=8844 empty=0
+  IBMObjectStoreTrace079Part0: 12582/12582 miss=0 exact=583 trim=7109 pad=4182 extent=708 empty=0
+total 168s
+DONE

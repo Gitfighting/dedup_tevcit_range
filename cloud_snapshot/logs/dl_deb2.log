@@ -1,0 +1,17 @@
+=== STEP 1: Download DEB (42GB) ===
+  Downloading vm-deb-fast25...
+  kaggle FAILED: 
+  Trying direct download via wget...
+
+=== STEP 2: Find OVA files ===
+  Found 0 OVA files
+
+=== STEP 3: Extract OVAs to pool ===
+
+  DEB total: 0 files, 0.0GB
+
+=== STEP 4: Size distribution ===
+  10-50MB: 0 files (from DEB)
+  50-100MB: 0 files (from DEB)
+
+DONE. Ready for pool rebuild.

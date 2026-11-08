@@ -1,0 +1,48 @@
+{
+  "trace": "IBMObjectStoreTrace015Part0.typeE.mc-aug.csv",
+  "policy": "dedup",
+  "regions": [
+    "aws:us-east-1",
+    "aws:us-west-2"
+  ],
+  "ops": 1575627,
+  "counters": {
+    "puts": 671586,
+    "gets": 904041,
+    "remote_fetch": 534313,
+    "hit_cached": 369728,
+    "evictions": 524322
+  },
+  "hit_rate": 0.408973,
+  "remote_fetch_rate": 0.591027,
+  "cost_usd": {
+    "storage": 23.1154,
+    "transfer": 2.4837,
+    "req_put": 3.3579,
+    "req_get": 0.5753,
+    "total": 29.5324
+  },
+  "storage_gb_hours": {
+    "aws:us-east-1": 7436.7,
+    "aws:us-west-2": 603.5
+  },
+  "bytes_transferred_gb": 124.18,
+  "bytes_logical_get_gb": 357.4,
+  "base_logical_bytes_gb": 402.48,
+  "base_stored_bytes_gb": 75.01,
+  "chunk_index_bytes_gb": 1.821,
+  "unique_chunks_m": 8.63,
+  "dedup_ratio_content": 0.813623,
+  "index_estimate_mb": {
+    "bloom_per_region": 10.339,
+    "lmdb_per_region": 552.261,
+    "manifest_control_plane": 1954.828
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit": 5.0,
+    "note": "design estimates; replay uses array O(1)"
+  },
+  "wall_seconds": 104.9,
+  "base_storage_compression": 0.186377
+}

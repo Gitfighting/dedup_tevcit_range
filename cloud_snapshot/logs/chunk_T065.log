@@ -1,0 +1,84 @@
+[main] 3065 objects, 4.8GB logical
+[main] worker 0: 1 objs 1.0GB
+[main] worker 1: 1 objs 0.6GB
+[main] worker 2: 442 objs 0.5GB
+[main] worker 3: 430 objs 0.5GB
+[main] worker 4: 540 objs 0.5GB
+[main] worker 5: 552 objs 0.5GB
+[main] worker 6: 553 objs 0.5GB
+[main] worker 7: 546 objs 0.5GB
+[w7] 50/546 objs 0.2GB 38MB/s
+[w5] 50/552 objs 0.2GB 35MB/s
+[w6] 50/553 objs 0.2GB 34MB/s
+[w4] 50/540 objs 0.3GB 31MB/s
+[w6] 100/553 objs 0.3GB 23MB/s
+[w7] 100/546 objs 0.3GB 23MB/s
+[w5] 100/552 objs 0.3GB 22MB/s
+[w1] 1/1 objs 0.6GB 41MB/s
+[w1] DONE 1 objs 73803 chunks
+[w4] 100/540 objs 0.3GB 22MB/s
+[w3] 50/430 objs 0.4GB 26MB/s
+[w2] 50/442 objs 0.5GB 32MB/s
+[w5] 150/552 objs 0.4GB 22MB/s
+[w6] 150/553 objs 0.4GB 22MB/s
+[w7] 150/546 objs 0.4GB 22MB/s
+[w4] 150/540 objs 0.4GB 22MB/s
+[w0] 1/1 objs 1.0GB 53MB/s
+[w0] DONE 1 objs 78620 chunks
+[w3] 100/430 objs 0.5GB 24MB/s
+[w2] 100/442 objs 0.5GB 28MB/s
+[w7] 200/546 objs 0.4GB 22MB/s
+[w6] 200/553 objs 0.4GB 22MB/s
+[w5] 200/552 objs 0.4GB 22MB/s
+[w4] 200/540 objs 0.4GB 22MB/s
+[w3] 150/430 objs 0.5GB 25MB/s
+[w3] 200/430 objs 0.5GB 26MB/s
+[w2] 150/442 objs 0.5GB 27MB/s
+[w5] 250/552 objs 0.5GB 24MB/s
+[w7] 250/546 objs 0.5GB 24MB/s
+[w6] 250/553 objs 0.5GB 23MB/s
+[w3] 250/430 objs 0.5GB 26MB/s
+[w5] 300/552 objs 0.5GB 25MB/s
+[w4] 250/540 objs 0.5GB 24MB/s
+[w7] 300/546 objs 0.5GB 25MB/s
+[w5] 350/552 objs 0.5GB 26MB/s
+[w6] 300/553 objs 0.5GB 25MB/s
+[w4] 300/540 objs 0.5GB 25MB/s
+[w2] 200/442 objs 0.5GB 26MB/s
+[w2] 250/442 objs 0.5GB 26MB/s
+[w2] 300/442 objs 0.5GB 26MB/s
+[w2] 350/442 objs 0.5GB 26MB/s
+[w2] 400/442 objs 0.5GB 26MB/s
+[w2] 442/442 objs 0.5GB 26MB/s
+[w3] 300/430 objs 0.5GB 26MB/s
+[w2] DONE 442 objs 65078 chunks
+[w7] 350/546 objs 0.5GB 25MB/s
+[w6] 350/553 objs 0.5GB 25MB/s
+[w4] 350/540 objs 0.5GB 26MB/s
+[w5] 400/552 objs 0.5GB 26MB/s
+[w3] 350/430 objs 0.5GB 26MB/s
+[w7] 400/546 objs 0.5GB 26MB/s
+[w6] 400/553 objs 0.5GB 26MB/s
+[w4] 400/540 objs 0.5GB 26MB/s
+[w5] 450/552 objs 0.5GB 26MB/s
+[w7] 450/546 objs 0.5GB 26MB/s
+[w3] 400/430 objs 0.5GB 26MB/s
+[w6] 450/553 objs 0.5GB 26MB/s
+[w3] 430/430 objs 0.5GB 26MB/s
+[w5] 500/552 objs 0.5GB 26MB/s
+[w4] 450/540 objs 0.5GB 26MB/s
+[w3] DONE 430 objs 60804 chunks
+[w7] 500/546 objs 0.5GB 26MB/s
+[w6] 500/553 objs 0.5GB 25MB/s
+[w5] 550/552 objs 0.5GB 25MB/s
+[w5] 552/552 objs 0.5GB 25MB/s
+[w7] 546/546 objs 0.5GB 25MB/s
+[w4] 500/540 objs 0.5GB 25MB/s
+[w5] DONE 552 objs 56985 chunks
+[w7] DONE 546 objs 52355 chunks
+[w6] 550/553 objs 0.5GB 25MB/s
+[w6] 553/553 objs 0.5GB 25MB/s
+[w4] 540/540 objs 0.5GB 25MB/s
+[w6] DONE 553 objs 53560 chunks
+[w4] DONE 540 objs 57744 chunks
+[main] MERGED 498949 chunks, 3065 objects in 0.4 min -> /data/dedup_exp/T065

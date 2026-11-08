@@ -1,0 +1,23 @@
+256^48 mod 8191 = 128
+Pool: 500,610 files (1.6s)
+T015: 200 files.... 72s
+  FIXED: 1.23x (18.9%) 18,393ch 1s
+  CDC:   1.27x (21.1%) 16,564ch 72s
+  WIN:   CDC (+2.2%)
+
+T029: 200 files.... 0s
+  FIXED: 1.23x (18.6%) 200ch 0s
+  CDC:   1.23x (18.6%) 220ch 0s
+  WIN:   SAME (+0.0%)
+
+T065: 200 files.... 110s
+  FIXED: 1.28x (22.1%) 30,099ch 1s
+  CDC:   1.41x (29.2%) 27,097ch 110s
+  WIN:   CDC (+7.1%)
+
+T078: 200 files.... 37s
+  FIXED: 1.09x (8.4%) 10,091ch 0s
+  CDC:   1.17x (14.3%) 9,540ch 37s
+  WIN:   CDC (+5.9%)
+
+T079: 200 files...

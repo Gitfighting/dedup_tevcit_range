@@ -1,0 +1,48 @@
+[21:02:56] Loading pool...
+  500,610 files, 71.45 GB (1.3s)
+  Traces: /data/traces/typeB
+
+[21:03:09] T015: 2,000 mapped
+  [500/2000] 1s | R=196M D=152M | 1.29x | chunks=18,749
+  [1000/2000] 4s | R=600M D=333M | 1.80x | chunks=41,142
+  [1500/2000] 6s | R=1043M D=532M | 1.96x | chunks=65,570
+  [2000/2000] 8s | R=1489M D=705M | 2.11x | chunks=86,875
+  DONE 8s | Raw=1489.4MB Dedup=704.9MB | Ratio=2.11x (52.7% savings) | Chunks=182,795 unq=86,875
+
+[21:03:31] T029: 2,000 mapped
+  [500/2000] 0s | R=1M D=1M | 1.88x | chunks=195
+  [1000/2000] 1s | R=2M D=1M | 2.00x | chunks=367
+  [1500/2000] 1s | R=4M D=2M | 1.98x | chunks=581
+  [2000/2000] 1s | R=6M D=3M | 2.04x | chunks=768
+  DONE 1s | Raw=5.6MB Dedup=2.7MB | Ratio=2.04x (51.1% savings) | Chunks=2,004 unq=768
+
+[21:03:33] T065: 1,517 mapped
+  [500/1517] 14s | R=3292M D=2848M | 1.16x | chunks=347,811
+  [1000/1517] 40s | R=9100M D=8542M | 1.07x | chunks=1,042,941
+  [1500/1517] 41s | R=9177M D=8574M | 1.07x | chunks=1,047,018
+  DONE 41s | Raw=9178.6MB Dedup=8575.2MB | Ratio=1.07x (6.6% savings) | Chunks=1,121,206 unq=1,047,155
+
+[21:04:17] T078: 1,476 mapped
+  [500/1476] 1s | R=103M D=61M | 1.68x | chunks=7,640
+  [1000/1476] 2s | R=190M D=114M | 1.67x | chunks=14,277
+  DONE 3s | Raw=267.1MB Dedup=163.1MB | Ratio=1.64x (38.9% savings) | Chunks=33,317 unq=20,445
+
+[21:04:21] T079: 417 mapped
+  DONE 1s | Raw=65.2MB Dedup=36.6MB | Ratio=1.78x (43.9% savings) | Chunks=8,166 unq=4,595
+
+
+================================================================================
+DEDUP ABLATION RESULTS (8192B fixed blocks, max file 105MB)
+================================================================================
+Pool: 500,610 files, used: 7,410 (1.5%)
+
+Trace          PUTs   Mapped    Raw(MB)  Dedup(MB)    Ratio  Savings     Chunks        Unq   Time
+T015        671,586    2,000   1,489.4     704.9    2.11x    52.7%    182,795     86,875     8s
+T029      3,966,990    2,000       5.6       2.7    2.04x    51.1%      2,004        768     1s
+T065          2,819    1,517   9,178.6   8,575.2    1.07x     6.6%  1,121,206  1,047,155    41s
+T078        132,360    1,476     267.1     163.1    1.64x    38.9%     33,317     20,445     3s
+T079         12,582      417      65.2      36.6    1.78x    43.9%      8,166      4,595     1s
+TOTAL                  7,410  11,005.9   9,482.6    1.16x    13.8%  1,347,488
+
+Total time: 86s
+[21:04:22] Complete.

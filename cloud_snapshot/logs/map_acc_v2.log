@@ -1,0 +1,76 @@
+Loading pool...
+  Pool: 500,312 files, 17.5GB
+
+
+====================================================================================================
+IBM Trace → Pool File Size Mapping Accuracy Analysis
+Pool: 500,312 files, 17.5GB
+====================================================================================================
+
+--- T015: 671,586 PUTs, sampled 10,000 ---
+  Mapped: 9,471 (94.7%)  Missed: 529
+  Size errors: avg=1054.0KB (62.5%), P50=0.0KB  P90=0.8MB  P99=11.5MB  MAX=103.4MB
+  Per size bin:
+  Bin             PUT count  PoolAvail  AvgErr%  MaxErr%       Status
+  0-1KB                  23      1,975    33.6%   166.7%           OK
+  1-10KB                968    321,288     0.0%     0.1%           OK
+  10-100KB            4,142    168,695     0.0%     0.1%           OK
+  100KB-1MB           3,055      7,706    14.1%    80.2%           OK
+  1-10MB              1,799        339   410.3%  9160.6%     SHORTAGE
+  10-50MB                13        248    38.1%    98.8%           OK
+
+--- T029: 3,966,990 PUTs, sampled 10,000 ---
+  Mapped: 7,628 (76.3%)  Missed: 2,372
+  Size errors: avg=0.1KB (20.9%), P50=0.0KB  P90=0.0MB  P99=0.0MB  MAX=0.0MB
+  Per size bin:
+  Bin             PUT count  PoolAvail  AvgErr%  MaxErr%       Status
+  0-1KB               4,372      1,975    79.5%    92.5%     SHORTAGE
+  1-10KB              5,608    321,288     0.1%     0.6%           OK
+  10-100KB               20    168,695     0.0%     0.0%           OK
+
+--- T065: 2,819 PUTs, sampled 2,819 ---
+  Mapped: 2,819 (100.0%)  Missed: 0
+  Size errors: avg=3705.5KB (306.9%), P50=3.4KB  P90=8.9MB  P99=95.7MB  MAX=864.4MB
+  Per size bin:
+  Bin             PUT count  PoolAvail  AvgErr%  MaxErr%       Status
+  0-1KB                 705      1,975   283.1%  2420.0%        LOOSE
+  1-10KB                165    321,288     0.0%     0.1%           OK
+  10-100KB              211    168,695     0.0%     0.0%           OK
+  100KB-1MB             973      7,706    70.8%  9329.7%        LOOSE
+  1-10MB                753        339   792.0%  9805.9%     SHORTAGE
+  10-50MB                 5        248    14.3%    33.6%           OK
+  50-100MB                2         61     6.2%    11.2%           OK
+
+--- T078: 132,360 PUTs, sampled 10,000 ---
+  Mapped: 7,302 (73.0%)  Missed: 2,698
+  Size errors: avg=1274.7KB (219.7%), P50=0.5KB  P90=0.3MB  P99=27.3MB  MAX=104.2MB
+  Per size bin:
+  Bin             PUT count  PoolAvail  AvgErr%  MaxErr%       Status
+  10-100KB              716    168,695     0.0%     0.1%           OK
+  100KB-1MB           9,072      7,706   245.1% 25556.3%     SHORTAGE
+  1-10MB                212        339   140.9%  2982.7%        LOOSE
+
+--- T079: 12,582 PUTs, sampled 10,000 ---
+  Mapped: 4,779 (47.8%)  Missed: 5,221
+  Size errors: avg=32600.6KB (33.9%), P50=70.4KB  P90=30.5MB  P99=48.8MB  MAX=14762.5MB
+  Per size bin:
+  Bin             PUT count  PoolAvail  AvgErr%  MaxErr%       Status
+  0-1KB                   1      1,975    19.6%    19.6%           OK
+  1-10KB                148    321,288     0.0%     0.0%           OK
+  10-100KB              258    168,695     0.0%     0.1%           OK
+  100KB-1MB           3,800      7,706    21.2%    80.1%           OK
+  1-10MB              2,343        339    79.1%   276.8%     SHORTAGE
+  10-50MB             3,326        248    89.4%   138.1%     SHORTAGE
+  50-100MB               41         61    68.1%    98.6%        LOOSE
+
+====================================================================================================
+Pool size distribution:
+  0-1KB         :      1,975 files
+  1-10KB        :    321,288 files
+  10-100KB      :    168,695 files
+  100KB-1MB     :      7,706 files
+  1-10MB        :        339 files
+  10-50MB       :        248 files
+  50-100MB      :         61 files
+
+Total: 36s

@@ -1,0 +1,26 @@
+[15:41:04] waiting for chunking to finish ...
+[16:10:06] chunking finished
+[16:10:06] running prep_chunkstore ...
+[16:10:32] [prep] 12582 objects, 8.69M unique chunks, 84.6GB unique bytes, 0.4 min
+[16:10:32] 10 replay jobs, concurrency 8
+[16:10:32] START typeE_2reg/baseline (pid 8149)
+[16:10:32] START typeE_2reg/dedup (pid 8150)
+[16:10:32] START typeA_9reg/baseline (pid 8151)
+[16:10:32] START typeA_9reg/dedup (pid 8152)
+[16:10:32] START typeB_9reg/baseline (pid 8153)
+[16:10:32] START typeB_9reg/dedup (pid 8154)
+[16:10:32] START typeC_9reg/baseline (pid 8155)
+[16:10:32] START typeC_9reg/dedup (pid 8156)
+[16:10:42] DONE  typeE_2reg/baseline (0.2 min)
+[16:10:42] DONE  typeA_9reg/baseline (0.2 min)
+[16:10:42] DONE  typeB_9reg/baseline (0.2 min)
+[16:10:42] DONE  typeC_9reg/baseline (0.2 min)
+[16:10:42] START typeD_9reg/baseline (pid 8216)
+[16:10:42] START typeD_9reg/dedup (pid 8217)
+[16:10:52] DONE  typeD_9reg/baseline (0.2 min)
+[16:11:02] DONE  typeB_9reg/dedup (0.5 min)
+[16:11:02] DONE  typeC_9reg/dedup (0.5 min)
+[16:11:12] DONE  typeE_2reg/dedup (0.7 min)
+[16:11:32] DONE  typeA_9reg/dedup (1.0 min)
+[16:11:42] DONE  typeD_9reg/dedup (1.0 min)
+[16:11:42] ALL REPLAYS FINISHED, failed=none

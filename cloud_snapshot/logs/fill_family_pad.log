@@ -1,0 +1,46 @@
+Phase 0: size linux roots
+  usable trees=260 free=199.6G
+  plan 11.390G: 10 whole trees (est 11.38G) + 4 reserve
+  plan 12.229G: 11 whole trees (est 12.22G) + 4 reserve
+[pad] building from linux_kernel/linux-6.0.12.tar
+[pad] done (tree exhausted) 0.95G
+Phase 1: build (2 parallel)
+[12.229G] +tree linux-5.10.225.tar -> 1.024G rem=11204.8MB
+[11.390G] +tree linux-5.11.15.tar -> 1.066G rem=10324.6MB
+[11.390G] +tree linux-5.11.14.tar -> 2.131G rem=9258.9MB
+[12.229G] +tree linux-5.10.224.tar -> 2.048G rem=10180.7MB
+[11.390G] +tree linux-5.11.13.tar -> 3.197G rem=8193.3MB
+[12.229G] +tree linux-5.10.223.tar -> 3.072G rem=9156.7MB
+[11.390G] +tree linux-5.11.11.tar -> 4.262G rem=7127.7MB
+[12.229G] +tree linux-5.10.222.tar -> 4.096G rem=8132.7MB
+[11.390G] +tree linux-5.11.10.tar -> 5.328G rem=6062.2MB
+[12.229G] +tree linux-5.10.221.tar -> 5.120G rem=7108.7MB
+[11.390G] +tree linux_kernel/linux-6.0.11.tar -> 6.370G rem=5020.4MB
+[12.229G] +tree linux-5.10.220.tar -> 6.144G rem=6084.7MB
+[11.390G] +tree linux_kernel/linux-6.0.10.tar -> 7.412G rem=3978.7MB
+[11.390G] +tree linux_kernel/linux-6.0.1.tar -> 8.453G rem=2937.1MB
+[12.229G] +tree linux-5.10.218.tar -> 7.168G rem=5060.9MB
+[11.390G] +tree linux-5.10.230.tar -> 9.477G rem=1912.9MB
+[12.229G] +tree linux-5.10.217.tar -> 8.192G rem=4037.2MB
+[11.390G] +tree linux_kernel/linux-5.0.20.tar -> 10.197G rem=1193.1MB
+[12.229G] +tree linux-5.10.216.tar -> 9.215G rem=3013.4MB
+[11.390G] +L1 linux-5.10.229.tar/linux-5.10.229 rem=168.9MB
+[11.390G] +L2 linux-5.10.228.tar/linux-5.10.228/arch rem=59.3MB
+[12.229G] +tree linux-5.10.215.tar -> 10.239G rem=1989.6MB
+[11.390G] +L2 linux-5.10.228.tar/linux-5.10.228/fs rem=18.0MB
+[11.390G] pad 18.0MB with real linux bytes
+[11.390G] EXACT 11390233215 bytes (11.1 min)
+[12.229G] +tree linux-5.11.21.tar -> 10.960G rem=1269.2MB
+[12.229G] +L1 linux-5.10.210.tar/linux-5.10.210 rem=245.5MB
+[12.229G] +L2 linux-5.10.213.tar/linux-5.10.213/arch rem=135.9MB
+[12.229G] +L2 linux-5.10.213.tar/linux-5.10.213/fs rem=94.8MB
+[12.229G] +L2 linux-5.10.213.tar/linux-5.10.213/sound rem=56.1MB
+[12.229G] +L2 linux-5.10.213.tar/linux-5.10.213/Documentation rem=15.4MB
+[12.229G] pad 15.4MB with real linux bytes
+[12.229G] EXACT 12228869939 bytes (14.1 min)
+
+Phase 2: verify
+  11390233215: EXACT (11390233215)
+  12228869939: EXACT (12228869939)
+/dev/vdb        1.6T  1.4T  163G  90% /data
+DONE

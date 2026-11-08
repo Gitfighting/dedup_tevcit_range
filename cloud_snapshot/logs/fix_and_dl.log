@@ -1,0 +1,15 @@
+=== FIX DESKTOP ISOs ===
+  22.04 desktop: FAIL
+  24.04 desktop: FAIL
+
+=== MORE LINUX KERNELS ===
+  Total new kernels: 0
+
+=== MORE PHP VERSIONS ===
+  Total new PHP: 0
+
+=== SUMMARY ===
+  ISO: 6 files, 17.6GB
+  Linux: 462 files, 50.2GB
+  PHP: 216 files, 2.5GB
+DONE

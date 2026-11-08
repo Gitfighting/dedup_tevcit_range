@@ -1,0 +1,8 @@
+[20:57:35] Loading pool...
+  Loaded: 500,610 files, 71.45 GB
+
+Trace dir: /data/traces/typeB
+
+[20:57:48] T015: 30,000 PUTs
+  Mapped: 21,873 (72.9%)
+  Chunking...

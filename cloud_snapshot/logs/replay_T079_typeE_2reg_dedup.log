@@ -1,0 +1,36 @@
+[load] 12582 objects, 8.7M unique chunks
+[load] 114227 ops, 2 regions
+{
+  "trace": "IBMObjectStoreTrace079Part0.typeE.mc-aug.csv",
+  "policy": "dedup",
+  "regions": [
+    "aws:us-east-1",
+    "aws:us-west-2"
+  ],
+  "ops": 114227,
+  "counters": {
+    "puts": 12582,
+    "gets": 101645,
+    "remote_fetch": 84423,
+    "hit_cached": 17222,
+    "evictions": 84421
+  },
+  "cost_usd": {
+    "storage": 43.4112,
+    "transfer": 7.8522,
+    "req_put": 0.0629,
+    "req_get": 0.0744,
+    "total": 51.4008
+  },
+  "storage_gb_hours": {
+    "aws:us-east-1": 13228.2,
+    "aws:us-west-2": 1871.4
+  },
+  "bytes_transferred_gb": 392.61,
+  "bytes_logical_get_gb": 3841.1,
+  "base_logical_bytes_gb": 580.58,
+  "base_stored_bytes_gb": 78.79,
+  "chunk_index_bytes_gb": 1.733,
+  "unique_chunks_m": 8.69,
+  "wall_seconds": 37.9
+}

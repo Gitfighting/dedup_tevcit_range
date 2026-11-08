@@ -1,0 +1,28 @@
+{
+  "tag": "029",
+  "n_objects": 3966994,
+  "n_chunks_total": 4292797,
+  "n_chunks_unique": 127494,
+  "logical_bytes": 10423171878,
+  "unique_bytes": 376859437,
+  "compression_ratio_unique_over_logical": 0.036156,
+  "dedup_ratio": 0.963844,
+  "avg_chunk_bytes": 2428.1,
+  "index_estimate": {
+    "bloom_bytes_per_region": 152755,
+    "bloom_mb_per_region": 0.153,
+    "lmdb_bytes_per_region": 8159616,
+    "lmdb_mb_per_region": 8.16,
+    "manifest_bytes_control_plane": 171711880,
+    "manifest_mb": 171.712,
+    "total_index_mb_one_region": 8.312,
+    "note": "Bloom \u03b5=1%; LMDB ~64B/entry; manifest 40B/chunk-ref"
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit_hot": 5.0,
+    "lmdb_hit_cold": 20.0,
+    "replay_array_index": 0.01,
+    "note": "Design numbers from cross_region_dedup_index_model; replay uses O(1) array, not real LMDB timing"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "trace": "IBMObjectStoreTrace015Part0.typeE.mc-aug.csv",
+  "policy": "baseline",
+  "regions": [
+    "aws:us-east-1",
+    "aws:us-west-2"
+  ],
+  "ops": 1575627,
+  "counters": {
+    "puts": 671586,
+    "gets": 904041,
+    "remote_fetch": 534313,
+    "hit_cached": 369728,
+    "evictions": 524322
+  },
+  "hit_rate": 0.408973,
+  "remote_fetch_rate": 0.591027,
+  "cost_usd": {
+    "storage": 88.6624,
+    "transfer": 5.1526,
+    "req_put": 3.3579,
+    "req_get": 0.5753,
+    "total": 97.7482
+  },
+  "storage_gb_hours": {
+    "aws:us-east-1": 29782.1,
+    "aws:us-west-2": 1057.0
+  },
+  "bytes_transferred_gb": 257.63,
+  "bytes_logical_get_gb": 357.4,
+  "base_logical_bytes_gb": 402.48,
+  "base_stored_bytes_gb": 402.48,
+  "chunk_index_bytes_gb": 0.0,
+  "unique_chunks_m": 8.63,
+  "dedup_ratio_content": 0.813623,
+  "index_estimate_mb": {
+    "bloom_per_region": 10.339,
+    "lmdb_per_region": 552.261,
+    "manifest_control_plane": 0.0
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit": 5.0,
+    "note": "design estimates; replay uses array O(1)"
+  },
+  "wall_seconds": 29.7
+}

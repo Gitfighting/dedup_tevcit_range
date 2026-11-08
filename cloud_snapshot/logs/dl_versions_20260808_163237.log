@@ -1,0 +1,43 @@
+==============================================
+MORE VERSIONS: php/linux/ubuntu/sqldump
+START: 2026-08-08 16:32:37
+==============================================
+[CLEANUP] Moving linux_big -> linux, removing iso/diverse
+
+=== PHP: 7.x versions ===
+  Downloading php-7.4.33.tar.xz...
+    OK: 10M
+  Downloading php-7.3.33.tar.xz...
+    OK: 12M
+  Downloading php-7.2.34.tar.xz...
+    OK: 12M
+  Downloading php-7.1.33.tar.xz...
+    OK: 12M
+  Downloading php-8.1.29.tar.xz...
+    OK: 12M
+
+=== LINUX: 5.15 LTS series ===
+  Downloading linux-5.15.180.tar.xz...
+    FAILED, skipping
+  Downloading linux-5.15.178.tar.xz...
+    FAILED, skipping
+  Downloading linux-5.15.179.tar.xz...
+    FAILED, skipping
+  Downloading linux-5.15.181.tar.xz...
+    FAILED, skipping
+  Downloading linux-5.15.182.tar.xz...
+    FAILED, skipping
+
+=== LINUX: 5.10 LTS series ===
+  Downloading linux-5.10.230.tar.xz...
+    OK: 13M
+  Downloading linux-5.10.228.tar.xz...
+    FAILED, skipping
+  Downloading linux-5.10.229.tar.xz...
+    FAILED, skipping
+
+=== UBUNTU: jammy (22.04) base ===
+  SKIP (exists)
+
+=== UBUNTU: bionic (18.04) base ===
+  SKIP (exists)

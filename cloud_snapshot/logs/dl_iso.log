@@ -1,0 +1,8 @@
+Starting download: Sat Aug  8 03:53:15 PM CST 2026
+--2026-08-08 15:53:15--  http://iso-osm.mirrors.aliyuncs.com/ubuntu-releases/22.04.5/ubuntu-22.04.5-live-server-amd64.iso
+Resolving iso-osm.mirrors.aliyuncs.com (iso-osm.mirrors.aliyuncs.com)... 8.132.237.172
+Connecting to iso-osm.mirrors.aliyuncs.com (iso-osm.mirrors.aliyuncs.com)|8.132.237.172|:80... failed: Connection refused.
+Done/Status: Sat Aug  8 03:53:15 PM CST 2026
+total 1008K
+-rw-r--r-- 1 root root     0 Aug  8 15:53 ubuntu-22.04.5-live-server-amd64.iso
+-rw-r--r-- 1 root root 1008K Aug  8 15:52 ubuntu-22.04.5-live-server-amd64.iso.1

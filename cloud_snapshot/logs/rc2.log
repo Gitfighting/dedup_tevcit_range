@@ -1,0 +1,57 @@
+Pool: 500,610 files, 71.45 GB
+Range: 1.0KB - 5.10GB
+
+================================================================================
+ ROOT CAUSE: NO_FILE=pool doesn't have any file within 10MB of this PUT
+              HAS_FILE=pool has it, but use-once exhausts the supply
+================================================================================
+
+T    Bin              PUTs      HAS       NO     Pool Verdict
+==============================================================
+T015 <1KB            1,557    1,557        0        0   EXHAUST
+T015 1-10KB         64,645   64,645        0  319,933   GOOD
+T015 10-100KB      275,218  275,218        0  171,648   EXHAUST
+T015 100KB-1MB     203,627  203,627        0    8,059   EXHAUST
+T015 1-10MB        125,530  125,530        0      345   EXHAUST
+T015 10-100MB        1,007    1,007        0      310   EXHAUST
+T015 100MB-1GB           2        2        0      310   GOOD
+T029 <1KB         1,743,632 1,743,632        0        0   EXHAUST
+T029 1-10KB       2,213,226 2,213,226        0  319,933   EXHAUST
+T029 10-100KB       10,131   10,131        0  171,648   GOOD
+T029 1-10MB              1        1        0      345   GOOD
+T065 <1KB              705      705        0        0   EXHAUST
+T065 1-10KB            165      165        0  319,933   GOOD
+T065 10-100KB          210      210        0  171,648   GOOD
+T065 100KB-1MB         743      743        0    8,059   GOOD
+T065 1-10MB            984      984        0      345   EXHAUST
+T065 10-100MB            7        7        0      310   GOOD
+T065 100MB-1GB           5        1        4      310   MISSING
+T078 10-100KB        9,134    9,134        0  171,648   GOOD
+T078 100KB-1MB     120,411  120,411        0    8,059   EXHAUST
+T078 1-10MB          2,809    2,809        0      345   EXHAUST
+T078 10-100MB            6        6        0      310   GOOD
+T079 <1KB                1        1        0        0   EXHAUST
+T079 1-10KB            150      150        0  319,933   GOOD
+T079 10-100KB          434      434        0  171,648   GOOD
+T079 100KB-1MB       4,449    4,449        0    8,059   GOOD
+T079 1-10MB          2,739    2,739        0      345   EXHAUST
+T079 10-100MB        4,385    4,385        0      310   EXHAUST
+T079 100MB-1GB         380      160      220      310   MISSING
+T079 1-10GB             16        1       15        5   MISSING
+T079 10-100GB           28        0       28        0   MISSING
+
+
+================================================================================
+ SUMMARY: Which bins need new downloads?
+================================================================================
+
+Bin                  PUTs   NO_FILE%  PoolAvail Action
+<1KB            1,745,895       0.0%          0   ADD more copies
+1-10KB          2,278,186       0.0%  1,279,732   ADD more copies
+10-100KB          295,127       0.0%    858,240   OK
+100KB-1MB         329,230       0.0%     32,236   ADD more copies
+1-10MB            132,063       0.0%      1,725   ADD more copies
+10-100MB            5,405       0.0%      1,240   ADD more copies
+100MB-1GB             387      57.9%        930   DOWNLOAD new files
+1-10GB                 16      93.8%          5   DOWNLOAD new files
+10-100GB               28     100.0%          0   DOWNLOAD new files

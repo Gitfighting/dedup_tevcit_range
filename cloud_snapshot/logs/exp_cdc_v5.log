@@ -1,0 +1,23 @@
+256^48 % 8191 = 128
+Pool: 17,866,707 → 17,866,707 files (61.2s)
+
+T015: 2,000/2,000 mapped (0.01s)
+cccccccccc 152s
+  FIXED: 2.24x (55.3%) 6s
+  CDC:   2.75x (63.6%) 152s
+  WIN:   CDC (+8.3%)
+
+T029: 2,000/2,000 mapped (0.03s)
+cccccccccc 2s
+  FIXED: 1.75x (43.0%) 1s
+  CDC:   1.76x (43.1%) 2s
+  WIN:   CDC (+0.1%)
+
+T065: 2,000/2,000 mapped (0.01s)
+cccccccccc 269s
+  FIXED: 2.84x (64.8%) 10s
+  CDC:   4.25x (76.4%) 269s
+  WIN:   CDC (+11.6%)
+
+T078: 2,000/2,000 mapped (0.01s)
+ccc

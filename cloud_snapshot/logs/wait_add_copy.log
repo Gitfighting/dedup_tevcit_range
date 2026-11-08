@@ -1,0 +1,25 @@
+Waiting for /tmp/pool.json to be ready...
+/tmp/pool.json ready: 1.5 GB
+Adding archives...
+============================================================
+Adding archives to pool.json
+============================================================
+
+[1] Reading existing pool.json...
+    Current: 18,142,854 entries
+
+[2] Finding archive files to add...
+    Added: 133 files (57.0 GB)
+      1-3GB: 10
+      10-50MB: 53
+      100-500MB: 23
+      50-100MB: 6
+      500MB-1GB: 39
+      >3GB: 2
+
+[3] Writing pool.json (18,142,987 entries)...
+    Done: 1.16 GB
+
+[DONE] 51s
+Copying to /data/pool.json...
+DONE: 1.7 GB at /data/pool.json

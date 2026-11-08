@@ -1,0 +1,38 @@
+==============================================
+100GB DOWNLOAD - 2026-08-08 16:58:06
+==============================================
+
+=== LINUX: More series, more versions ===
+  Started 19 kernel downloads...
+
+=== PYTHON: More versions ===
+  Node.js versions...
+  PostgreSQL...
+
+=== PHP: 5.x & more ===
+
+=== UBUNTU BASE: All releases ===
+
+=== Debian ISOs ===
+
+All downloads launched. Waiting...
+/tmp/dl_100g.sh: line 162:  7386 Killed                  wget -q --timeout=300 -O "$F" "$MK/v4.x/linux-4.19.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7387 Killed                  wget -q --timeout=300 -O "$F" "$MK/v4.x/linux-4.19.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7388 Killed                  wget -q --timeout=300 -O "$F" "$MK/v4.x/linux-4.19.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7389 Killed                  wget -q --timeout=300 -O "$F" "$MK/v4.x/linux-4.19.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7390 Killed                  wget -q --timeout=300 -O "$F" "$MK/v4.x/linux-4.19.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7391 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7392 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7396 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.5.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7397 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.5.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7398 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.5.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7400 Killed                  wget -q --timeout=300 -O "$F" "$MK/v6.x/linux-6.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7402 Killed                  wget -q --timeout=300 -O "$F" "$MK/v6.x/linux-6.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7403 Killed                  wget -q --timeout=300 -O "$F" "$MK/v6.x/linux-6.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7404 Killed                  wget -q --timeout=300 -O "$F" "$MK/v6.x/linux-6.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7393 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7394 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7395 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.5.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7399 Killed                  wget -q --timeout=300 -O "$F" "$MK/v5.x/linux-5.5.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7401 Killed                  wget -q --timeout=300 -O "$F" "$MK/v6.x/linux-6.0.${v}.tar.xz" 2> /dev/null
+/tmp/dl_100g.sh: line 162:  7778 Killed                  wget -q --progress=dot:giga --timeout=7200 -O "$F" "https://download.fedoraproject.org/pub/fedora/linux/releases/41/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-41-1.4.iso"

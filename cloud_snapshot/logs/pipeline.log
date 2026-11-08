@@ -1,0 +1,1076 @@
+=== 步骤0: 清理 ===
+
+=== 步骤1: 移动 OVA 文件 ===
+  COPY bitnami-activemq-5.18.1-r3-debian-11-amd64.ova: 0.52 GB
+  COPY bitnami-artifactory-7.59.9-r1-debian-11-amd64.ova: 1.34 GB
+  COPY bitnami-cassandra-4.0.10-r1-debian-11-amd64.ova: 0.47 GB
+  COPY bitnami-concourse-7.9.1-r0-debian-11-amd64.ova: 1.27 GB
+  COPY bitnami-concrete5-9.2.0-r0-debian-11-amd64.ova: 0.50 GB
+  COPY bitnami-consul-1.16.0-r0-debian-11-amd64.ova: 0.31 GB
+  COPY bitnami-couchdb-3.3.2-r0-debian-11-amd64.ova: 0.50 GB
+  COPY bitnami-django-3.2.19-r1-debian-11-amd64.ova: 0.55 GB
+  COPY bitnami-dokuwiki-20230404.1.0-r1-debian-11-amd64.ova: 0.36 GB
+  COPY bitnami-elk-8.8.1-r1-debian-11-amd64.ova: 1.17 GB
+  COPY bitnami-etcd-3.5.9-r1-debian-11-amd64.ova: 0.29 GB
+  COPY bitnami-flink-1.17.1-r0-debian-11-amd64.ova: 1.09 GB
+  COPY bitnami-gitea-1.19.3-r1-debian-11-amd64.ova: 0.41 GB
+  COPY bitnami-gitlab-ce-15.11.0-ce.0-r0-debian-11-amd64.ova: 1.67 GB
+  COPY bitnami-guacamole-1.5.2-r1-debian-11-amd64.ova: 0.66 GB
+  COPY bitnami-harbor-2.8.2-r1-debian-11-amd64.ova: 0.59 GB
+  COPY bitnami-influxdb-2.7.1-r1-debian-11-amd64.ova: 0.32 GB
+  COPY bitnami-jaeger-1.46.0-r1-debian-11-amd64.ova: 0.58 GB
+  COPY bitnami-jasperreports-8.1.0-r37-debian-11-amd64.ova: 0.94 GB
+  COPY bitnami-jruby-9.4.3-0-r1-debian-11-amd64.ova: 0.87 GB
+  COPY bitnami-jupyterhub-4.0.1-r1-debian-11-amd64.ova: 0.60 GB
+  COPY bitnami-lamp-8.0.29-r3-debian-11-amd64.ova: 0.52 GB
+  COPY bitnami-mariadb-10.10.5-r1-debian-11-amd64.ova: 0.33 GB
+  COPY bitnami-matomo-4.14.2-r7-debian-11-amd64.ova: 0.45 GB
+  COPY bitnami-mean-5.0.18-r1-debian-11-amd64.ova: 0.66 GB
+  COPY bitnami-memcached-1.6.21-r1-debian-11-amd64.ova: 0.27 GB
+  COPY bitnami-minio-2023.6.23-r0-debian-11-amd64.ova: 0.36 GB
+  COPY bitnami-mongodb-6.0.6-r1-debian-11-amd64.ova: 0.45 GB
+  COPY bitnami-nats-2.9.19-r4-debian-11-amd64.ova: 0.27 GB
+  COPY bitnami-neo4j-4.4.22-r0-debian-11-amd64.ova: 0.60 GB
+  COPY bitnami-nginx-1.24.0-r1-debian-11-amd64.ova: 0.51 GB
+  COPY bitnami-node-20.3.1-r3-debian-11-amd64.ova: 0.43 GB
+  COPY bitnami-openfire-4.7.5-r1-debian-11-amd64.ova: 0.63 GB
+  COPY bitnami-percona-mysql-8.0.33-25-r0-debian-11-amd64.ova: 0.52 GB
+  COPY bitnami-postgresql-11.20.0-r1-debian-11-amd64.ova: 0.30 GB
+  COPY bitnami-rabbitmq-3.10.24-r1-debian-11-amd64.ova: 0.33 GB
+  COPY bitnami-redash-10.1.0-r68-debian-11-amd64.ova: 0.65 GB
+  COPY bitnami-redmine-5.0.5-r15-debian-11-amd64.ova: 0.57 GB
+  COPY bitnami-reportserver-4.6.1-6092-r0-debian-11-amd64.ova: 0.93 GB
+  COPY bitnami-solr-9.2.1-r1-debian-11-amd64.ova: 0.78 GB
+  COPY bitnami-sonarqube-10.1.0-r0-debian-11-amd64.ova: 0.90 GB
+  COPY bitnami-subversion-1.14.2-r40-debian-11-amd64.ova: 0.31 GB
+  COPY bitnami-tensorflow-serving-2.12.1-r1-debian-11-amd64.ova: 0.83 GB
+  COPY bitnami-wildfly-26.1.3-r8-debian-11-amd64.ova: 0.79 GB
+  COPY bitnami-wordpress-6.2.2-r1-debian-11-amd64.ova: 0.60 GB
+  COPY bitnami-zookeeper-3.7.1-r27-debian-11-amd64.ova: 0.48 GB
+  COPY debian-analytics-1.ova: 0.46 GB
+  COPY debian-analytics-2.ova: 0.87 GB
+  COPY debian-bus-app-service-1.ova: 0.73 GB
+  COPY debian-bus-app-service-2.ova: 0.66 GB
+  COPY debian-business-tool-1.ova: 0.64 GB
+  COPY debian-business-tool-2.ova: 1.05 GB
+  COPY debian-compute-1.ova: 0.59 GB
+  COPY debian-compute-2.ova: 0.59 GB
+  COPY debian-database-1.ova: 0.40 GB
+  COPY debian-database-2.ova: 0.27 GB
+  COPY debian-dev-ops-1.ova: 0.65 GB
+  COPY debian-dev-ops-2.ova: 0.80 GB
+  COPY debian-dev-tool-1.ova: 0.75 GB
+  COPY debian-dev-tool-2.ova: 0.68 GB
+  COPY debian-security-1.ova: 1.02 GB
+Moved: 61
+
+=== 步骤2: 提取 OVA 文件 ===
+  EXTRACTED bitnami-consul-1.16.0-r0-debian-11-amd64.ova: 1 VMDKs, 0.31 GB
+  EXTRACTED bitnami-cassandra-4.0.10-r1-debian-11-amd64.ova: 1 VMDKs, 0.47 GB
+  EXTRACTED bitnami-concrete5-9.2.0-r0-debian-11-amd64.ova: 1 VMDKs, 0.50 GB
+  EXTRACTED bitnami-activemq-5.18.1-r3-debian-11-amd64.ova: 1 VMDKs, 0.52 GB
+  EXTRACTED bitnami-couchdb-3.3.2-r0-debian-11-amd64.ova: 1 VMDKs, 0.50 GB
+  EXTRACTED bitnami-dokuwiki-20230404.1.0-r1-debian-11-amd64.ova: 1 VMDKs, 0.36 GB
+  EXTRACTED bitnami-django-3.2.19-r1-debian-11-amd64.ova: 1 VMDKs, 0.55 GB
+  EXTRACTED bitnami-etcd-3.5.9-r1-debian-11-amd64.ova: 1 VMDKs, 0.29 GB
+  EXTRACTED bitnami-concourse-7.9.1-r0-debian-11-amd64.ova: 1 VMDKs, 1.27 GB
+  EXTRACTED bitnami-artifactory-7.59.9-r1-debian-11-amd64.ova: 1 VMDKs, 1.34 GB
+  EXTRACTED bitnami-gitea-1.19.3-r1-debian-11-amd64.ova: 1 VMDKs, 0.41 GB
+  EXTRACTED bitnami-elk-8.8.1-r1-debian-11-amd64.ova: 1 VMDKs, 1.17 GB
+  EXTRACTED bitnami-influxdb-2.7.1-r1-debian-11-amd64.ova: 1 VMDKs, 0.32 GB
+  EXTRACTED bitnami-harbor-2.8.2-r1-debian-11-amd64.ova: 1 VMDKs, 0.59 GB
+  EXTRACTED bitnami-guacamole-1.5.2-r1-debian-11-amd64.ova: 1 VMDKs, 0.66 GB
+  EXTRACTED bitnami-flink-1.17.1-r0-debian-11-amd64.ova: 1 VMDKs, 1.09 GB
+  EXTRACTED bitnami-jaeger-1.46.0-r1-debian-11-amd64.ova: 1 VMDKs, 0.58 GB
+  EXTRACTED bitnami-lamp-8.0.29-r3-debian-11-amd64.ova: 1 VMDKs, 0.52 GB
+  EXTRACTED bitnami-jupyterhub-4.0.1-r1-debian-11-amd64.ova: 1 VMDKs, 0.60 GB
+  EXTRACTED bitnami-mariadb-10.10.5-r1-debian-11-amd64.ova: 1 VMDKs, 0.33 GB
+  EXTRACTED bitnami-jasperreports-8.1.0-r37-debian-11-amd64.ova: 1 VMDKs, 0.94 GB
+  EXTRACTED bitnami-gitlab-ce-15.11.0-ce.0-r0-debian-11-amd64.ova: 1 VMDKs, 1.67 GB
+  EXTRACTED bitnami-jruby-9.4.3-0-r1-debian-11-amd64.ova: 1 VMDKs, 0.87 GB
+  EXTRACTED bitnami-memcached-1.6.21-r1-debian-11-amd64.ova: 1 VMDKs, 0.27 GB
+  EXTRACTED bitnami-matomo-4.14.2-r7-debian-11-amd64.ova: 1 VMDKs, 0.45 GB
+  EXTRACTED bitnami-minio-2023.6.23-r0-debian-11-amd64.ova: 1 VMDKs, 0.36 GB
+  EXTRACTED bitnami-nats-2.9.19-r4-debian-11-amd64.ova: 1 VMDKs, 0.27 GB
+  EXTRACTED bitnami-mean-5.0.18-r1-debian-11-amd64.ova: 1 VMDKs, 0.66 GB
+  EXTRACTED bitnami-mongodb-6.0.6-r1-debian-11-amd64.ova: 1 VMDKs, 0.45 GB
+  EXTRACTED bitnami-nginx-1.24.0-r1-debian-11-amd64.ova: 1 VMDKs, 0.51 GB
+  EXTRACTED bitnami-neo4j-4.4.22-r0-debian-11-amd64.ova: 1 VMDKs, 0.60 GB
+  EXTRACTED bitnami-node-20.3.1-r3-debian-11-amd64.ova: 1 VMDKs, 0.43 GB
+  EXTRACTED bitnami-openfire-4.7.5-r1-debian-11-amd64.ova: 1 VMDKs, 0.63 GB
+  EXTRACTED bitnami-postgresql-11.20.0-r1-debian-11-amd64.ova: 1 VMDKs, 0.30 GB
+  EXTRACTED bitnami-percona-mysql-8.0.33-25-r0-debian-11-amd64.ova: 1 VMDKs, 0.52 GB
+  EXTRACTED bitnami-rabbitmq-3.10.24-r1-debian-11-amd64.ova: 1 VMDKs, 0.33 GB
+  EXTRACTED bitnami-parse-5.5.1-r1-debian-11-amd64.ova: 1 VMDKs, 0.65 GB
+  EXTRACTED bitnami-redash-10.1.0-r68-debian-11-amd64.ova: 1 VMDKs, 0.65 GB
+  EXTRACTED bitnami-subversion-1.14.2-r40-debian-11-amd64.ova: 1 VMDKs, 0.31 GB
+  EXTRACTED bitnami-redmine-5.0.5-r15-debian-11-amd64.ova: 1 VMDKs, 0.57 GB
+  EXTRACTED bitnami-solr-9.2.1-r1-debian-11-amd64.ova: 1 VMDKs, 0.78 GB
+  EXTRACTED bitnami-reportserver-4.6.1-6092-r0-debian-11-amd64.ova: 1 VMDKs, 0.93 GB
+  EXTRACTED bitnami-sonarqube-10.1.0-r0-debian-11-amd64.ova: 1 VMDKs, 0.90 GB
+  EXTRACTED bitnami-wordpress-6.2.2-r1-debian-11-amd64.ova: 1 VMDKs, 0.60 GB
+  EXTRACTED bitnami-wildfly-26.1.3-r8-debian-11-amd64.ova: 1 VMDKs, 0.79 GB
+  EXTRACTED bitnami-tensorflow-serving-2.12.1-r1-debian-11-amd64.ova: 1 VMDKs, 0.83 GB
+  EXTRACTED bitnami-zookeeper-3.7.1-r27-debian-11-amd64.ova: 1 VMDKs, 0.48 GB
+  EXTRACTED debian-analytics-1.ova: 1 VMDKs, 0.46 GB
+  EXTRACTED debian-analytics-2.ova: 1 VMDKs, 0.87 GB
+  EXTRACTED debian-bus-app-service-1.ova: 1 VMDKs, 0.73 GB
+  EXTRACTED debian-business-tool-1.ova: 1 VMDKs, 0.64 GB
+  EXTRACTED debian-bus-app-service-2.ova: 1 VMDKs, 0.66 GB
+  EXTRACTED debian-compute-1.ova: 1 VMDKs, 0.59 GB
+  EXTRACTED debian-database-2.ova: 1 VMDKs, 0.27 GB
+  EXTRACTED debian-database-1.ova: 1 VMDKs, 0.40 GB
+  EXTRACTED debian-business-tool-2.ova: 1 VMDKs, 1.05 GB
+  EXTRACTED debian-compute-2.ova: 1 VMDKs, 0.59 GB
+  EXTRACTED debian-dev-ops-1.ova: 1 VMDKs, 0.65 GB
+  EXTRACTED debian-dev-ops-2.ova: 1 VMDKs, 0.80 GB
+  EXTRACTED debian-dev-tool-1.ova: 1 VMDKs, 0.75 GB
+  EXTRACTED debian-dev-tool-2.ova: 1 VMDKs, 0.68 GB
+  EXTRACTED debian-security-1.ova: 1 VMDKs, 1.02 GB
+
+Total VMDKs: 62, Size: 39.30 GB
+
+=== 步骤3: OVA 文件放入 pool ===
+OVA files in pool: 62
+
+[DONE] 阶段1完成
+下一步: python3 /tmp/stage2_pool.py 重建 pool.json
+=== 阶段2: 重建 pool.json ===
+Scanning file_pool...
+  Dir 1000: 13844 files, 1.2s
+  Dir 2000: 27082 files, 2.3s
+  Dir 3000: 41287 files, 3.6s
+  Dir 4000: 59432 files, 5.5s
+  Dir 5000: 95480 files, 8.6s
+  Scanned 0.1M files, 8.7s
+  Dir 6000: 112214 files, 9.5s
+  Dir 7000: 123117 files, 9.8s
+  Dir 8000: 140079 files, 10.6s
+  Dir 9000: 156743 files, 12.0s
+  Dir 10000: 172955 files, 12.8s
+  Dir 11000: 187553 files, 14.3s
+  Dir 12000: 198511 files, 20.7s
+  Scanned 0.2M files, 21.1s
+  Dir 13000: 215103 files, 26.7s
+  Dir 14000: 232506 files, 31.3s
+  Dir 15000: 246653 files, 36.2s
+  Dir 16000: 264340 files, 38.1s
+  Dir 17000: 281691 files, 39.2s
+  Scanned 0.3M files, 39.9s
+  Dir 18000: 333677 files, 40.7s
+  Dir 19000: 348826 files, 41.0s
+  Dir 20000: 362061 files, 41.3s
+  Dir 21000: 387992 files, 41.9s
+  Scanned 0.4M files, 42.2s
+  Dir 22000: 419111 files, 42.6s
+  Dir 23000: 431277 files, 42.8s
+  Dir 24000: 447197 files, 43.2s
+  Dir 25000: 463227 files, 43.5s
+  Dir 26000: 478375 files, 43.9s
+  Scanned 0.5M files, 44.3s
+  Dir 27000: 516728 files, 44.6s
+  Dir 28000: 533910 files, 45.0s
+  Dir 29000: 548307 files, 45.3s
+  Dir 30000: 566873 files, 45.7s
+  Scanned 0.6M files, 46.4s
+  Dir 31000: 608543 files, 46.6s
+  Dir 32000: 634564 files, 47.2s
+  Dir 33000: 647156 files, 47.4s
+  Dir 34000: 661373 files, 47.8s
+  Dir 35000: 678397 files, 48.2s
+  Dir 36000: 694861 files, 48.5s
+  Scanned 0.7M files, 48.6s
+  Dir 37000: 705912 files, 48.8s
+  Dir 38000: 722530 files, 49.1s
+  Dir 39000: 739908 files, 49.4s
+  Dir 40000: 754938 files, 49.8s
+  Dir 41000: 778995 files, 50.3s
+  Dir 42000: 791658 files, 50.7s
+  Scanned 0.8M files, 50.9s
+  Dir 43000: 804497 files, 51.0s
+  Dir 44000: 818625 files, 51.4s
+  Dir 45000: 836755 files, 51.8s
+  Dir 46000: 850138 files, 52.1s
+  Dir 47000: 863586 files, 52.4s
+  Dir 48000: 878510 files, 52.8s
+  Dir 49000: 897305 files, 53.2s
+  Scanned 0.9M files, 53.3s
+  Dir 50000: 911343 files, 53.5s
+  Dir 51000: 924351 files, 53.8s
+  Dir 52000: 938240 files, 54.1s
+  Dir 53000: 955894 files, 54.5s
+  Dir 54000: 992971 files, 55.3s
+  Scanned 1.0M files, 55.5s
+  Dir 55000: 1008462 files, 55.6s
+  Dir 56000: 1021352 files, 55.9s
+  Dir 57000: 1035489 files, 56.2s
+  Dir 58000: 1053859 files, 56.6s
+  Dir 59000: 1080400 files, 57.2s
+  Dir 60000: 1093600 files, 57.5s
+  Scanned 1.1M files, 57.6s
+  Dir 61000: 1108082 files, 57.8s
+  Dir 62000: 1126609 files, 58.2s
+  Dir 63000: 1138404 files, 58.4s
+  Dir 64000: 1152221 files, 58.7s
+  Dir 65000: 1169710 files, 59.0s
+  Dir 66000: 1186320 files, 59.4s
+  Dir 67000: 1196336 files, 59.6s
+  Scanned 1.2M files, 59.7s
+  Dir 68000: 1212718 files, 59.9s
+  Dir 69000: 1229490 files, 60.3s
+  Dir 70000: 1257851 files, 60.9s
+  Dir 71000: 1271901 files, 61.2s
+  Dir 72000: 1285648 files, 61.5s
+  Scanned 1.3M files, 61.8s
+  Dir 73000: 1300111 files, 61.8s
+  Dir 74000: 1316000 files, 62.1s
+  Dir 75000: 1343064 files, 62.7s
+  Dir 76000: 1356299 files, 63.0s
+  Dir 77000: 1367226 files, 63.2s
+  Dir 78000: 1383680 files, 63.6s
+  Scanned 1.4M files, 64.0s
+  Dir 79000: 1401472 files, 64.0s
+  Dir 80000: 1418332 files, 64.3s
+  Dir 81000: 1443479 files, 64.9s
+  Dir 82000: 1456295 files, 65.1s
+  Dir 83000: 1471684 files, 65.5s
+  Dir 84000: 1489925 files, 65.8s
+  Scanned 1.5M files, 66.0s
+  Dir 85000: 1503893 files, 66.1s
+  Dir 86000: 1517881 files, 66.4s
+  Dir 87000: 1543651 files, 66.9s
+  Dir 88000: 1593207 files, 68.0s
+  Scanned 1.6M files, 68.2s
+  Dir 89000: 1641805 files, 69.1s
+  Dir 90000: 1671873 files, 69.8s
+  Dir 91000: 1683211 files, 70.0s
+  Dir 92000: 1698091 files, 70.3s
+  Scanned 1.7M files, 70.4s
+  Dir 93000: 1715130 files, 70.7s
+  Dir 94000: 1731689 files, 71.1s
+  Dir 95000: 1743316 files, 71.3s
+  Dir 96000: 1757578 files, 71.6s
+  Dir 97000: 1773819 files, 72.0s
+  Dir 98000: 1789534 files, 72.3s
+  Scanned 1.8M files, 72.5s
+  Dir 99000: 1837254 files, 73.4s
+  Dir 100000: 1856451 files, 73.8s
+  Dir 101000: 1869329 files, 74.1s
+  Dir 102000: 1882448 files, 74.4s
+  Dir 103000: 1897362 files, 74.7s
+  Scanned 1.9M files, 74.7s
+  Dir 104000: 1927262 files, 75.3s
+  Dir 105000: 1956278 files, 76.6s
+  Dir 106000: 1966746 files, 76.9s
+  Dir 107000: 1982419 files, 77.2s
+  Dir 108000: 1999745 files, 77.6s
+  Scanned 2.0M files, 77.6s
+  Dir 109000: 2029661 files, 78.3s
+  Dir 110000: 2056576 files, 79.0s
+  Dir 111000: 2067286 files, 79.2s
+  Dir 112000: 2082906 files, 79.6s
+  Dir 113000: 2099586 files, 79.9s
+  Scanned 2.1M files, 79.9s
+  Dir 114000: 2118234 files, 80.3s
+  Dir 115000: 2145637 files, 81.0s
+  Dir 116000: 2158502 files, 81.2s
+  Dir 117000: 2173464 files, 81.6s
+  Dir 118000: 2191700 files, 81.9s
+  Scanned 2.2M files, 82.1s
+  Dir 119000: 2203350 files, 82.2s
+  Dir 120000: 2217168 files, 82.5s
+  Dir 121000: 2234619 files, 82.9s
+  Dir 122000: 2243443 files, 83.1s
+  Dir 123000: 2257139 files, 83.4s
+  Dir 124000: 2270449 files, 83.7s
+  Dir 125000: 2284539 files, 84.0s
+  Scanned 2.3M files, 84.4s
+  Dir 126000: 2302554 files, 84.4s
+  Dir 127000: 2316908 files, 84.7s
+  Dir 128000: 2329930 files, 85.0s
+  Dir 129000: 2346181 files, 85.3s
+  Dir 130000: 2363662 files, 85.7s
+  Dir 131000: 2374313 files, 85.9s
+  Dir 132000: 2388388 files, 86.2s
+  Scanned 2.4M files, 86.5s
+  Dir 133000: 2405363 files, 86.6s
+  Dir 134000: 2435170 files, 87.2s
+  Dir 135000: 2464541 files, 87.8s
+  Dir 136000: 2479909 files, 88.1s
+  Dir 137000: 2494923 files, 88.4s
+  Scanned 2.5M files, 88.6s
+  Dir 138000: 2509628 files, 88.8s
+  Dir 139000: 2536294 files, 89.3s
+  Dir 140000: 2551295 files, 89.7s
+  Dir 141000: 2565139 files, 90.0s
+  Dir 142000: 2579489 files, 90.3s
+  Dir 143000: 2596873 files, 90.7s
+  Scanned 2.6M files, 90.7s
+  Dir 144000: 2618031 files, 91.1s
+  Dir 145000: 2665962 files, 92.1s
+  Dir 146000: 2692067 files, 92.6s
+  Scanned 2.7M files, 92.7s
+  Dir 147000: 2705610 files, 92.8s
+  Dir 148000: 2719182 files, 93.1s
+  Dir 149000: 2739402 files, 93.4s
+  Dir 150000: 2788086 files, 94.1s
+  Scanned 2.8M files, 94.3s
+  Dir 151000: 2830787 files, 94.8s
+  Dir 152000: 2877327 files, 95.5s
+  Dir 153000: 2891720 files, 95.7s
+  Scanned 2.9M files, 95.9s
+  Dir 154000: 2905259 files, 96.0s
+  Dir 155000: 2931111 files, 96.4s
+  Dir 156000: 2978483 files, 97.1s
+  Dir 157000: 2993023 files, 97.4s
+  Scanned 3.0M files, 97.5s
+  Dir 158000: 3008202 files, 97.6s
+  Dir 159000: 3041750 files, 98.3s
+  Dir 160000: 3053935 files, 98.5s
+  Dir 161000: 3068815 files, 98.8s
+  Dir 162000: 3085867 files, 99.1s
+  Scanned 3.1M files, 99.3s
+  Dir 163000: 3101975 files, 99.4s
+  Dir 164000: 3113140 files, 99.6s
+  Dir 165000: 3128106 files, 99.8s
+  Dir 166000: 3145005 files, 100.1s
+  Dir 167000: 3162751 files, 100.4s
+  Dir 168000: 3172219 files, 100.6s
+  Dir 169000: 3187951 files, 100.8s
+  Scanned 3.2M files, 101.0s
+  Dir 170000: 3203845 files, 101.1s
+  Dir 171000: 3218694 files, 101.4s
+  Dir 172000: 3260538 files, 102.0s
+  Dir 173000: 3272733 files, 102.2s
+  Dir 174000: 3286371 files, 102.5s
+  Scanned 3.3M files, 102.7s
+  Dir 175000: 3301786 files, 102.7s
+  Dir 176000: 3320185 files, 103.0s
+  Dir 177000: 3359123 files, 103.6s
+  Dir 178000: 3373334 files, 103.9s
+  Dir 179000: 3387832 files, 104.1s
+  Scanned 3.4M files, 104.3s
+  Dir 180000: 3405210 files, 104.4s
+  Dir 181000: 3418768 files, 104.7s
+  Dir 182000: 3431448 files, 104.9s
+  Dir 183000: 3450249 files, 105.2s
+  Dir 184000: 3480079 files, 105.7s
+  Dir 185000: 3490841 files, 105.9s
+  Scanned 3.5M files, 106.0s
+  Dir 186000: 3505827 files, 106.1s
+  Dir 187000: 3522588 files, 106.4s
+  Dir 188000: 3538710 files, 106.7s
+  Dir 189000: 3553080 files, 106.9s
+  Dir 190000: 3573474 files, 107.3s
+  Scanned 3.6M files, 107.7s
+  Dir 191000: 3600893 files, 107.7s
+  Dir 192000: 3610956 files, 107.9s
+  Dir 193000: 3626880 files, 108.1s
+  Dir 194000: 3644424 files, 108.4s
+  Dir 195000: 3659888 files, 108.7s
+  Dir 196000: 3673930 files, 108.9s
+  Dir 197000: 3690786 files, 109.2s
+  Scanned 3.7M files, 109.3s
+  Dir 198000: 3740113 files, 109.9s
+  Dir 199000: 3771766 files, 110.4s
+  Dir 200000: 3785905 files, 110.7s
+  Scanned 3.8M files, 110.9s
+  Dir 201000: 3804619 files, 111.0s
+  Dir 202000: 3818135 files, 111.2s
+  Dir 203000: 3831571 files, 111.4s
+  Dir 204000: 3846483 files, 111.7s
+  Dir 205000: 3865289 files, 112.0s
+  Scanned 3.9M files, 112.5s
+  Dir 206000: 3905396 files, 112.6s
+  Dir 207000: 3917575 files, 112.8s
+  Dir 208000: 3931757 files, 113.1s
+  Dir 209000: 3947308 files, 113.3s
+  Dir 210000: 3964976 files, 113.6s
+  Dir 211000: 3976400 files, 113.8s
+  Dir 212000: 3991449 files, 114.1s
+  Scanned 4.0M files, 114.4s
+  Dir 213000: 4008703 files, 114.6s
+  Dir 214000: 4024518 files, 114.8s
+  Dir 215000: 4037863 files, 115.0s
+  Dir 216000: 4050942 files, 115.3s
+  Dir 217000: 4069798 files, 115.6s
+  Dir 218000: 4096063 files, 116.0s
+  Scanned 4.1M files, 116.1s
+  Dir 219000: 4106109 files, 116.2s
+  Dir 220000: 4122631 files, 116.5s
+  Dir 221000: 4139571 files, 116.7s
+  Dir 222000: 4172099 files, 117.3s
+  Dir 223000: 4199580 files, 117.7s
+  Scanned 4.2M files, 117.7s
+  Dir 224000: 4210784 files, 117.9s
+  Dir 225000: 4226185 files, 118.2s
+  Dir 226000: 4243585 files, 118.5s
+  Dir 227000: 4258482 files, 118.7s
+  Dir 228000: 4272289 files, 118.9s
+  Dir 229000: 4285545 files, 119.2s
+  Scanned 4.3M files, 119.4s
+  Dir 230000: 4300121 files, 119.4s
+  Dir 231000: 4319288 files, 119.8s
+  Dir 232000: 4358542 files, 120.4s
+  Dir 233000: 4371263 files, 120.6s
+  Dir 234000: 4384943 files, 120.9s
+  Scanned 4.4M files, 121.1s
+  Dir 235000: 4400377 files, 121.2s
+  Dir 236000: 4418344 files, 121.5s
+  Dir 237000: 4430083 files, 121.6s
+  Dir 238000: 4445021 files, 121.9s
+  Dir 239000: 4462013 files, 122.2s
+  Dir 240000: 4477275 files, 122.5s
+  Dir 241000: 4493217 files, 122.8s
+  Scanned 4.5M files, 122.9s
+  Dir 242000: 4510621 files, 123.1s
+  Dir 243000: 4523239 files, 123.3s
+  Dir 244000: 4536997 files, 123.5s
+  Dir 245000: 4552397 files, 123.8s
+  Dir 246000: 4570590 files, 124.1s
+  Dir 247000: 4584377 files, 124.3s
+  Dir 248000: 4597614 files, 124.6s
+  Scanned 4.6M files, 124.6s
+  Dir 249000: 4612167 files, 124.8s
+  Dir 250000: 4631323 files, 125.1s
+  Dir 251000: 4658506 files, 125.6s
+  Dir 252000: 4669352 files, 125.8s
+  Dir 253000: 4684582 files, 126.1s
+  Scanned 4.7M files, 126.3s
+  Dir 254000: 4701451 files, 126.4s
+  Dir 255000: 4727038 files, 126.8s
+  Dir 256000: 4774266 files, 127.5s
+  Scanned 4.8M files, 128.0s
+  Dir 257000: 4819918 files, 128.3s
+  Dir 258000: 4853605 files, 128.8s
+  Dir 259000: 4864787 files, 129.0s
+  Dir 260000: 4879770 files, 129.3s
+  Dir 261000: 4896665 files, 129.6s
+  Scanned 4.9M files, 129.6s
+  Dir 262000: 4912416 files, 129.8s
+  Dir 263000: 4929902 files, 130.1s
+  Dir 264000: 4945517 files, 130.4s
+  Dir 265000: 4962587 files, 130.7s
+  Dir 266000: 4975586 files, 131.1s
+  Dir 267000: 4989583 files, 131.4s
+  Scanned 5.0M files, 131.6s
+  Dir 268000: 5005197 files, 131.7s
+  Dir 269000: 5020310 files, 131.9s
+  Dir 270000: 5036588 files, 132.2s
+  Dir 271000: 5048720 files, 132.5s
+  Dir 272000: 5062320 files, 132.7s
+  Dir 273000: 5079383 files, 133.0s
+  Dir 274000: 5094802 files, 133.2s
+  Scanned 5.1M files, 133.3s
+  Dir 275000: 5108639 files, 133.5s
+  Dir 276000: 5141317 files, 134.1s
+  Dir 277000: 5155492 files, 134.3s
+  Dir 278000: 5169734 files, 134.7s
+  Dir 279000: 5188262 files, 135.2s
+  Scanned 5.2M files, 135.4s
+  Dir 280000: 5200630 files, 135.4s
+  Dir 281000: 5214885 files, 135.7s
+  Dir 282000: 5231344 files, 136.3s
+  Dir 283000: 5247911 files, 136.6s
+  Dir 284000: 5260361 files, 136.9s
+  Dir 285000: 5275957 files, 137.2s
+  Dir 286000: 5291614 files, 137.8s
+  Scanned 5.3M files, 138.1s
+  Dir 287000: 5307058 files, 138.6s
+  Dir 288000: 5322288 files, 139.1s
+  Dir 289000: 5336613 files, 139.7s
+  Dir 290000: 5364934 files, 140.6s
+  Scanned 5.4M files, 141.4s
+  Dir 291000: 5411992 files, 141.6s
+  Dir 292000: 5427215 files, 142.3s
+  Dir 293000: 5441285 files, 142.9s
+  Dir 294000: 5455541 files, 143.4s
+  Dir 295000: 5473001 files, 143.8s
+  Dir 296000: 5487908 files, 144.0s
+  Scanned 5.5M files, 144.2s
+  Dir 297000: 5501245 files, 144.3s
+  Dir 298000: 5516376 files, 144.6s
+  Dir 299000: 5547997 files, 145.2s
+  Dir 300000: 5560037 files, 145.4s
+  Dir 301000: 5573680 files, 145.7s
+  Dir 302000: 5589160 files, 145.9s
+  Scanned 5.6M files, 146.1s
+  Dir 303000: 5607731 files, 146.2s
+  Dir 304000: 5620408 files, 146.5s
+  Dir 305000: 5633336 files, 146.9s
+  Dir 306000: 5648209 files, 147.2s
+  Dir 307000: 5667256 files, 147.6s
+  Scanned 5.7M files, 148.3s
+  Dir 308000: 5710410 files, 148.5s
+  Dir 309000: 5721029 files, 148.7s
+  Dir 310000: 5735881 files, 149.1s
+  Dir 311000: 5751278 files, 149.4s
+  Dir 312000: 5767024 files, 149.9s
+  Dir 313000: 5795233 files, 150.4s
+  Scanned 5.8M files, 150.5s
+  Dir 314000: 5807097 files, 150.7s
+  Dir 315000: 5823511 files, 151.0s
+  Dir 316000: 5839648 files, 151.3s
+  Dir 317000: 5855033 files, 151.6s
+  Dir 318000: 5896753 files, 152.4s
+  Scanned 5.9M files, 152.5s
+  Dir 319000: 5912198 files, 152.7s
+  Dir 320000: 5925573 files, 153.0s
+  Dir 321000: 5940045 files, 153.3s
+  Dir 322000: 5957629 files, 154.0s
+  Dir 323000: 5978289 files, 154.4s
+  Scanned 6.0M files, 154.8s
+  Dir 324000: 6009574 files, 155.0s
+  Dir 325000: 6023660 files, 155.2s
+  Dir 326000: 6038507 files, 155.6s
+  Dir 327000: 6055959 files, 155.9s
+  Dir 328000: 6067707 files, 156.2s
+  Dir 329000: 6082395 files, 156.4s
+  Dir 330000: 6099848 files, 156.8s
+  Scanned 6.1M files, 156.8s
+  Dir 331000: 6126669 files, 157.3s
+  Dir 332000: 6140007 files, 157.5s
+  Dir 333000: 6153052 files, 157.8s
+  Dir 334000: 6171910 files, 158.2s
+  Dir 335000: 6198327 files, 158.7s
+  Scanned 6.2M files, 158.7s
+  Dir 336000: 6208964 files, 158.9s
+  Dir 337000: 6223945 files, 159.2s
+  Dir 338000: 6240884 files, 159.5s
+  Dir 339000: 6257483 files, 159.8s
+  Dir 340000: 6269411 files, 160.1s
+  Dir 341000: 6284177 files, 160.3s
+  Scanned 6.3M files, 160.6s
+  Dir 342000: 6301028 files, 160.7s
+  Dir 343000: 6330867 files, 161.2s
+  Dir 344000: 6342632 files, 161.4s
+  Dir 345000: 6356314 files, 161.7s
+  Dir 346000: 6371848 files, 162.1s
+  Dir 347000: 6390190 files, 162.4s
+  Scanned 6.4M files, 162.6s
+  Dir 348000: 6434503 files, 163.2s
+  Dir 349000: 6478879 files, 164.0s
+  Dir 350000: 6490540 files, 164.3s
+  Scanned 6.5M files, 164.5s
+  Dir 351000: 6504831 files, 164.6s
+  Dir 352000: 6519889 files, 164.9s
+  Dir 353000: 6536081 files, 165.2s
+  Dir 354000: 6550286 files, 165.4s
+  Dir 355000: 6562916 files, 165.7s
+  Dir 356000: 6576866 files, 166.0s
+  Dir 357000: 6594150 files, 166.3s
+  Scanned 6.6M files, 166.5s
+  Dir 358000: 6622119 files, 166.9s
+  Dir 359000: 6632041 files, 167.1s
+  Dir 360000: 6647058 files, 167.4s
+  Dir 361000: 6663483 files, 167.7s
+  Dir 362000: 6694274 files, 168.3s
+  Scanned 6.7M files, 168.4s
+  Dir 363000: 6738284 files, 169.2s
+  Dir 364000: 6751872 files, 169.4s
+  Dir 365000: 6765180 files, 169.7s
+  Dir 366000: 6779643 files, 170.0s
+  Dir 367000: 6797982 files, 170.4s
+  Scanned 6.8M files, 170.4s
+  Dir 368000: 6838232 files, 171.1s
+  Dir 369000: 6887492 files, 171.9s
+  Scanned 6.9M files, 172.1s
+  Dir 370000: 6924054 files, 172.5s
+  Dir 371000: 6937925 files, 172.8s
+  Dir 372000: 6959229 files, 173.2s
+  Dir 373000: 6998799 files, 174.3s
+  Scanned 7.0M files, 174.4s
+  Dir 374000: 7009058 files, 174.5s
+  Dir 375000: 7024385 files, 174.8s
+  Dir 376000: 7040509 files, 175.2s
+  Dir 377000: 7055135 files, 175.4s
+  Dir 378000: 7070229 files, 175.7s
+  Dir 379000: 7084238 files, 175.9s
+  Dir 380000: 7098440 files, 176.2s
+  Scanned 7.1M files, 176.2s
+  Dir 381000: 7115662 files, 176.5s
+  Dir 382000: 7130910 files, 176.8s
+  Dir 383000: 7141527 files, 177.0s
+  Dir 384000: 7156488 files, 177.2s
+  Dir 385000: 7172424 files, 177.5s
+  Dir 386000: 7189850 files, 177.8s
+  Scanned 7.2M files, 178.0s
+  Dir 387000: 7204582 files, 178.1s
+  Dir 388000: 7218475 files, 178.3s
+  Dir 389000: 7232816 files, 178.6s
+  Dir 390000: 7249551 files, 178.9s
+  Dir 391000: 7276041 files, 179.3s
+  Scanned 7.3M files, 179.7s
+  Dir 392000: 7323886 files, 180.1s
+  Dir 393000: 7368136 files, 180.8s
+  Dir 394000: 7396496 files, 181.3s
+  Scanned 7.4M files, 181.3s
+  Dir 395000: 7406927 files, 181.5s
+  Dir 396000: 7422551 files, 181.8s
+  Dir 397000: 7439993 files, 182.1s
+  Dir 398000: 7455888 files, 182.3s
+  Dir 399000: 7466354 files, 182.5s
+  Dir 400000: 7482521 files, 182.8s
+  Dir 401000: 7499263 files, 183.1s
+  Scanned 7.5M files, 183.1s
+  Dir 402000: 7516732 files, 183.4s
+  Dir 403000: 7527745 files, 183.6s
+  Dir 404000: 7542285 files, 183.9s
+  Dir 405000: 7557383 files, 184.1s
+  Dir 406000: 7573554 files, 184.4s
+  Dir 407000: 7598721 files, 184.8s
+  Scanned 7.6M files, 184.8s
+  Dir 408000: 7609961 files, 185.0s
+  Dir 409000: 7625033 files, 185.3s
+  Dir 410000: 7641896 files, 185.6s
+  Dir 411000: 7659639 files, 185.9s
+  Dir 412000: 7670032 files, 186.1s
+  Dir 413000: 7685349 files, 186.3s
+  Scanned 7.7M files, 186.6s
+  Dir 414000: 7701909 files, 186.6s
+  Dir 415000: 7721866 files, 187.0s
+  Dir 416000: 7771521 files, 187.8s
+  Dir 417000: 7785044 files, 188.0s
+  Dir 418000: 7798480 files, 188.2s
+  Scanned 7.8M files, 188.3s
+  Dir 419000: 7813329 files, 188.5s
+  Dir 420000: 7832117 files, 188.8s
+  Dir 421000: 7844260 files, 189.1s
+  Dir 422000: 7858527 files, 189.3s
+  Dir 423000: 7874945 files, 189.6s
+  Scanned 7.9M files, 190.0s
+  Dir 424000: 7906532 files, 190.1s
+  Dir 425000: 7920598 files, 190.3s
+  Dir 426000: 7933525 files, 190.6s
+  Dir 427000: 7948398 files, 191.2s
+  Dir 428000: 7966173 files, 191.6s
+  Scanned 8.0M files, 192.2s
+  Dir 429000: 8010791 files, 192.3s
+  Dir 430000: 8061477 files, 193.1s
+  Dir 431000: 8087669 files, 193.6s
+  Dir 432000: 8098410 files, 193.8s
+  Scanned 8.1M files, 193.8s
+  Dir 433000: 8114146 files, 194.1s
+  Dir 434000: 8131348 files, 194.4s
+  Dir 435000: 8147778 files, 194.6s
+  Dir 436000: 8159005 files, 194.8s
+  Dir 437000: 8173206 files, 195.1s
+  Dir 438000: 8189931 files, 195.4s
+  Scanned 8.2M files, 195.5s
+  Dir 439000: 8207603 files, 195.7s
+  Dir 440000: 8245499 files, 196.3s
+  Dir 441000: 8258627 files, 196.5s
+  Dir 442000: 8273420 files, 196.8s
+  Dir 443000: 8288841 files, 197.0s
+  Scanned 8.3M files, 197.2s
+  Dir 444000: 8304263 files, 197.3s
+  Dir 445000: 8332810 files, 197.8s
+  Dir 446000: 8343573 files, 198.0s
+  Dir 447000: 8358685 files, 198.2s
+  Dir 448000: 8374601 files, 198.6s
+  Dir 449000: 8394247 files, 198.9s
+  Scanned 8.4M files, 199.0s
+  Dir 450000: 8442057 files, 199.7s
+  Dir 451000: 8485179 files, 200.4s
+  Dir 452000: 8498461 files, 200.6s
+  Scanned 8.5M files, 200.7s
+  Dir 453000: 8513000 files, 200.9s
+  Dir 454000: 8531596 files, 201.2s
+  Dir 455000: 8545260 files, 201.5s
+  Dir 456000: 8558533 files, 201.7s
+  Dir 457000: 8573093 files, 202.0s
+  Dir 458000: 8592529 files, 202.3s
+  Scanned 8.6M files, 202.4s
+  Dir 459000: 8605941 files, 202.5s
+  Dir 460000: 8622143 files, 202.8s
+  Dir 461000: 8638992 files, 203.1s
+  Dir 462000: 8654417 files, 203.4s
+  Dir 463000: 8667259 files, 203.6s
+  Dir 464000: 8680873 files, 203.8s
+  Dir 465000: 8698956 files, 204.1s
+  Scanned 8.7M files, 204.2s
+  Dir 466000: 8714595 files, 204.4s
+  Dir 467000: 8727187 files, 204.6s
+  Dir 468000: 8741398 files, 204.9s
+  Dir 469000: 8758417 files, 205.2s
+  Dir 470000: 8795841 files, 205.8s
+  Scanned 8.8M files, 205.9s
+  Dir 471000: 8813469 files, 206.1s
+  Dir 472000: 8839291 files, 206.5s
+  Dir 473000: 8850184 files, 206.7s
+  Dir 474000: 8866209 files, 207.1s
+  Dir 475000: 8883948 files, 207.4s
+  Dir 476000: 8899403 files, 207.7s
+  Scanned 8.9M files, 207.7s
+  Dir 477000: 8936578 files, 208.7s
+  Dir 478000: 8949552 files, 208.9s
+  Dir 479000: 8964808 files, 209.2s
+  Dir 480000: 8982112 files, 209.5s
+  Dir 481000: 8992582 files, 209.7s
+  Scanned 9.0M files, 209.8s
+  Dir 482000: 9008390 files, 209.9s
+  Dir 483000: 9025563 files, 210.2s
+  Dir 484000: 9042025 files, 210.5s
+  Dir 485000: 9058612 files, 210.8s
+  Dir 486000: 9074408 files, 211.1s
+  Dir 487000: 9090928 files, 211.4s
+  Scanned 9.1M files, 211.6s
+  Dir 488000: 9103419 files, 211.6s
+  Dir 489000: 9117720 files, 211.9s
+  Dir 490000: 9134630 files, 212.2s
+  Dir 491000: 9171508 files, 212.8s
+  Scanned 9.2M files, 213.3s
+  Dir 492000: 9217329 files, 213.6s
+  Dir 493000: 9230392 files, 213.8s
+  Dir 494000: 9243582 files, 214.0s
+  Dir 495000: 9258092 files, 214.3s
+  Dir 496000: 9273123 files, 214.5s
+  Dir 497000: 9288956 files, 214.8s
+  Scanned 9.3M files, 215.0s
+  Dir 498000: 9302023 files, 215.0s
+  Dir 499000: 9315122 files, 215.3s
+  Dir 500000: 9330512 files, 215.5s
+  Dir 501000: 9358098 files, 216.0s
+  Scanned 9.4M files, 216.7s
+  Dir 502000: 9403835 files, 216.7s
+  Dir 503000: 9446893 files, 217.4s
+  Dir 504000: 9460944 files, 217.7s
+  Dir 505000: 9475184 files, 217.9s
+  Dir 506000: 9489415 files, 218.2s
+  Scanned 9.5M files, 218.4s
+  Dir 507000: 9505678 files, 218.5s
+  Dir 508000: 9534892 files, 218.9s
+  Dir 509000: 9579985 files, 219.7s
+  Scanned 9.6M files, 220.0s
+  Dir 510000: 9625335 files, 220.4s
+  Dir 511000: 9651526 files, 220.8s
+  Dir 512000: 9665176 files, 221.1s
+  Dir 513000: 9683827 files, 221.4s
+  Dir 514000: 9697398 files, 221.6s
+  Scanned 9.7M files, 221.7s
+  Dir 515000: 9710490 files, 221.9s
+  Dir 516000: 9724059 files, 222.1s
+  Dir 517000: 9739135 files, 222.4s
+  Dir 518000: 9767890 files, 222.8s
+  Dir 519000: 9777269 files, 223.0s
+  Dir 520000: 9792394 files, 223.2s
+  Scanned 9.8M files, 223.4s
+  Dir 521000: 9809033 files, 223.5s
+  Dir 522000: 9836591 files, 224.0s
+  Dir 523000: 9880071 files, 225.2s
+  Dir 524000: 9891540 files, 225.5s
+  Scanned 9.9M files, 225.6s
+  Dir 525000: 9905869 files, 225.7s
+  Dir 526000: 9921381 files, 226.0s
+  Dir 527000: 9939112 files, 226.2s
+  Dir 528000: 9985987 files, 227.0s
+  Scanned 10.0M files, 227.2s
+  Dir 529000: 10010485 files, 227.4s
+  Dir 530000: 10021524 files, 227.6s
+  Dir 531000: 10037771 files, 227.9s
+  Dir 532000: 10055357 files, 228.2s
+  Dir 533000: 10070002 files, 228.4s
+  Dir 534000: 10082411 files, 228.6s
+  Dir 535000: 10095998 files, 228.9s
+  Scanned 10.1M files, 228.9s
+  Dir 536000: 10110833 files, 229.1s
+  Dir 537000: 10125789 files, 229.4s
+  Dir 538000: 10155495 files, 229.8s
+  Dir 539000: 10166278 files, 230.0s
+  Dir 540000: 10182190 files, 230.3s
+  Dir 541000: 10198938 files, 230.6s
+  Scanned 10.2M files, 230.7s
+  Dir 542000: 10216690 files, 230.9s
+  Dir 543000: 10227296 files, 231.1s
+  Dir 544000: 10242258 files, 231.4s
+  Dir 545000: 10258189 files, 231.7s
+  Dir 546000: 10276359 files, 232.0s
+  Scanned 10.3M files, 232.3s
+  Dir 547000: 10326763 files, 232.7s
+  Dir 548000: 10344779 files, 233.0s
+  Dir 549000: 10357635 files, 233.3s
+  Dir 550000: 10370950 files, 233.5s
+  Dir 551000: 10385905 files, 233.7s
+  Scanned 10.4M files, 234.0s
+  Dir 552000: 10401902 files, 234.0s
+  Dir 553000: 10415420 files, 234.2s
+  Dir 554000: 10428875 files, 234.5s
+  Dir 555000: 10446895 files, 234.8s
+  Dir 556000: 10463115 files, 235.0s
+  Dir 557000: 10477124 files, 235.3s
+  Scanned 10.5M files, 235.6s
+  Dir 558000: 10502073 files, 235.7s
+  Dir 559000: 10522257 files, 236.0s
+  Dir 560000: 10536557 files, 236.2s
+  Dir 561000: 10569685 files, 236.8s
+  Scanned 10.6M files, 237.2s
+  Dir 562000: 10615300 files, 237.5s
+  Dir 563000: 10633514 files, 237.8s
+  Dir 564000: 10647305 files, 238.0s
+  Dir 565000: 10663480 files, 238.3s
+  Dir 566000: 10691576 files, 238.7s
+  Scanned 10.7M files, 238.9s
+  Dir 567000: 10704418 files, 238.9s
+  Dir 568000: 10717278 files, 239.2s
+  Dir 569000: 10732719 files, 239.4s
+  Dir 570000: 10752655 files, 239.7s
+  Dir 571000: 10776773 files, 240.1s
+  Dir 572000: 10789797 files, 240.8s
+  Scanned 10.8M files, 241.0s
+  Dir 573000: 10802879 files, 241.1s
+  Dir 574000: 10818371 files, 241.3s
+  Dir 575000: 10847293 files, 241.8s
+  Dir 576000: 10894664 files, 242.5s
+  Scanned 10.9M files, 242.6s
+  Dir 577000: 10928575 files, 243.1s
+  Dir 578000: 10939714 files, 243.2s
+  Dir 579000: 10953836 files, 243.5s
+  Dir 580000: 10970448 files, 243.8s
+  Dir 581000: 10985937 files, 244.1s
+  Scanned 11.0M files, 244.4s
+  Dir 582000: 11035987 files, 245.1s
+  Dir 583000: 11055423 files, 245.5s
+  Dir 584000: 11071730 files, 245.8s
+  Scanned 11.1M files, 246.3s
+  Dir 585000: 11118815 files, 246.7s
+  Dir 586000: 11150898 files, 247.3s
+  Dir 587000: 11168426 files, 247.6s
+  Dir 588000: 11184991 files, 248.0s
+  Scanned 11.2M files, 248.2s
+  Dir 589000: 11226694 files, 248.7s
+  Dir 590000: 11242025 files, 249.0s
+  Dir 591000: 11254915 files, 249.3s
+  Dir 592000: 11286423 files, 249.8s
+  Scanned 11.3M files, 250.0s
+  Dir 593000: 11300944 files, 250.0s
+  Dir 594000: 11317390 files, 250.3s
+  Dir 595000: 11362011 files, 251.0s
+  Scanned 11.4M files, 251.6s
+  Dir 596000: 11406496 files, 251.7s
+  Dir 597000: 11419053 files, 251.9s
+  Dir 598000: 11431981 files, 252.2s
+  Dir 599000: 11446852 files, 252.4s
+  Dir 600000: 11465846 files, 252.7s
+  Dir 601000: 11492955 files, 253.1s
+  Scanned 11.5M files, 253.3s
+  Dir 602000: 11505269 files, 253.4s
+  Dir 603000: 11519741 files, 253.6s
+  Dir 604000: 11536735 files, 253.9s
+  Dir 605000: 11559673 files, 254.3s
+  Dir 606000: 11584683 files, 254.7s
+  Scanned 11.6M files, 254.9s
+  Dir 607000: 11614164 files, 255.1s
+  Dir 608000: 11625002 files, 255.3s
+  Dir 609000: 11639997 files, 255.6s
+  Dir 610000: 11657001 files, 255.8s
+  Dir 611000: 11678240 files, 256.2s
+  Scanned 11.7M files, 256.5s
+  Dir 612000: 11727303 files, 257.0s
+  Dir 613000: 11739276 files, 257.7s
+  Dir 614000: 11754166 files, 258.0s
+  Dir 615000: 11771212 files, 258.3s
+  Dir 616000: 11787176 files, 258.5s
+  Dir 617000: 11799145 files, 258.7s
+  Scanned 11.8M files, 258.7s
+  Dir 618000: 11815334 files, 259.0s
+  Dir 619000: 11831571 files, 259.3s
+  Dir 620000: 11846703 files, 259.5s
+  Dir 621000: 11877258 files, 260.0s
+  Dir 622000: 11887989 files, 260.2s
+  Scanned 11.9M files, 260.4s
+  Dir 623000: 11903302 files, 260.5s
+  Dir 624000: 11919325 files, 260.8s
+  Dir 625000: 11938294 files, 261.1s
+  Dir 626000: 11989510 files, 262.0s
+  Scanned 12.0M files, 262.2s
+  Dir 627000: 12016991 files, 262.5s
+  Dir 628000: 12028385 files, 262.7s
+  Dir 629000: 12043283 files, 263.0s
+  Dir 630000: 12060431 files, 263.2s
+  Dir 631000: 12076793 files, 263.5s
+  Dir 632000: 12087424 files, 263.7s
+  Scanned 12.1M files, 263.9s
+  Dir 633000: 12103402 files, 264.0s
+  Dir 634000: 12120048 files, 264.2s
+  Dir 635000: 12137287 files, 264.5s
+  Dir 636000: 12147664 files, 264.7s
+  Dir 637000: 12162676 files, 265.0s
+  Dir 638000: 12178702 files, 265.2s
+  Dir 639000: 12196091 files, 265.5s
+  Scanned 12.2M files, 265.6s
+  Dir 640000: 12206817 files, 265.7s
+  Dir 641000: 12222096 files, 266.0s
+  Dir 642000: 12238039 files, 266.3s
+  Dir 643000: 12256225 files, 266.6s
+  Dir 644000: 12298084 files, 267.3s
+  Scanned 12.3M files, 267.3s
+  Dir 645000: 12309010 files, 267.5s
+  Dir 646000: 12323414 files, 267.8s
+  Dir 647000: 12339190 files, 268.1s
+  Dir 648000: 12356760 files, 268.5s
+  Dir 649000: 12386061 files, 269.1s
+  Dir 650000: 12396885 files, 269.3s
+  Scanned 12.4M files, 269.4s
+  Dir 651000: 12413552 files, 269.6s
+  Dir 652000: 12430642 files, 270.0s
+  Dir 653000: 12446656 files, 270.3s
+  Dir 654000: 12487170 files, 271.1s
+  Scanned 12.5M files, 271.3s
+  Scanned 12.6M files, 273.0s
+  Scanned 12.7M files, 274.7s
+  Scanned 12.8M files, 276.3s
+  Scanned 12.9M files, 278.1s
+  Scanned 13.0M files, 279.7s
+  Scanned 13.1M files, 281.3s
+  Scanned 13.2M files, 282.8s
+  Scanned 13.3M files, 284.2s
+  Scanned 13.4M files, 285.5s
+  Scanned 13.5M files, 286.9s
+  Scanned 13.6M files, 288.2s
+  Scanned 13.7M files, 290.2s
+  Scanned 13.8M files, 291.6s
+  Scanned 13.9M files, 292.9s
+  Scanned 14.0M files, 294.3s
+  Scanned 14.1M files, 295.6s
+  Scanned 14.2M files, 297.0s
+  Scanned 14.3M files, 298.3s
+  Scanned 14.4M files, 299.6s
+  Scanned 14.5M files, 301.0s
+  Scanned 14.6M files, 302.3s
+  Scanned 14.7M files, 303.6s
+  Scanned 14.8M files, 305.0s
+  Scanned 14.9M files, 306.3s
+  Scanned 15.0M files, 307.7s
+  Scanned 15.1M files, 309.0s
+  Scanned 15.2M files, 310.3s
+  Scanned 15.3M files, 311.6s
+  Scanned 15.4M files, 313.0s
+  Scanned 15.5M files, 314.3s
+  Scanned 15.6M files, 315.6s
+  Scanned 15.7M files, 316.9s
+  Scanned 15.8M files, 318.3s
+  Scanned 15.9M files, 319.6s
+  Scanned 16.0M files, 320.9s
+  Scanned 16.1M files, 322.3s
+  Scanned 16.2M files, 323.6s
+  Scanned 16.3M files, 324.9s
+  Scanned 16.4M files, 326.2s
+  Scanned 16.5M files, 327.6s
+  Scanned 16.6M files, 328.9s
+  Scanned 16.7M files, 330.2s
+  Scanned 16.8M files, 331.5s
+  Scanned 16.9M files, 332.9s
+  Scanned 17.0M files, 334.2s
+  Scanned 17.1M files, 335.6s
+  Scanned 17.2M files, 336.9s
+  Scanned 17.3M files, 338.2s
+  Scanned 17.4M files, 339.5s
+  Scanned 17.5M files, 340.8s
+  Dir 655000: 17549068 files, 341.5s
+  Dir 656000: 17562013 files, 341.8s
+  Dir 657000: 17577125 files, 342.0s
+  Dir 658000: 17593027 files, 342.3s
+  Scanned 17.6M files, 342.4s
+  Dir 659000: 17608157 files, 342.5s
+  Dir 660000: 17634791 files, 342.9s
+  Dir 661000: 17647689 files, 343.2s
+  Dir 662000: 17661754 files, 343.4s
+  Dir 663000: 17677342 files, 343.7s
+  Dir 664000: 17692714 files, 343.9s
+  Scanned 17.7M files, 344.0s
+  Dir 665000: 17708906 files, 344.2s
+  Dir 666000: 17721149 files, 345.2s
+  Dir 667000: 17734651 files, 345.4s
+  Dir 668000: 17751635 files, 345.7s
+  Dir 669000: 17767628 files, 345.9s
+  Dir 670000: 17779749 files, 346.1s
+  Dir 671000: 17794468 files, 346.4s
+  Scanned 17.8M files, 346.5s
+  Dir 672000: 17811328 files, 346.7s
+  Dir 673000: 17825551 files, 346.9s
+  Dir 674000: 17841745 files, 347.1s
+  Dir 675000: 17855620 files, 347.4s
+  Dir 676000: 17880602 files, 347.8s
+  Scanned 17.9M files, 348.1s
+  Dir 677000: 17914322 files, 348.3s
+  Dir 678000: 17924489 files, 348.5s
+  Dir 679000: 17940632 files, 348.7s
+  Dir 680000: 17957495 files, 349.0s
+  Dir 681000: 17977601 files, 349.3s
+  Scanned 18.0M files, 349.7s
+  Dir 682000: 18002791 files, 349.7s
+  Dir 683000: 18013688 files, 349.9s
+  Dir 684000: 18029623 files, 350.2s
+  Dir 685000: 18047378 files, 350.5s
+  Dir 686000: 18062640 files, 350.7s
+  Dir 687000: 18091472 files, 351.2s
+  Scanned 18.1M files, 351.3s
+  Dir 688000: 18101489 files, 351.3s
+  Dir 689000: 18117872 files, 351.6s
+  Dir 690000: 18134644 files, 351.9s
+Scan complete: 690459 dirs, 18142854 files, 352.0s
+Writing pool.json (18142854 entries)...
+Write complete: 1187.5 MB, 15.0s
+Total time: 367.0s
+
+=== Pool 统计 ===
+Files: 18,142,854
+Total size: 293.94 GB
+Average size: 17.0 KB
+
+Size Range                  Count        Total
+--------------------------------------------
+<1KB                    4,750,961       2.24 GB
+1KB-1MB                13,383,677     170.23 GB
+1MB-10MB                    7,201      17.44 GB
+10MB-100MB                    855      15.14 GB
+100MB-500MB                    72      20.81 GB
+500MB-1GB                      73      48.61 GB
+>1GB                           15      19.46 GB
+--------------------------------------------
+TOTAL                  18,142,854     293.94 GB
+
+[DONE] pool.json ready at /data/pool.json
+============================================================
+=== 阶段3: 映射分析 ===
+误差阈值: 10 MB
+============================================================
+
+[1] 加载 pool.json...
+  加载完成: 18,142,854 文件, 293.9 GB, 33.1s
+  排序 pool_sizes...
+  排序完成: 5.6s
+
+========================================
+[T15] /data/traces/typeA/IBMObjectStoreTrace015Part0.typeA.mc.aug
+========================================
+  PUT 操作: 671,586
+  PUT 总大小: 402.48 GB
+  PUT 大小范围: 345 - 107,883,940
+  进度: 100,000/671,586 (2.7s)
+  进度: 200,000/671,586 (133.8s)
+  进度: 300,000/671,586 (636.4s)
+  进度: 400,000/671,586 (1673.3s)
+  进度: 500,000/671,586 (3086.8s)
+============================================================
+Pipeline 开始
+时间: 2026-08-09 08:23:17
+============================================================
+
+========================================
+>>> 阶段1: 移动DEB+提取
+========================================
+[OK] 阶段1: 移动DEB+提取 完成 (1297.3s)
+
+========================================
+>>> 阶段2: 重建pool.json
+========================================
+[OK] 阶段2: 重建pool.json 完成 (380.7s)
+
+========================================
+>>> 阶段3: 映射分析
+========================================
+[FAIL] 阶段3: 映射分析 返回码=-15 (3215.3s)
+
+[DONE] Pipeline 完成
+时间: 2026-08-09 09:44:50

@@ -1,0 +1,1 @@
+[16:10:07] workers=0 read=0.0/623.4GB (0.0%) speed=-31679MB/s eta=10390000000min  *** CHUNKING MERGED ***

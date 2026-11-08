@@ -1,0 +1,180 @@
+[17:38:08] === MASTER PIPELINE START ===
+[17:38:08] tags=['065', '078', '015', '029']
+{
+  "tag": "079",
+  "n_objects": 12582,
+  "n_chunks_total": 69879547,
+  "n_chunks_unique": 8691500,
+  "logical_bytes": 623397964811,
+  "unique_bytes": 84601774994,
+  "compression_ratio_unique_over_logical": 0.135711,
+  "dedup_ratio": 0.864289,
+  "avg_chunk_bytes": 8921.0,
+  "index_estimate": {
+    "bloom_bytes_per_region": 10413567,
+    "bloom_mb_per_region": 10.414,
+    "lmdb_bytes_per_region": 556256000,
+    "lmdb_mb_per_region": 556.256,
+    "manifest_bytes_control_plane": 2795181880,
+    "manifest_mb": 2795.182,
+    "total_index_mb_one_region": 566.67,
+    "note": "Bloom \u03b5=1%; LMDB ~64B/entry; manifest 40B/chunk-ref"
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit_hot": 5.0,
+    "lmdb_hit_cold": 20.0,
+    "replay_array_index": 0.01,
+    "note": "Design numbers from cross_region_dedup_index_model; replay uses O(1) array, not real LMDB timing"
+  }
+}
+[17:38:08] ######## TAG 065 ########
+[17:38:08] T065: START chunk_objects (8 workers)
+[17:40:08] T065: chunking OK
+[17:40:08] T065: START orchestrate (prep+replays)
+[17:40:33] T065: orchestrate rc=0
+pid=9101
+[17:40:17] DONE  typeE_2reg/baseline (0.1 min)
+[17:40:17] DONE  typeE_2reg/dedup (0.1 min)
+[17:40:17] DONE  typeA_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeB_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeB_9reg/dedup (0.1 min)
+[17:40:17] DONE  typeC_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeC_9reg/dedup (0.1 min)
+[17:40:17] START typeD_9reg/baseline pid=9161
+[17:40:17] START typeD_9reg/dedup pid=9162
+[17:40:25] DONE  typeA_9reg/dedup (0.3 min)
+[17:40:25] DONE  typeD_9reg/baseline (0.1 min)
+[17:40:33] DONE  typeD_9reg/dedup (0.3 min)
+[17:40:33] T065: ALL REPLAYS done, failed=none
+
+[17:40:33] ######## TAG 078 ########
+[17:40:33] T078: START chunk_objects (8 workers)
+[17:42:33] T078: ... [w7] 2400/11397 objs 2.9GB 24MB/s
+[17:44:33] T078: chunking OK
+[17:44:33] T078: START orchestrate (prep+replays)
+[17:46:28] T078: orchestrate rc=0
+pid=9406
+[17:45:08] DONE  typeE_2reg/baseline (0.5 min)
+[17:45:08] DONE  typeB_9reg/baseline (0.5 min)
+[17:45:08] DONE  typeC_9reg/baseline (0.5 min)
+[17:45:08] START typeD_9reg/baseline pid=9467
+[17:45:08] START typeD_9reg/dedup pid=9468
+[17:45:16] DONE  typeA_9reg/baseline (0.7 min)
+[17:45:24] DONE  typeB_9reg/dedup (0.8 min)
+[17:45:32] DONE  typeE_2reg/dedup (0.9 min)
+[17:45:32] DONE  typeC_9reg/dedup (0.9 min)
+[17:45:40] DONE  typeD_9reg/baseline (0.5 min)
+[17:46:12] DONE  typeA_9reg/dedup (1.6 min)
+[17:46:28] DONE  typeD_9reg/dedup (1.3 min)
+[17:46:28] T078: ALL REPLAYS done, failed=none
+
+[17:46:28] ######## TAG 015 ########
+[17:46:28] T015: START chunk_objects (8 workers)
+[17:48:29] T015: ... [w1] 100/83946 objs 2.5GB 26MB/s
+[17:50:29] T015: ... [w0] 350/83945 objs 4.7GB 21MB/s
+[17:52:29] T015: ... [w0] 650/83945 objs 7.2GB 20MB/s
+[17:54:29] T015: ... [w2] 1000/83947 objs 10.1GB 21MB/s
+[17:56:29] T015: ... [w1] 1300/83946 objs 12.6GB 22MB/s
+[17:58:29] T015: ... [w1] 1650/83946 objs 15.5GB 22MB/s
+[18:00:29] T015: ... [w1] 2000/83946 objs 18.4GB 22MB/s
+[18:02:30] T015: ... [w1] 2400/83946 objs 21.4GB 22MB/s
+[18:04:30] T015: ... [w0] 3050/83945 objs 24.4GB 23MB/s
+[18:06:30] T015: ... [w0] 3850/83945 objs 27.2GB 23MB/s
+[18:08:30] T015: ... [w0] 5150/83945 objs 30.1GB 23MB/s
+[18:10:30] T015: ... [w1] 6950/83946 objs 32.8GB 23MB/s
+[18:12:30] T015: ... [w0] 9000/83945 objs 35.6GB 23MB/s
+[18:14:30] T015: ... [w0] 11200/83945 objs 38.5GB 23MB/s
+[18:16:31] T015: ... [w0] 13600/83945 objs 41.3GB 23MB/s
+[18:18:31] T015: ... [w1] 16300/83946 objs 44.1GB 23MB/s
+[18:20:31] T015: ... [w1] 19600/83946 objs 47.0GB 23MB/s
+[18:22:31] T015: ... [w4] 24550/83949 objs 49.9GB 23MB/s
+[18:24:31] T015: ... [w7] 37850/83949 objs 52.3GB 23MB/s
+[18:26:31] T015: ... [w7] DONE 83949 objs 6144460 chunks
+[18:28:31] T015: chunking OK
+[18:28:31] T015: START orchestrate (prep+replays)
+[18:31:41] T015: orchestrate rc=0
+=10400
+[18:29:33] DONE  typeE_2reg/baseline (0.5 min)
+[18:29:33] START typeD_9reg/baseline pid=10458
+[18:29:41] DONE  typeA_9reg/baseline (0.7 min)
+[18:29:41] DONE  typeB_9reg/baseline (0.7 min)
+[18:29:41] DONE  typeC_9reg/baseline (0.7 min)
+[18:29:41] START typeD_9reg/dedup pid=10466
+[18:30:05] DONE  typeD_9reg/baseline (0.5 min)
+[18:30:37] DONE  typeC_9reg/dedup (1.6 min)
+[18:30:53] DONE  typeE_2reg/dedup (1.9 min)
+[18:30:53] DONE  typeA_9reg/dedup (1.9 min)
+[18:30:53] DONE  typeB_9reg/dedup (1.9 min)
+[18:31:41] DONE  typeD_9reg/dedup (2.0 min)
+[18:31:41] T015: ALL REPLAYS done, failed=none
+
+[18:31:41] ######## TAG 029 ########
+[18:31:41] T029: START chunk_objects (8 workers)
+[18:33:41] T029: ... [w5] 63400/495884 objs 0.4GB 4MB/s
+[18:35:41] T029: ... [w0] 134500/495833 objs 0.7GB 3MB/s
+[18:37:42] T029: ... [w0] 209950/495833 objs 1.0GB 3MB/s
+[18:39:42] T029: ... [w3] 274000/495878 objs 1.1GB 2MB/s
+[18:41:42] T029: ... [w4] 349750/495879 objs 1.2GB 2MB/s
+[18:43:42] T029: ... [w5] 426700/495884 objs 1.3GB 2MB/s
+[18:45:42] T029: ... [w5] 489700/495884 objs 1.3GB 2MB/s
+[18:47:42] T029: chunking OK
+[18:47:42] T029: START orchestrate (prep+replays)
+[18:59:49] T029: orchestrate rc=0
+[18:47:42] === orchestrate TAG=029 ===
+[18:47:42] T029: chunk store present, skip wait
+[18:47:42] T029: running prep_chunkstore ...
+[18:48:37] [prep] 3966994 objects, 0.13M unique chunks, 0.4GB unique bytes, 0.9 min
+[18:48:53] T029: 2 replay jobs, concurrency 8
+[18:48:53] START typeE_2reg/baseline pid=10561
+[18:48:53] START typeE_2reg/dedup pid=10562
+[18:51:33] DONE  typeE_2reg/baseline (2.7 min)
+[18:59:49] DONE  typeE_2reg/dedup (10.9 min)
+[18:59:49] T029: ALL REPLAYS done, failed=none
+
+[18:59:49] === MASTER DONE ok=['065', '078', '015', '029'] fail=[] ===
+total 176
+drwxr-xr-x 2 root root 4096 Aug 11 18:59 .
+drwxr-xr-x 9 root root 4096 Aug 11 18:31 ..
+-rw-r--r-- 1 root root 1492 Aug 11 18:29 T015_typeA_9reg_baseline.json
+-rw-r--r-- 1 root root 1534 Aug 11 18:30 T015_typeA_9reg_dedup.json
+-rw-r--r-- 1 root root 1492 Aug 11 18:29 T015_typeB_9reg_baseline.json
+-rw-r--r-- 1 root root 1534 Aug 11 18:30 T015_typeB_9reg_dedup.json
+-rw-r--r-- 1 root root 1491 Aug 11 18:29 T015_typeC_9reg_baseline.json
+-rw-r--r-- 1 root root 1534 Aug 11 18:30 T015_typeC_9reg_dedup.json
+-rw-r--r-- 1 root root 1492 Aug 11 18:30 T015_typeD_9reg_baseline.json
+-rw-r--r-- 1 root root 1534 Aug 11 18:31 T015_typeD_9reg_dedup.json
+-rw-r--r-- 1 root root 1106 Aug 11 18:29 T015_typeE_2reg_baseline.json
+-rw-r--r-- 1 root root 1148 Aug 11 18:30 T015_typeE_2reg_dedup.json
+-rw-r--r-- 1 root root 1099 Aug 11 18:51 T029_typeE_2reg_baseline.json
+-rw-r--r-- 1 root root 1138 Aug 11 18:59 T029_typeE_2reg_dedup.json
+-rw-r--r-- 1 root root 1467 Aug 11 17:40 T065_typeA_9reg_baseline.json
+-rw-r--r-- 1 root root 1507 Aug 11 17:40 T065_typeA_9reg_dedup.json
+-rw-r--r-- 1 root root 1461 Aug 11 17:40 T065_typeB_9reg_baseline.json
+-rw-r--r-- 1 root root 1499 Aug 11 17:40 T065_typeB_9reg_dedup.json
+-rw-r--r-- 1 root root 1457 Aug 11 17:40 T065_typeC_9reg_baseline.json
+-rw-r--r-- 1 root root 1497 Aug 11 17:40 T065_typeC_9reg_dedup.json
+-rw-r--r-- 1 root root 1467 Aug 11 17:40 T065_typeD_9reg_baseline.json
+-rw-r--r-- 1 root root 1508 Aug 11 17:40 T065_typeD_9reg_dedup.json
+-rw-r--r-- 1 root root 1086 Aug 11 17:40 T065_typeE_2reg_baseline.json
+-rw-r--r-- 1 root root 1125 Aug 11 17:40 T065_typeE_2reg_dedup.json
+-rw-r--r-- 1 root root 1489 Aug 11 17:45 T078_typeA_9reg_baseline.json
+-rw-r--r-- 1 root root 1520 Aug 11 17:46 T078_typeA_9reg_dedup.json
+-rw-r--r-- 1 root root 1480 Aug 11 17:45 T078_typeB_9reg_baseline.json
+-rw-r--r-- 1 root root 1520 Aug 11 17:45 T078_typeB_9reg_dedup.json
+-rw-r--r-- 1 root root 1481 Aug 11 17:45 T078_typeC_9reg_baseline.json
+-rw-r--r-- 1 root root 1520 Aug 11 17:45 T078_typeC_9reg_dedup.json
+-rw-r--r-- 1 root root 1487 Aug 11 17:45 T078_typeD_9reg_baseline.json
+-rw-r--r-- 1 root root 1519 Aug 11 17:46 T078_typeD_9reg_dedup.json
+-rw-r--r-- 1 root root 1102 Aug 11 17:45 T078_typeE_2reg_baseline.json
+-rw-r--r-- 1 root root 1140 Aug 11 17:45 T078_typeE_2reg_dedup.json
+-rw-r--r-- 1 root root 1136 Aug 11 16:10 T079_typeA_9reg_baseline.json
+-rw-r--r-- 1 root root 1125 Aug 11 16:11 T079_typeA_9reg_dedup.json
+-rw-r--r-- 1 root root 1131 Aug 11 16:10 T079_typeB_9reg_baseline.json
+-rw-r--r-- 1 root root 1126 Aug 11 16:10 T079_typeB_9reg_dedup.json
+-rw-r--r-- 1 root root 1133 Aug 11 16:10 T079_typeC_9reg_baseline.json
+-rw-r--r-- 1 root root 1123 Aug 11 16:10 T079_typeC_9reg_dedup.json
+-rw-r--r-- 1 root root 1136 Aug 11 16:10 T079_typeD_9reg_baseline.json
+-rw-r--r-- 1 root root 1126 Aug 11 16:11 T079_typeD_9reg_dedup.json
+-rw-r--r-- 1 root root  743 Aug 11 16:10 T079_typeE_2reg_baseline.json
+-rw-r--r-- 1 root root  738 Aug 11 16:11 T079_typeE_2reg_dedup.json

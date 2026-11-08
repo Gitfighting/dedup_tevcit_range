@@ -1,0 +1,20 @@
+PARALLEL DOWNLOAD (100Mbps) - Sat Aug  8 05:55:14 PM CST 2026
+==============================================
+
+=== 1. CENTOS 9 ISO (15GB) [if not already done] ===
+=== 2. UBUNTU ISO 24.04 (3GB) ===
+=== 3. UBUNTU ISO 22.04 (5GB) ===
+=== 4. DEBIAN 12.5 DVD (3.7GB) ===
+=== 5. LINUX KERNEL 5.4 series ===
+=== 6. LINUX KERNEL 5.10 series ===
+=== 7. LINUX KERNEL 5.15 series ===
+=== 8. LINUX KERNEL 6.6 series ===
+=== 9. PHP 8.x more versions ===
+=== 10. PYTHON more versions ===
+
+ALL 19 JOBS LAUNCHED FOR PIPE SATURATION
+100Mbps = 12.5MB/s = ~45GB/hour
+
+Current download rate: 12 MB/s
+
+Terminated

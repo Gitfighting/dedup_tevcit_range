@@ -1,0 +1,26 @@
+[17:40:08] === orchestrate TAG=065 ===
+[17:40:08] T065: chunk store present, skip wait
+[17:40:08] T065: running prep_chunkstore ...
+[17:40:08] [prep] 3065 objects, 0.25M unique chunks, 2.2GB unique bytes, 0.0 min
+[17:40:09] T065: 10 replay jobs, concurrency 8
+[17:40:09] START typeE_2reg/baseline pid=9094
+[17:40:09] START typeE_2reg/dedup pid=9095
+[17:40:09] START typeA_9reg/baseline pid=9096
+[17:40:09] START typeA_9reg/dedup pid=9097
+[17:40:09] START typeB_9reg/baseline pid=9098
+[17:40:09] START typeB_9reg/dedup pid=9099
+[17:40:09] START typeC_9reg/baseline pid=9100
+[17:40:09] START typeC_9reg/dedup pid=9101
+[17:40:17] DONE  typeE_2reg/baseline (0.1 min)
+[17:40:17] DONE  typeE_2reg/dedup (0.1 min)
+[17:40:17] DONE  typeA_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeB_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeB_9reg/dedup (0.1 min)
+[17:40:17] DONE  typeC_9reg/baseline (0.1 min)
+[17:40:17] DONE  typeC_9reg/dedup (0.1 min)
+[17:40:17] START typeD_9reg/baseline pid=9161
+[17:40:17] START typeD_9reg/dedup pid=9162
+[17:40:25] DONE  typeA_9reg/dedup (0.3 min)
+[17:40:25] DONE  typeD_9reg/baseline (0.1 min)
+[17:40:33] DONE  typeD_9reg/dedup (0.3 min)
+[17:40:33] T065: ALL REPLAYS done, failed=none

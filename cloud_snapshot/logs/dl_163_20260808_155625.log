@@ -1,0 +1,140 @@
+==============================================
+ISO DOWNLOAD from 163 mirror - 2026-08-08 15:56:25
+==============================================
+
+>>> [1/2] Ubuntu 22.04.5 ISO (~2.0GB)
+--2026-08-08 15:56:25--  https://mirrors.163.com/ubuntu-releases/22.04.5/ubuntu-22.04.5-live-server-amd64.iso
+Resolving mirrors.163.com (mirrors.163.com)... 117.147.202.12
+Connecting to mirrors.163.com (mirrors.163.com)|117.147.202.12|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2136926208 (2.0G) [application/octet-stream]
+Saving to: ‘/data/datasets/iso/ubuntu-22.04.5-live-server-amd64.iso’
+
+     0K ........ ........ ........ ........  1% 1.60M 20m58s
+ 32768K ........ ........ ........ ........  3% 3.52M 14m59s
+ 65536K ........ ........ ........ ........  4% 4.26M 12m22s
+ 98304K ........ ........ ........ ........  6% 8.82M 10m1s
+131072K ........ ........ ........ ........  7% 11.1M 8m27s
+163840K ........ ........ ........ ........  9% 9.51M 7m27s
+196608K ........ ........ ........ ........ 10% 11.1M 6m40s
+229376K ........ ........ ........ ........ 12% 10.2M 6m6s
+262144K ........ ........ ........ ........ 14% 4.52M 6m2s
+294912K ........ ........ ........ ........ 15% 11.2M 5m35s
+327680K ........ ........ ........ ........ 17% 7.80M 5m19sTerminated
+--2026-08-08 15:57:32--  https://repo.huaweicloud.com/ubuntu-releases/22.04.5/ubuntu-22.04.5-live-server-amd64.iso
+Resolving repo.huaweicloud.com (repo.huaweicloud.com)... 120.226.22.165, 39.136.179.227, 39.136.179.224, ...
+Connecting to repo.huaweicloud.com (repo.huaweicloud.com)|120.226.22.165|:443... connected.
+HTTP request sent, awaiting response... 206 Partial Content
+Length: 2136926208 (2.0G), 1767774621 (1.6G) remaining [application/octet-stream]
+Saving to: ‘/data/datasets/iso/ubuntu-22.04.5-live-server-amd64.iso’
+
+        [ skipping 360448K ]
+360448K
+360448K ........ ........ ........ ........ 18% 18.5M 90s
+393216K ........ ........ ........ ........ 20% 11.9M 1m52s
+425984K ........ ........ ........ ........ 21% 11.8M 1m58s
+458752K ........ ........ ........ ........ 23% 11.9M 2m0s
+491520K ........ ........ ........ ........ 25% 11.9M 1m59s
+524288K ........ ........ ........ ........ 26% 11.9M 1m58s
+557056K ........ ........ ........ ........ 28% 11.9M 1m57s
+589824K ........ ........ ........ ........ 29% 11.9M 1m55s
+622592K ........ ........ ........ ........ 31% 12.0M 1m53s
+655360K ........ ........ ........ ........ 32% 11.8M 1m51s
+688128K ........ ........ ........ ........ 34% 12.1M 1m48s
+720896K ........ ........ ........ ........ 36% 12.0M 1m46s
+753664K ........ ........ ........ ........ 37% 11.9M 1m44s
+786432K ........ ........ ........ ........ 39% 11.7M 1m41s
+819200K ........ ........ ........ ........ 40% 12.1M 99s
+851968K ........ ........ ........ ........ 42% 12.0M 96s
+884736K ........ ........ ........ ........ 43% 11.9M 94s
+917504K ........ ........ ........ ........ 45% 11.9M 91s
+950272K ........ ........ ........ ........ 47% 11.7M 89s
+983040K ........ ........ ........ ........ 48% 11.4M 86s
+1015808K ........ ........ ........ ........ 50% 11.4M 84s
+1048576K ........ ........ ........ ........ 51% 11.9M 81s
+1081344K ........ ........ ........ ........ 53% 11.4M 79s
+1114112K ........ ........ ........ ........ 54% 11.7M 76s
+1146880K ........ ........ ........ ........ 56% 11.4M 74s
+1179648K ........ ........ ........ ........ 58% 11.8M 71s
+1212416K ........ ........ ........ ........ 59% 11.4M 69s
+1245184K ........ ........ ........ ........ 61% 11.5M 66s
+1277952K ........ ........ ........ ........ 62% 11.4M 64s
+1310720K ........ ........ ........ ........ 64% 11.6M 61s
+1343488K ........ ........ ........ ........ 65% 11.9M 58s
+1376256K ........ ........ ........ ........ 67% 11.6M 56s
+1409024K ........ ........ ........ ........ 69% 11.2M 53s
+1441792K ........ ........ ........ ........ 70% 12.0M 50s
+1474560K ........ ........ ........ ........ 72% 11.4M 48s
+1507328K ........ ........ ........ ........ 73% 11.1M 45s
+1540096K ........ ........ ........ ........ 75% 12.2M 42s
+1572864K ........ ........ ........ ........ 76% 11.6M 40s
+1605632K ........ ........ ........ ........ 78% 11.3M 37s
+1638400K ........ ........ ........ ........ 80% 11.5M 34s
+1671168K ........ ........ ........ ........ 81% 11.6M 32s
+1703936K ........ ........ ........ ........ 83% 11.8M 29s
+1736704K ........ ........ ........ ........ 84% 11.6M 26s
+1769472K ........ ........ ........ ........ 86% 11.1M 24s
+1802240K ........ ........ ........ ........ 87% 11.7M 21s
+1835008K ........ ........ ........ ........ 89% 11.5M 18s
+1867776K ........ ........ ........ ........ 91% 12.0M 15s
+1900544K ........ ........ ........ ........ 92% 11.4M 13s
+1933312K ........ ........ ........ ........ 94% 11.7M 10s
+1966080K ........ ........ ........ ........ 95% 11.3M 7s
+1998848K ........ ........ ........ ........ 97% 12.0M 5s
+2031616K ........ ........ ........ ........ 98% 11.8M 2s
+2064384K ........ ........ .....            100% 11.6M=2m23s
+
+2026-08-08 15:59:56 (11.8 MB/s) - ‘/data/datasets/iso/ubuntu-22.04.5-live-server-amd64.iso’ saved [2136926208/2136926208]
+
+  SIZE: 2.0G
+
+>>> [2/2] Ubuntu 24.04.2 ISO (~2.6GB)
+--2026-08-08 15:59:56--  https://mirrors.163.com/ubuntu-releases/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+Resolving mirrors.163.com (mirrors.163.com)... 117.147.202.12
+Connecting to mirrors.163.com (mirrors.163.com)|117.147.202.12|:443... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-08-08 15:59:57 ERROR 404: Not Found.
+
+--2026-08-08 15:59:57--  https://repo.huaweicloud.com/ubuntu-releases/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+Resolving repo.huaweicloud.com (repo.huaweicloud.com)... 39.136.99.225, 39.136.179.224, 120.226.22.165, ...
+Connecting to repo.huaweicloud.com (repo.huaweicloud.com)|39.136.99.225|:443... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-08-08 15:59:57 ERROR 404: Not Found.
+
+  SIZE: 0
+
+==============================================
+COMPLETE - 2026-08-08 15:59:57
+==============================================
+
+=== FINAL INVENTORY ===
+2.0G	/data/datasets/iso/
+647M	/data/datasets/linux/
+1.3G	/data/datasets/linux_big/
+37M	/data/datasets/php/
+4.0K	/data/datasets/sqldump/
+56M	/data/datasets/ubuntu/
+
+-rw-r--r-- 1 root root 12M Jul 28 18:30 /data/datasets/php/php-8.2.33.tar.xz
+-rw-r--r-- 1 root root 13M Jul 29 02:10 /data/datasets/php/php-8.3.33.tar.xz
+-rw-r--r-- 1 root root 14M Jul 29 14:10 /data/datasets/php/php-8.4.24.tar.xz
+-rw-r--r-- 1 root root 27M Aug  7 12:44 /data/datasets/ubuntu/focal-base-amd64.tar.gz
+-rw-r--r-- 1 root root 29M Aug  7 13:54 /data/datasets/ubuntu/noble-base-amd64.tar.gz
+-rw-r--r-- 1 root root 74M Aug  8 15:14 /data/datasets/linux_big/linux-6.6.149.tar.xz
+-rw-r--r-- 1 root root 130M Aug  7 01:39 /data/datasets/linux/linux-6.1.181.tar.xz
+-rw-r--r-- 1 root root 130M Aug  7 14:24 /data/datasets/linux/linux-6.1.182.tar.xz
+-rw-r--r-- 1 root root 130M Jul 24 22:09 /data/datasets/linux/linux-6.1.178.tar.xz
+-rw-r--r-- 1 root root 130M Jul 29 23:54 /data/datasets/linux/linux-6.1.179.tar.xz
+-rw-r--r-- 1 root root 130M Jul 30 19:14 /data/datasets/linux/linux-6.1.180.tar.xz
+-rw-r--r-- 1 root root 135M Aug  3 17:24 /data/datasets/linux_big/linux-6.6.148.tar.xz
+-rw-r--r-- 1 root root 135M Jul 24 22:19 /data/datasets/linux_big/linux-6.6.145.tar.xz
+-rw-r--r-- 1 root root 135M Jul 29 23:58 /data/datasets/linux_big/linux-6.6.146.tar.xz
+-rw-r--r-- 1 root root 135M Jul 30 19:17 /data/datasets/linux_big/linux-6.6.147.tar.xz
+-rw-r--r-- 1 root root 142M Aug  3 17:28 /data/datasets/linux_big/linux-6.12.101.tar.xz
+-rw-r--r-- 1 root root 142M Aug  7 13:44 /data/datasets/linux_big/linux-6.12.102.tar.xz
+-rw-r--r-- 1 root root 142M Jul 25 14:10 /data/datasets/linux_big/linux-6.12.98.tar.xz
+-rw-r--r-- 1 root root 142M Jul 30 00:02 /data/datasets/linux_big/linux-6.12.99.tar.xz
+-rw-r--r-- 1 root root 142M Jul 30 19:21 /data/datasets/linux_big/linux-6.12.100.tar.xz
+-rw-r--r-- 1 root root 2.0G Sep 12  2024 /data/datasets/iso/ubuntu-22.04.5-live-server-amd64.iso
+
+/dev/vdb        295G   17G  263G   6% /data

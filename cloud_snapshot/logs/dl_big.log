@@ -1,0 +1,8 @@
+/tmp/dl_big_ubuntu.sh: line 4: cd: $'/data/datasets/iso\r\r': No such file or directory
+/tmp/dl_big_ubuntu.sh: line 6: $'\r': command not found
+/tmp/dl_big_ubuntu.sh: line 9: $'\r': command not found
+Starting sequential downloads...
+
+/tmp/dl_big_ubuntu.sh: line 12: $'\r': command not found
+/tmp/dl_big_ubuntu.sh: line 13: syntax error near unexpected token `$'{\r''
+/tmp/dl_big_ubuntu.sh: line 13: `download() {'

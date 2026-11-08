@@ -1,0 +1,51 @@
+[load] 12582 objects, 8.7M unique chunks
+[load] 114227 ops, 9 regions
+{
+  "trace": "IBMObjectStoreTrace079Part0.typeA.mc.aug",
+  "policy": "baseline",
+  "regions": [
+    "aws:eu-west-1",
+    "aws:us-east-1",
+    "aws:us-west-1",
+    "azure:eastus",
+    "azure:westeurope",
+    "azure:westus",
+    "gcp:europe-west1-b",
+    "gcp:us-east1-b",
+    "gcp:us-west1-a"
+  ],
+  "ops": 114227,
+  "counters": {
+    "puts": 12582,
+    "gets": 101645,
+    "remote_fetch": 76723,
+    "hit_base": 11389,
+    "hit_cached": 13533,
+    "evictions": 73239
+  },
+  "cost_usd": {
+    "storage": 351.2247,
+    "transfer": 147.8111,
+    "req_put": 0.0648,
+    "req_get": 0.0736,
+    "total": 499.1742
+  },
+  "storage_gb_hours": {
+    "aws:eu-west-1": 16546.0,
+    "aws:us-east-1": 18768.3,
+    "aws:us-west-1": 18737.2,
+    "azure:eastus": 13243.9,
+    "azure:westeurope": 9279.2,
+    "azure:westus": 11205.1,
+    "gcp:europe-west1-b": 12208.2,
+    "gcp:us-east1-b": 14649.0,
+    "gcp:us-west1-a": 14142.2
+  },
+  "bytes_transferred_gb": 2331.34,
+  "bytes_logical_get_gb": 3841.1,
+  "base_logical_bytes_gb": 580.58,
+  "base_stored_bytes_gb": 580.58,
+  "chunk_index_bytes_gb": 0.0,
+  "unique_chunks_m": 8.69,
+  "wall_seconds": 1.9
+}

@@ -1,0 +1,17 @@
+=== BUILDING KERNEL DOWNLOAD LIST ===
+  141 new kernels to try (4 parallel)
+=== BUILDING PHP LIST ===
+  315 new PHP to try (2 parallel)
+=== BUILDING PYTHON LIST ===
+  308 new Python to try (2 parallel)
+=== BUILDING NODEJS LIST ===
+  120 new NodeJS to try (2 parallel)
+
+Total tasks: 884, running with 10 parallel workers
+
+
+Done: 121 OK, 763 FAIL in 17min
+  lx: 461 files, 50.2GB
+  php: 216 files, 2.5GB
+  py: 0 files, 0.0GB
+  node: 40 files, 3.4GB

@@ -1,0 +1,89 @@
+Loading pool.json (1.7GB)...
+Pool: 17,866,707 files (72.7s)
+
+=== T015: 671,586 PUTs ===
+  Mapped: 10,000/10,000 (100.0%), Missing: 0
+  Within 10MB: 10,000 (100.0%)
+  Errors: avg=64.5KB P50=0.0KB P90=0.0MB MAX=6.0MB
+  Mapping time: 0.06s
+
+  Bin                PUTs  PoolAvail  Mapped%   ≤10MB%     AvgErr     MAXErr     Status
+  0-1KB                23  4,478,838   100.0%   100.0%       0.0KB       0.0MB         OK
+  1-10KB              968  9,185,161   100.0%   100.0%       0.0KB       0.0MB         OK
+  10-100KB          4,142  4,007,294   100.0%   100.0%       0.0KB       0.0MB         OK
+  100KB-1MB         3,055    187,573   100.0%   100.0%       1.6KB       0.0MB         OK
+  1-10MB            1,799      7,083   100.0%   100.0%     336.1KB       4.6MB         OK
+  10-50MB              13        758   100.0%   100.0%    2751.9KB       6.0MB         OK
+
+  [OK] READY: 100.0% mappings within 10MB
+
+=== T029: 3,966,990 PUTs ===
+  Mapped: 10,000/10,000 (100.0%), Missing: 0
+  Within 10MB: 10,000 (100.0%)
+  Errors: avg=0.0KB P50=0.0KB P90=0.0MB MAX=0.0MB
+  Mapping time: 0.55s
+
+  Bin                PUTs  PoolAvail  Mapped%   ≤10MB%     AvgErr     MAXErr     Status
+  0-1KB             4,372  4,478,838   100.0%   100.0%       0.0KB       0.0MB         OK
+  1-10KB            5,608  9,185,161   100.0%   100.0%       0.0KB       0.0MB         OK
+  10-100KB             20  4,007,294   100.0%   100.0%       0.0KB       0.0MB         OK
+
+  [OK] READY: 100.0% mappings within 10MB
+
+=== T065: 2,819 PUTs ===
+  Mapped: 2,819/2,819 (100.0%), Missing: 0
+  Within 10MB: 2,813 (99.8%)
+  Errors: avg=854.0KB P50=0.2KB P90=0.0MB MAX=920.8MB
+  Mapping time: 0.02s
+
+  Bin                PUTs  PoolAvail  Mapped%   ≤10MB%     AvgErr     MAXErr     Status
+  0-1KB               705  4,478,838   100.0%   100.0%       0.0KB       0.0MB         OK
+  1-10KB              165  9,185,161   100.0%   100.0%       0.0KB       0.0MB         OK
+  10-100KB            211  4,007,294   100.0%   100.0%       0.0KB       0.0MB         OK
+  100KB-1MB           973    187,573   100.0%   100.0%       4.0KB       0.0MB         OK
+  1-10MB              753      7,083   100.0%   100.0%      16.4KB       1.1MB         OK
+  10-50MB               5        758   100.0%   100.0%     802.1KB       3.1MB         OK
+  50-100MB              2          0   100.0%    50.0%   17135.6KB      29.8MB   NO_FILES
+
+  [OK] READY: 99.8% mappings within 10MB
+
+=== T078: 132,360 PUTs ===
+  Mapped: 10,000/10,000 (100.0%), Missing: 0
+  Within 10MB: 10,000 (100.0%)
+  Errors: avg=5.3KB P50=0.0KB P90=0.0MB MAX=3.4MB
+  Mapping time: 0.05s
+
+  Bin                PUTs  PoolAvail  Mapped%   ≤10MB%     AvgErr     MAXErr     Status
+  10-100KB            716  4,007,294   100.0%   100.0%       0.0KB       0.0MB         OK
+  100KB-1MB         9,072    187,573   100.0%   100.0%       0.5KB       0.0MB         OK
+  1-10MB              212      7,083   100.0%   100.0%     231.5KB       3.4MB         OK
+
+  [OK] READY: 100.0% mappings within 10MB
+
+=== T079: 12,582 PUTs ===
+  Mapped: 10,000/10,000 (100.0%), Missing: 0
+  Within 10MB: 6,981 (69.8%)
+  Errors: avg=24762.4KB P50=110.6KB P90=24.2MB MAX=14824.6MB
+  Mapping time: 2.00s
+
+  Bin                PUTs  PoolAvail  Mapped%   ≤10MB%     AvgErr     MAXErr     Status
+  0-1KB                 1  4,478,838   100.0%   100.0%       0.0KB       0.0MB         OK
+  1-10KB              148  9,185,161   100.0%   100.0%       0.0KB       0.0MB         OK
+  10-100KB            258  4,007,294   100.0%   100.0%       0.0KB       0.0MB         OK
+  100KB-1MB         3,800    187,573   100.0%   100.0%       0.3KB       0.0MB         OK
+  1-10MB            2,343      7,083   100.0%   100.0%    1932.9KB       9.2MB         OK
+  10-50MB           3,326        758   100.0%    13.0%   19191.3KB      49.9MB      LOOSE
+  50-100MB             41          0   100.0%     0.0%   45113.8KB     100.3MB   NO_FILES
+
+  [FAIL] NEED MORE FILES: only 69.8% within 10MB
+
+=== POOL DISTRIBUTION ===
+  0-1KB         :    4,478,838 files
+  1-10KB        :    9,185,161 files
+  10-100KB      :    4,007,294 files
+  100KB-1MB     :      187,573 files
+  1-10MB        :        7,083 files
+  10-50MB       :          758 files
+  50-100MB      :            0 files
+
+Total: 98s

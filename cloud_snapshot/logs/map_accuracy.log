@@ -1,0 +1,155 @@
+Loading pool...
+  500,610 files, 71.45 GB
+Trace dir: /data/traces/typeB
+
+======================================================================
+T015 | 671,586 PUTs | IBMObjectStoreTrace015Part0.typeB.mc.aug
+======================================================================
+  Total PUT data: 432.16 GB
+  Gap distribution (diff = mapped_file_size - put_size):
+    mean:        -8.8 KB
+    median:       0.0 KB
+    P10:         -4.2 KB
+    P90:         0.00 MB
+    P99:         0.24 MB
+    max:          1.4 MB
+  Coverage:
+    within 100KB: 95.8%
+    within 1MB:   99.9%
+    within 10MB:  100.0%
+  Per PUT-size bin gap (abs):
+    <1KB            1,557 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    1-10KB         64,645 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    10-100KB      275,218 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    100KB-1MB     203,627 PUTs | mean=      2KB med=      0KB | in100KB=100%
+    1-10MB        125,530 PUTs | mean=    127KB med=     13KB | in100KB=78%
+    10-100MB        1,007 PUTs | mean=  1,037KB med=  1,281KB | in100KB=15%
+    100MB-1GB           2 PUTs | mean=    664KB med=    664KB | in100KB=0%
+  File category distribution:
+    linux_kernel        :  649,676 (96.7%)
+    linux               :   21,732 (3.2%)
+    php                 :      174 (0.0%)
+    ubuntu              :        4 (0.0%)
+
+======================================================================
+T029 | 3,966,990 PUTs | IBMObjectStoreTrace029Part0.typeB.mc.aug
+======================================================================
+  Total PUT data: 10.42 GB
+  Gap distribution (diff = mapped_file_size - put_size):
+    mean:         0.1 KB
+    median:       0.0 KB
+    P10:          0.0 KB
+    P90:         0.00 MB
+    P99:         0.00 MB
+    max:          0.1 MB
+  Coverage:
+    within 100KB: 100.0%
+    within 1MB:   100.0%
+    within 10MB:  100.0%
+  Per PUT-size bin gap (abs):
+    <1KB         1,743,632 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    1-10KB       2,213,226 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    10-100KB       10,131 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    1-10MB              1 PUTs | mean=    119KB med=    119KB | in100KB=0%
+  File category distribution:
+    linux_kernel        : 3,966,989 (100.0%)
+    linux               :        1 (0.0%)
+
+======================================================================
+T065 | 2,819 PUTs | IBMObjectStoreTrace065Part0.typeB.mc.aug
+======================================================================
+  Total PUT data: 4.82 GB
+  Gap distribution (diff = mapped_file_size - put_size):
+    mean:      -217.9 KB
+    median:       0.2 KB
+    P10:         -9.0 KB
+    P90:         0.01 MB
+    P99:         0.19 MB
+    max:         32.7 MB
+  Coverage:
+    within 100KB: 96.6%
+    within 1MB:   99.8%
+    within 10MB:  99.9%
+  Per PUT-size bin gap (abs):
+    <1KB              705 PUTs | mean=      0KB med=      1KB | in100KB=100%
+    1-10KB            165 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    10-100KB          210 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    100KB-1MB         743 PUTs | mean=      4KB med=      1KB | in100KB=100%
+    1-10MB            984 PUTs | mean=     31KB med=      7KB | in100KB=91%
+    10-100MB            7 PUTs | mean=  1,352KB med=    645KB | in100KB=14%
+    100MB-1GB           5 PUTs | mean=134,468KB med= 42,631KB | in100KB=0%
+  File category distribution:
+    linux_kernel        :    2,712 (96.2%)
+    linux               :      100 (3.5%)
+    php                 :        4 (0.1%)
+    sqldump             :        3 (0.1%)
+
+======================================================================
+T078 | 132,360 PUTs | IBMObjectStoreTrace078Part0.typeB.mc.aug
+======================================================================
+  Total PUT data: 54.00 GB
+  Gap distribution (diff = mapped_file_size - put_size):
+    mean:         0.1 KB
+    median:       0.0 KB
+    P10:         -0.9 KB
+    P90:         0.00 MB
+    P99:         0.02 MB
+    max:          0.8 MB
+  Coverage:
+    within 100KB: 98.8%
+    within 1MB:   100.0%
+    within 10MB:  100.0%
+  Per PUT-size bin gap (abs):
+    10-100KB        9,134 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    100KB-1MB     120,411 PUTs | mean=      1KB med=      0KB | in100KB=100%
+    1-10MB          2,809 PUTs | mean=    167KB med=    125KB | in100KB=42%
+    10-100MB            6 PUTs | mean=     17KB med=      7KB | in100KB=100%
+  File category distribution:
+    linux_kernel        :  130,983 (99.0%)
+    linux               :    1,345 (1.0%)
+    php                 :       32 (0.0%)
+
+======================================================================
+T079 | 12,582 PUTs | IBMObjectStoreTrace079Part0.typeB.mc.aug
+======================================================================
+  Total PUT data: 623.40 GB
+  Gap distribution (diff = mapped_file_size - put_size):
+    mean:   -18,501.7 KB
+    median:       0.1 KB
+    P10:       -864.3 KB
+    P90:         0.22 MB
+    P99:         5.25 MB
+    max:        501.5 MB
+  Coverage:
+    within 100KB: 61.3%
+    within 1MB:   87.2%
+    within 10MB:  97.9%
+  Per PUT-size bin gap (abs):
+    <1KB                1 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    1-10KB            150 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    10-100KB          434 PUTs | mean=      0KB med=      0KB | in100KB=100%
+    100KB-1MB       4,449 PUTs | mean=      1KB med=      0KB | in100KB=100%
+    1-10MB          2,739 PUTs | mean=    141KB med=    114KB | in100KB=45%
+    10-100MB        4,385 PUTs | mean=  1,276KB med=    316KB | in100KB=32%
+    100MB-1GB         380 PUTs | mean= 38,815KB med= 20,968KB | in100KB=7%
+    1-10GB             16 PUTs | mean=1,987,518KB med=1,238,534KB | in100KB=0%
+  File category distribution:
+    linux_kernel        :    7,547 (60.0%)
+    linux               :    3,555 (28.3%)
+    php                 :    1,083 (8.6%)
+    ubuntu              :      344 (2.7%)
+    iso                 :       44 (0.3%)
+    sqldump             :        9 (0.1%)
+
+
+======================================================================
+OVERALL MAPPING ACCURACY SUMMARY
+======================================================================
+Trace          PUTs    MeanGap   <100KB     <1MB    <10MB
+T015        671,586        -9KB    95.8%    99.9%   100.0%
+T029      3,966,990         0KB   100.0%   100.0%   100.0%
+T065          2,819      -218KB    96.6%    99.8%    99.9%
+T078        132,360         0KB    98.8%   100.0%   100.0%
+T079         12,582   -18,502KB    61.3%    87.2%    97.9%
+
+Total time: 69.4s

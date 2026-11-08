@@ -1,0 +1,10 @@
+[18:47:42] === orchestrate TAG=029 ===
+[18:47:42] T029: chunk store present, skip wait
+[18:47:42] T029: running prep_chunkstore ...
+[18:48:37] [prep] 3966994 objects, 0.13M unique chunks, 0.4GB unique bytes, 0.9 min
+[18:48:53] T029: 2 replay jobs, concurrency 8
+[18:48:53] START typeE_2reg/baseline pid=10561
+[18:48:53] START typeE_2reg/dedup pid=10562
+[18:51:33] DONE  typeE_2reg/baseline (2.7 min)
+[18:59:49] DONE  typeE_2reg/dedup (10.9 min)
+[18:59:49] T029: ALL REPLAYS done, failed=none

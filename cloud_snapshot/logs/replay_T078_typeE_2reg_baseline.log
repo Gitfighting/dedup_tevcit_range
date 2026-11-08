@@ -1,0 +1,51 @@
+[load] 91176 objects, 0.7M unique chunks
+[load] 2409805 ops, 2 regions
+  [400000/2409805] 17s
+  [2000000/2409805] 26s
+{
+  "trace": "IBMObjectStoreTrace078Part0.typeE.mc-aug.csv",
+  "policy": "baseline",
+  "regions": [
+    "aws:us-east-1",
+    "aws:us-west-2"
+  ],
+  "ops": 2409805,
+  "counters": {
+    "puts": 132360,
+    "gets": 2277445,
+    "remote_fetch": 165839,
+    "hit_cached": 2111606,
+    "evictions": 161691
+  },
+  "hit_rate": 0.927182,
+  "remote_fetch_rate": 0.072818,
+  "cost_usd": {
+    "storage": 15.2036,
+    "transfer": 1.8049,
+    "req_put": 0.6618,
+    "req_get": 0.9773,
+    "total": 18.6476
+  },
+  "storage_gb_hours": {
+    "aws:us-east-1": 4588.8,
+    "aws:us-west-2": 699.4
+  },
+  "bytes_transferred_gb": 90.25,
+  "bytes_logical_get_gb": 2446.45,
+  "base_logical_bytes_gb": 37.32,
+  "base_stored_bytes_gb": 37.32,
+  "chunk_index_bytes_gb": 0.0,
+  "unique_chunks_m": 0.67,
+  "dedup_ratio_content": 0.85763,
+  "index_estimate_mb": {
+    "bloom_per_region": 0.807,
+    "lmdb_per_region": 43.119,
+    "manifest_control_plane": 0.0
+  },
+  "lookup_latency_estimate_us": {
+    "bloom_negative": 0.1,
+    "lmdb_hit": 5.0,
+    "note": "design estimates; replay uses array O(1)"
+  },
+  "wall_seconds": 30.8
+}

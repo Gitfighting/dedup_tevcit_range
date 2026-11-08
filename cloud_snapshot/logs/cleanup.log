@@ -1,0 +1,114 @@
+=== STEP 1: Delete extracted linux tars ===
+  Freed: 0.0GB (0 tars)
+
+=== STEP 2: Delete 0-byte files ===
+  DEL 0B: linux-5.8.10.tar.xz
+  DEL 0B: linux-5.16.10.tar.xz
+  DEL 0B: linux-6.2.16.tar.xz
+  DEL 0B: linux-5.6.3.tar.xz
+  DEL 0B: linux-5.14.20.tar.xz
+  DEL 0B: linux-6.8.6.tar.xz
+  DEL 0B: linux-4.19.300.tar.xz
+  DEL 0B: linux-6.10.13.tar.xz
+  DEL 0B: linux-5.2.16.tar.xz
+  DEL 0B: linux-6.2.13.tar.xz
+  DEL 0B: linux-5.2.20.tar.xz
+  DEL 0B: linux-6.2.11.tar.xz
+  DEL 0B: linux-4.4.284.tar.xz
+  DEL 0B: linux-5.13.17.tar.xz
+  DEL 0B: linux-5.18.1.tar.xz
+  DEL 0B: linux-6.9.4.tar.xz
+  DEL 0B: linux-5.19.10.tar.xz
+  DEL 0B: linux-5.6.14.tar.xz
+  DEL 0B: linux-5.8.3.tar.xz
+  DEL 0B: linux-5.3.2.tar.xz
+  DEL 0B: linux-5.8.4.tar.xz
+  DEL 0B: linux-5.12.19.tar.xz
+  DEL 0B: linux-5.16.4.tar.xz
+  DEL 0B: linux-4.9.319.tar.xz
+  DEL 0B: linux-6.7.2.tar.xz
+  DEL 0B: linux-5.6.1.tar.xz
+  DEL 0B: linux-6.5.4.tar.xz
+  DEL 0B: linux-5.16.6.tar.xz
+  DEL 0B: linux-5.6.7.tar.xz
+  DEL 0B: linux-6.10.9.tar.xz
+  DEL 0B: linux-5.7.13.tar.xz
+  DEL 0B: linux-6.5.2.tar.xz
+  DEL 0B: linux-6.9.2.tar.xz
+  DEL 0B: linux-5.17.13.tar.xz
+  DEL 0B: linux-6.10.4.tar.xz
+  DEL 0B: linux-6.8.1.tar.xz
+  DEL 0B: linux-5.3.3.tar.xz
+  DEL 0B: linux-5.9.3.tar.xz
+  DEL 0B: linux-5.12.4.tar.xz
+  DEL 0B: linux-4.9.324.tar.xz
+  DEL 0B: linux-5.14.13.tar.xz
+  DEL 0B: linux-5.11.22.tar.xz
+  DEL 0B: linux-6.10.1.tar.xz
+  DEL 0B: linux-5.11.4.tar.xz
+  DEL 0B: linux-5.12.17.tar.xz
+  DEL 0B: linux-6.5.10.tar.xz
+  DEL 0B: linux-5.18.16.tar.xz
+  DEL 0B: linux-6.9.6.tar.xz
+  DEL 0B: linux-6.9.5.tar.xz
+  DEL 0B: linux-5.14.9.tar.xz
+  DEL 0B: linux-6.11.5.tar.xz
+  DEL 0B: linux-4.4.280.tar.xz
+  DEL 0B: linux-5.13.11.tar.xz
+  DEL 0B: linux-6.3.3.tar.xz
+  DEL 0B: linux-6.4.5.tar.xz
+  DEL 0B: linux-6.5.6.tar.xz
+  DEL 0B: linux-5.16.17.tar.xz
+  DEL 0B: ubuntu-24.10-live-server-amd64.iso
+  DEL 0B: ubuntu-24.10-desktop-amd64.iso
+
+=== STEP 3: Extract PHP ===
+  216 PHP archives
+    php-8.0.13: 20,046 files, 124MB
+    php-8.1.29: 21,601 files, 137MB
+    php-5.6.23: 17,608 files, 104MB
+    php-7.0.33: 18,701 files, 107MB
+    php-8.3.8: 22,788 files, 147MB
+    php-7.2.33: 19,947 files, 126MB
+    php-8.0.3: 19,797 files, 122MB
+    php-7.1.8: 19,242 files, 112MB
+    php-7.4.4: 18,845 files, 113MB
+    php-5.5.21: 16,847 files, 96MB
+    php-7.3.33: 20,147 files, 126MB
+    php-8.2.20: 22,211 files, 139MB
+    php-7.0.26: 18,679 files, 107MB
+    php-5.5.6: 16,483 files, 94MB
+    php-7.4.12: 18,985 files, 114MB
+    php-7.1.16: 19,382 files, 111MB
+    php-5.6.30: 13,961 files, 55MB
+    php-7.3.16: 3,598 files, 56MB
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/usr/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/usr/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/tmp/cleanup_extract.py", line 53, in extract_one
+    target.mkdir(parents=True, exist_ok=True)
+  File "/usr/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+OSError: [Errno 28] No space left on device: '/data/file_pool/php-7.3.22'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/cleanup_extract.py", line 65, in <module>
+    for name, cnt, sz in pool.map(extract_one, php_archives):
+  File "/usr/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/usr/lib/python3.10/concurr

@@ -1,0 +1,27 @@
+[14:34:15] ============================================================
+[14:34:15] FINAL DATASET DOWNLOAD (No Docker)
+[14:34:15] Server: iZbp1a6u096xitmhw2x2i0Z
+[14:34:15] Free: 294.4 GB
+[14:34:15] ==================================================
+[14:34:15] [PHP] Downloading 3 PHP source versions
+[14:34:15]   SKIP php-8.2.33 (exists, 12.0MB)
+[14:34:15]   Downloading php[14:34:16]   Downloa[14:34:21]   DONE: 12.6MB
+[1[14:34:23]   DONE: 12.6MB
+[14:34:23]   SKIP ph[14:34:30]   DONE: 13.8MB
+[14:34:30]   [PHP Sources] 3 files, 38.5 MB total
+[14:34:30] ==================================================
+[14:34:30] [Ubuntu] Downloading 5 Ubuntu base rootfs versions
+[14:34:30]   Downloading ubuntu-base-20.04.6...
+[14:34:34]   Retry with Aliyun mirror...
+[14:34:34]   FAILED: ubuntu-20.04.6
+[14:34:34]   SKIP ubuntu-22.04.5 (exists, 29.8MB)
+[14:34:34]   Downloading ubuntu-base-24.04.2...
+[14:34:36]   Retry with Aliyun mirror...
+[14:34:36]   FAILED: ubuntu-24.04.2
+[14:34:36]   SKIP ubuntu-26.04 (exists, 2.6MB)
+[14:34:36]   [Ubuntu B[14:34:53]   DONE: 34.9MB
+[14:34:53]   [Ubuntu Base] 4 files, 64.8 MB total
+[14:34:53] ==================================================
+[14:34:53] [SQLDump] Downloading Wikipedia categorylinks dumps
+[14:34:53]   SKIP enwiki-20260501-categorylinks.sql.gz (exists, 0.00GB)
+[14:34:53]   Downloading enwiki-20260601-categorylinks.sql.gz (~2.3GB)...
